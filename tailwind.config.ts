@@ -63,6 +63,9 @@ export default {
         sand: "hsl(var(--sand))",
         olive: "hsl(var(--olive))",
         terracotta: "hsl(var(--terracotta))",
+        "accent-yellow": "hsl(var(--accent-yellow))",
+        "accent-lime": "hsl(var(--accent-lime))",
+        blush: "hsl(var(--blush))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

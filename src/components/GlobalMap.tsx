@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Loader2, Settings, Calendar, Building2, ScrollText, User, ChevronUp, ChevronDown } from "lucide-react";
 import { EventsDialog } from "@/components/EventsDialog";
+import { ZuletterDialog } from "@/components/ZuletterDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { useNavigate } from "react-router-dom";
 import { AddVillageForm } from "@/components/villages/AddVillageForm";
@@ -448,10 +449,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </p>
           </div>
 
-          {/* Manifesto + Events dialogs */}
+          {/* Manifesto + Events + Zuletter dialogs */}
           <div className="flex items-center gap-2">
             <ManifestoDialog />
             <EventsDialog />
+            <ZuletterDialog />
           </div>
         </div>
       </div>
