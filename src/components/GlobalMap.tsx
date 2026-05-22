@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, User, ChevronUp, ChevronDown, Menu, X as XIcon } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
 import { ZuletterDialog } from "@/components/ZuletterDialog";
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ManifestoDialog } from "@/components/ManifestoDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 const ADMIN_USER_IDS = [
   "9807c494-ba07-4438-9a89-07ac13334e78", // dev
@@ -58,7 +58,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
-  const { profile, isAuthenticated } = useAuth();
 
   // Parse popup dates string -> { start, end } (best effort)
   const parsePopupDates = useCallback((dateStr?: string | null): { start: number; end: number } | null => {
@@ -667,22 +666,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               Permanent
             </ToggleGroupItem>
           </ToggleGroup>
-
-          <button
-            onClick={() => isAuthenticated ? navigate("/profile") : navigate("/auth")}
-            className="flex items-center justify-center h-9 w-9 rounded-full bg-card/95 backdrop-blur-sm border border-border/50 shadow-lg"
-          >
-            {isAuthenticated && profile?.avatar_url ? (
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                  {(profile.username || "U").slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
         </div>
       )}
     </div>
