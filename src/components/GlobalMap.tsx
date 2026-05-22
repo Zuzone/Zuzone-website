@@ -25,8 +25,9 @@ const ADMIN_USER_IDS = [
   "b015441b-3bb4-4150-94e6-d8be048035bb", // booga
 ];
 const MUSHANGHAI_CENTER: [number, number] = [121.3136, 31.20488];
-const DEFAULT_CENTER: [number, number] = MUSHANGHAI_CENTER;
-const DEFAULT_ZOOM = 8;
+const MONTENEGRO_CENTER: [number, number] = [19.3744, 42.7087];
+const DEFAULT_CENTER: [number, number] = MONTENEGRO_CENTER;
+const DEFAULT_ZOOM = 1.4;
 const FEATURED_VILLAGE_ID = "renaissance-village";
 const FEATURED_VILLAGE_ZOOM = 8;
 
@@ -127,6 +128,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
         style: "mapbox://styles/mapbox/light-v11",
         center: DEFAULT_CENTER,
         zoom: DEFAULT_ZOOM,
+        projection: { name: 'globe' } as any,
       });
 
       // Apply padding to visually center the map within the visible area
