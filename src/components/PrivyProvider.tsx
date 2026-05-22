@@ -45,8 +45,10 @@ export const PrivyProvider = ({ children }: PrivyProviderProps) => {
     fetchConfig();
   }, []);
 
-  // While loading or if no app ID, just render children without Privy
-  if (loading || !appId) {
+  // While loading or if no valid app ID, just render children without Privy.
+  // Guard against empty/placeholder values to avoid
+  // "Cannot initialize the Privy provider with an invalid Privy app ID".
+  if (loading || !appId || appId.trim().length < 10) {
     return <>{children}</>;
   }
 
