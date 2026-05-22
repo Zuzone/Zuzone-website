@@ -650,7 +650,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               <p className="text-xs text-muted-foreground text-center py-6">No permanent villages</p>
             )}
           </div>
+          )}
         </div>
+
       )}
 
       {/* Mobile: split-screen bottom panel with toggle + gantt/list */}
