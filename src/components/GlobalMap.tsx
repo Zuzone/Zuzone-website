@@ -557,7 +557,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
 
       {/* Timeline */}
-      {timelineVillages.length > 0 && (
+      {timelineVillages.length > 0 && !anyDialogOpen && (
         <PopupTimeline
           villages={timelineVillages}
           activeVillage={activeVillage}
