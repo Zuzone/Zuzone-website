@@ -597,7 +597,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           {!panelCollapsed && (
           <div className="flex-1 min-h-0 overflow-hidden">
 
-            {villageTypeFilter === 'popup' ? (
+            {viewMode === 'gantt' ? (
               timelineVillages.length > 0 ? (
                 <PopupTimeline
                   villages={timelineVillages}
@@ -631,7 +631,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-6">No permanent villages</p>
+              <p className="text-xs text-muted-foreground text-center py-6">No villages</p>
             )}
           </div>
           )}
