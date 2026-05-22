@@ -457,6 +457,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
