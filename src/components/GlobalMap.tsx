@@ -388,14 +388,15 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
       clusterMarkersRef.current.set(village.id, marker);
     });
-  }, [filteredVillages, navigate, getMarkerScale, isVillagePast]);
+  }, [mapVillages, navigate, getMarkerScale, isVillagePast]);
 
-  // Create markers when filtered villages change
+  // Create markers when villages change
   useEffect(() => {
     if (mapReady) {
       createVillageMarkers();
     }
-  }, [mapReady, filteredVillages, createVillageMarkers]);
+  }, [mapReady, mapVillages, createVillageMarkers]);
+
 
   // Listen to zoom changes to scale markers
   useEffect(() => {
