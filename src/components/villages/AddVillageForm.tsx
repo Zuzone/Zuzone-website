@@ -226,6 +226,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
     setGoogleMapsUrl("");
     setWebsiteUrl("");
     setLocationName("");
+    setManualName("");
     setCoordinates(null);
     setWebsiteMetadata(null);
     setOpen(false);
