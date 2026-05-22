@@ -466,6 +466,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <ZuletterDialog open={zuletterOpen} onOpenChange={setZuletterOpen} />
 
           {/* Desktop: inline buttons */}
+          {!isMobile && (
           <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={() => setManifestoOpen(true)}
