@@ -615,7 +615,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
       {/* Mobile: split-screen bottom panel with toggle + gantt/list */}
       {isMobile && (
-        <div className="absolute left-0 right-0 bottom-0 h-1/2 z-30 flex flex-col bg-background border-t border-border shadow-xl">
+        <div className="absolute left-0 right-0 bottom-0 max-h-[50%] z-30 flex flex-col bg-background border-t border-border shadow-xl">
           <div className="flex items-center justify-center px-3 pt-2 pb-1 border-b border-border/50">
             <ToggleGroup
               type="single"
