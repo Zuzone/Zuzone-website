@@ -42,6 +42,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [locationName, setLocationName] = useState("");
+  const [manualName, setManualName] = useState("");
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
