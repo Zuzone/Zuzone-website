@@ -10,76 +10,81 @@
   :root {
     /* Dynamic viewport height for mobile compatibility */
     --viewport-height: 100dvh;
-    
-    /* Cream/paper background */
-    --background: 45 30% 96%;
-    --foreground: 140 25% 20%;
 
-    /* Cards with warm paper tones */
-    --card: 42 40% 94%;
-    --card-foreground: 140 25% 20%;
+    /* Warm cream/butter #FAF6EC */
+    --background: 45 60% 95%;
+    --foreground: 150 42% 21%;
 
-    --popover: 45 40% 97%;
-    --popover-foreground: 140 25% 20%;
+    /* White card surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 150 42% 21%;
 
-    /* Sage green primary */
-    --primary: 140 25% 35%;
-    --primary-foreground: 45 30% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 42% 21%;
 
-    /* Warm sand secondary */
-    --secondary: 35 30% 88%;
-    --secondary-foreground: 140 25% 25%;
+    /* Deep forest green #1F4D3A */
+    --primary: 150 42% 21%;
+    --primary-foreground: 45 60% 95%;
 
-    /* Muted sage */
-    --muted: 140 15% 90%;
-    --muted-foreground: 140 15% 45%;
+    /* Peachy cream secondary #FFF4E8 */
+    --secondary: 30 100% 95%;
+    --secondary-foreground: 150 42% 21%;
 
-    /* Olive accent */
-    --accent: 90 20% 40%;
-    --accent-foreground: 45 30% 96%;
+    /* Muted warm beige */
+    --muted: 40 30% 90%;
+    --muted-foreground: 145 9% 46%;
+
+    /* Mid-green accent #2E6B4F */
+    --accent: 150 40% 30%;
+    --accent-foreground: 45 60% 95%;
 
     --destructive: 0 70% 50%;
-    --destructive-foreground: 45 30% 96%;
+    --destructive-foreground: 45 60% 95%;
 
-    /* Subtle borders */
-    --border: 140 15% 80%;
-    --input: 140 15% 85%;
-    --ring: 140 25% 35%;
+    /* Warm beige borders #E8E2D2 */
+    --border: 45 32% 87%;
+    --input: 45 32% 87%;
+    --ring: 150 42% 21%;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
-    --sage: 140 25% 35%;
-    --sage-light: 140 20% 50%;
-    --sage-dark: 140 30% 25%;
-    --cream: 45 30% 96%;
-    --cream-dark: 42 25% 90%;
-    --sand: 35 40% 80%;
-    --olive: 90 20% 40%;
-    --terracotta: 20 50% 55%;
+    --sage: 150 42% 21%;
+    --sage-light: 150 40% 30%;
+    --sage-dark: 150 47% 13%;
+    --cream: 45 60% 95%;
+    --cream-dark: 40 30% 90%;
+    --sand: 30 100% 95%;
+    --olive: 150 40% 30%;
+    --terracotta: 0 60% 94%;
+    --accent-yellow: 54 78% 59%;
+    --accent-lime: 65 65% 54%;
+    --blush: 0 60% 94%;
+    --peach: 30 100% 95%;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(180deg, hsl(45 30% 96%) 0%, hsl(42 25% 90%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(42 40% 94%) 0%, hsl(45 30% 96%) 100%);
-    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(140 25% 20% / 0.6) 100%);
+    --gradient-hero: linear-gradient(180deg, #FBE6E6 0%, #FAF6EC 40%, #FAF6EC 100%);
+    --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #FAF6EC 100%);
+    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(150 42% 21% / 0.6) 100%);
+    --gradient-accent: linear-gradient(135deg, #E8D547 0%, #C4D63E 100%);
 
     /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(140 25% 20% / 0.1);
-    --shadow-card: 0 8px 30px -8px hsl(140 25% 20% / 0.15);
-    --shadow-elevated: 0 20px 50px -12px hsl(140 25% 20% / 0.25);
+    --shadow-soft: 0 1px 3px rgba(31, 77, 58, 0.08);
+    --shadow-card: 0 4px 16px -4px rgba(31, 77, 58, 0.1);
+    --shadow-elevated: 0 20px 50px -12px rgba(31, 77, 58, 0.2);
 
     /* Typography */
     --font-display: 'Cormorant Garamond', serif;
     --font-body: 'DM Sans', sans-serif;
 
-    --sidebar-background: 45 30% 96%;
-    --sidebar-foreground: 140 25% 20%;
-    --sidebar-primary: 140 25% 35%;
-    --sidebar-primary-foreground: 45 30% 96%;
-    --sidebar-accent: 140 15% 90%;
-    --sidebar-accent-foreground: 140 25% 20%;
-    --sidebar-border: 140 15% 80%;
-    --sidebar-ring: 140 25% 35%;
+    --sidebar-background: 45 60% 95%;
+    --sidebar-foreground: 150 42% 21%;
+    --sidebar-primary: 150 42% 21%;
+    --sidebar-primary-foreground: 45 60% 95%;
+    --sidebar-accent: 40 30% 90%;
+    --sidebar-accent-foreground: 150 42% 21%;
+    --sidebar-border: 45 32% 87%;
+    --sidebar-ring: 150 42% 21%;
   }
 
   .dark {
