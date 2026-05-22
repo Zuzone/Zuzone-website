@@ -88,25 +88,25 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     }
   }, []);
 
-  // Filter villages by type, sort by relevance: current → upcoming → past
+  // Sorted list of all villages: popups (ongoing → upcoming → past), then permanent
   const filteredVillages = useMemo(() => {
-    const list = villages.filter(v => v.village_type === villageTypeFilter);
-    if (villageTypeFilter !== 'popup') return list;
     const now = Date.now();
-    const ranked = list.map(v => {
+    const popups = villages.filter(v => v.village_type === 'popup');
+    const permanent = villages.filter(v => v.village_type !== 'popup');
+    const ranked = popups.map(v => {
       const d = parsePopupDates(v.dates);
-      let bucket = 3; // unknown
+      let bucket = 3;
       let key = 0;
       if (d) {
-        if (d.start <= now && d.end >= now) { bucket = 0; key = d.end; }          // ongoing — soonest ending first
-        else if (d.start > now) { bucket = 1; key = d.start; }                     // upcoming — soonest first
-        else { bucket = 2; key = -d.end; }                                         // past — most recent first
+        if (d.start <= now && d.end >= now) { bucket = 0; key = d.end; }
+        else if (d.start > now) { bucket = 1; key = d.start; }
+        else { bucket = 2; key = -d.end; }
       }
       return { v, bucket, key };
     });
     ranked.sort((a, b) => a.bucket - b.bucket || a.key - b.key);
-    return ranked.map(r => r.v);
-  }, [villages, villageTypeFilter, parsePopupDates]);
+    return [...ranked.map(r => r.v), ...permanent];
+  }, [villages, parsePopupDates]);
 
   // All villages shown on the map (popups + permanent merged)
   const mapVillages = useMemo(() => villages, [villages]);
