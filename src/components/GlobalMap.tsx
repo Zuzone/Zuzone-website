@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
 import { ZuletterDialog } from "@/components/ZuletterDialog";
@@ -49,7 +49,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const { currentVillage } = useUserCurrentVillage(user?.id, villages);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [villageTypeFilter, setVillageTypeFilter] = useState<VillageType>("popup");
+  const [viewMode, setViewMode] = useState<"gantt" | "list">("gantt");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
   const [manifestoOpen, setManifestoOpen] = useState(false);
@@ -88,25 +88,25 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     }
   }, []);
 
-  // Filter villages by type, sort by relevance: current → upcoming → past
+  // Sorted list of all villages: popups (ongoing → upcoming → past), then permanent
   const filteredVillages = useMemo(() => {
-    const list = villages.filter(v => v.village_type === villageTypeFilter);
-    if (villageTypeFilter !== 'popup') return list;
     const now = Date.now();
-    const ranked = list.map(v => {
+    const popups = villages.filter(v => v.village_type === 'popup');
+    const permanent = villages.filter(v => v.village_type !== 'popup');
+    const ranked = popups.map(v => {
       const d = parsePopupDates(v.dates);
-      let bucket = 3; // unknown
+      let bucket = 3;
       let key = 0;
       if (d) {
-        if (d.start <= now && d.end >= now) { bucket = 0; key = d.end; }          // ongoing — soonest ending first
-        else if (d.start > now) { bucket = 1; key = d.start; }                     // upcoming — soonest first
-        else { bucket = 2; key = -d.end; }                                         // past — most recent first
+        if (d.start <= now && d.end >= now) { bucket = 0; key = d.end; }
+        else if (d.start > now) { bucket = 1; key = d.start; }
+        else { bucket = 2; key = -d.end; }
       }
       return { v, bucket, key };
     });
     ranked.sort((a, b) => a.bucket - b.bucket || a.key - b.key);
-    return ranked.map(r => r.v);
-  }, [villages, villageTypeFilter, parsePopupDates]);
+    return [...ranked.map(r => r.v), ...permanent];
+  }, [villages, parsePopupDates]);
 
   // All villages shown on the map (popups + permanent merged)
   const mapVillages = useMemo(() => villages, [villages]);
@@ -568,17 +568,17 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50 relative">
             <ToggleGroup
               type="single"
-              value={villageTypeFilter}
-              onValueChange={(value) => value && setVillageTypeFilter(value as VillageType)}
+              value={viewMode}
+              onValueChange={(value) => value && setViewMode(value as "gantt" | "list")}
               className="bg-card rounded-full border border-border/50 px-1 py-1"
             >
-              <ToggleGroupItem value="popup" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                Popups
+              <ToggleGroupItem value="gantt" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                <BarChart3 className="h-3.5 w-3.5" />
+                Gantt
               </ToggleGroupItem>
-              <ToggleGroupItem value="permanent" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                <Building2 className="h-3.5 w-3.5" />
-                Permanent
+              <ToggleGroupItem value="list" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                <LayoutList className="h-3.5 w-3.5" />
+                List
               </ToggleGroupItem>
             </ToggleGroup>
             <Button
@@ -597,7 +597,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           {!panelCollapsed && (
           <div className="flex-1 min-h-0 overflow-hidden">
 
-            {villageTypeFilter === 'popup' ? (
+            {viewMode === 'gantt' ? (
               timelineVillages.length > 0 ? (
                 <PopupTimeline
                   villages={timelineVillages}
@@ -631,7 +631,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-6">No permanent villages</p>
+              <p className="text-xs text-muted-foreground text-center py-6">No villages</p>
             )}
           </div>
           )}
@@ -645,17 +645,17 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50">
             <ToggleGroup
               type="single"
-              value={villageTypeFilter}
-              onValueChange={(value) => value && setVillageTypeFilter(value as VillageType)}
+              value={viewMode}
+              onValueChange={(value) => value && setViewMode(value as "gantt" | "list")}
               className="bg-card rounded-full border border-border/50 px-1 py-1"
             >
-              <ToggleGroupItem value="popup" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                Popups
+              <ToggleGroupItem value="gantt" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                <BarChart3 className="h-3.5 w-3.5" />
+                Gantt
               </ToggleGroupItem>
-              <ToggleGroupItem value="permanent" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                <Building2 className="h-3.5 w-3.5" />
-                Permanent
+              <ToggleGroupItem value="list" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                <LayoutList className="h-3.5 w-3.5" />
+                List
               </ToggleGroupItem>
             </ToggleGroup>
             <Button
@@ -673,7 +673,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           {!panelCollapsed && (
           <div className="flex-1 min-h-0 overflow-hidden">
 
-            {villageTypeFilter === 'popup' ? (
+            {viewMode === 'gantt' ? (
               timelineVillages.length > 0 ? (
                 <PopupTimeline
                   villages={timelineVillages}
@@ -707,7 +707,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-6">No permanent villages</p>
+              <p className="text-xs text-muted-foreground text-center py-6">No villages</p>
             )}
           </div>
           )}
