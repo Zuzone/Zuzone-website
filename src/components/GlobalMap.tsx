@@ -446,8 +446,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               <Users className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-foreground">{userCount}</span>
             </div>
-            <NotificationBell />
-            <AuthButton />
           </div>
         </div>
       </div>
