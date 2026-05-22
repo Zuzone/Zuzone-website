@@ -201,7 +201,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
   // ============ EMBEDDED LAYOUT (used inside mobile bottom panel) ============
   if (embedded) {
     return (
-      <div className="h-full w-full overflow-y-auto px-3 pt-2 pb-3">
+      <div className="w-full overflow-y-auto px-3 pt-2 pb-3 max-h-full">
         <div className="relative mb-2 h-5">
           {months.map((month, i) => (
             <div
