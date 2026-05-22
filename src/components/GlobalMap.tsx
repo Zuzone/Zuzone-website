@@ -430,7 +430,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       {/* Header overlay */}
       <div className="absolute left-0 right-0 top-0 z-10 pointer-events-none bg-gradient-to-b from-background/90 via-background/60 to-transparent p-3 pb-12 sm:p-4 sm:pb-16 md:p-6 md:pb-20">
         <div className="flex items-start justify-between pointer-events-auto">
-          <div className="flex flex-col gap-1 w-fit">
+          <div className={`flex flex-col gap-1 w-fit transition-opacity ${anyDialogOpen ? 'invisible opacity-0' : ''}`}>
             <div className="flex items-center gap-2">
               <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
                 Zuzone
