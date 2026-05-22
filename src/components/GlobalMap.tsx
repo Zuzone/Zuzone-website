@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Users, Settings, Calendar, Building2, ScrollText, User, ChevronUp, ChevronDown } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, User, ChevronUp, ChevronDown } from "lucide-react";
 import { EventsDialog } from "@/components/EventsDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +42,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const navigate = useNavigate();
 
   const { villages, loading: villagesLoading } = useVillages();
-  const { count: userCount } = useUserCount();
   const { user } = useAuth();
   const { currentVillage } = useUserCurrentVillage(user?.id, villages);
   const [mapReady, setMapReady] = useState(false);
@@ -444,10 +443,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="flex items-center gap-2">
             <ManifestoDialog />
             <EventsDialog />
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-card/90 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">{userCount}</span>
-            </div>
           </div>
         </div>
       </div>
