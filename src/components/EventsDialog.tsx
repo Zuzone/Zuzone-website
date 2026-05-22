@@ -21,13 +21,21 @@ export const EventsDialog = () => {
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-[90vw] h-[85vh] p-1 gap-0 border border-border overflow-hidden flex flex-col bg-background">
         <DialogTitle className="sr-only">Zuzalu Events</DialogTitle>
-        <iframe
-          src="https://lu.ma/zuzalutownhall"
-          title="Zuzalu Events on Luma"
-          className="w-full h-full rounded-md bg-background"
-          sandbox="allow-scripts allow-popups"
-          loading="lazy"
-        />
+        <div className="relative w-full h-full rounded-md overflow-hidden">
+          <div className="absolute top-2 right-2 z-10">
+            <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full shadow-sm">
+              Demo Embedded
+            </span>
+          </div>
+          <iframe
+            src="https://luma.com/embed/calendar/cal-4TZzgldrBxBU0Cd/events"
+            title="Zuzalu Events on Luma"
+            className="w-full h-full rounded-md bg-background"
+            style={{ border: "1px solid #bfcbda88" }}
+            allowFullScreen
+            loading="lazy"
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
