@@ -1,0 +1,1 @@
+UPDATE public.villages SET dates = 'Nov 9, 2026 - Jan 9, 2027' WHERE id = 'renaissance-village';
