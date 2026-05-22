@@ -485,7 +485,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       </div>
 
       {/* Info sidebar - positioned above map markers and timeline */}
-      <div className={`absolute top-24 right-4 z-[100] hidden w-56 ${sidebarCollapsed ? '' : 'max-h-[320px]'} rounded-lg bg-card/95 p-3 shadow-card backdrop-blur-sm md:block lg:w-64`}>
+      <div className={`absolute top-24 right-4 z-[100] hidden w-56 ${sidebarCollapsed ? '' : 'max-h-[320px]'} rounded-lg bg-card/95 p-3 shadow-card backdrop-blur-sm md:block lg:w-64 ${anyDialogOpen ? 'md:hidden' : ''}`}>
         <div className={`flex items-center justify-between ${sidebarCollapsed ? '' : 'mb-2 border-b border-border pb-2'}`}>
           <div className="min-w-0">
             <h3 className="font-display text-sm font-semibold text-foreground">
