@@ -20,6 +20,7 @@ interface PopupTimelineProps {
   activeVillage: PopupVillage;
   isZoomedIn?: boolean;
   onVillageClick: (village: PopupVillage) => void;
+  embedded?: boolean;
 }
 
 // Parse date string to get start and end dates
