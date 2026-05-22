@@ -1,0 +1,1 @@
+UPDATE public.villages SET village_type = 'popup', dates = 'Nov 11, 2026 - Jan 5, 2027' WHERE id = '4seas';
