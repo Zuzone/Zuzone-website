@@ -166,15 +166,8 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
-      toast.error("Please sign in to create a village", {
-        action: {
-          label: "Sign In",
-          onClick: () => navigate("/auth"),
-        },
-      });
-      return;
-    }
+
+
 
     if (!coordinates) {
       toast.error("Please paste a valid Google Maps link");
