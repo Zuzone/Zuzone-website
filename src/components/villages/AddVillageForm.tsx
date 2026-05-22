@@ -235,17 +235,9 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && !user) {
-      toast.error("Please sign in to create a village", {
-        action: {
-          label: "Sign In",
-          onClick: () => navigate("/auth"),
-        },
-      });
-      return;
-    }
     setOpen(newOpen);
   };
+
 
   const hasSocials = websiteMetadata?.twitter_url || websiteMetadata?.instagram_url || websiteMetadata?.telegram_url;
 
