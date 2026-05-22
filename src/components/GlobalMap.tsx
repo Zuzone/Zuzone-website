@@ -160,22 +160,31 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     };
   }, [mapboxToken]);
 
-  // Center map on user's current village or preferred village
+  // Center map on currently-active popup village (today between dates), else user's current/featured
   useEffect(() => {
-    if (!map.current || !mapReady || initialCenterSet) return;
+    if (!map.current || !mapReady || initialCenterSet || villages.length === 0) return;
 
-    // Prefer Renaissance Village as the featured village, then fall back to user's current village
-    const preferredVillage = villages.find(v => v.id === FEATURED_VILLAGE_ID) || currentVillage;
+    const now = Date.now();
+    const activePopups = villages
+      .filter(v => v.village_type === 'popup')
+      .map(v => ({ v, d: parsePopupDates(v.dates) }))
+      .filter(x => x.d && x.d.start <= now && x.d.end >= now)
+      .sort((a, b) => (a.d!.end - b.d!.end)); // soonest ending first
+
+    const preferredVillage =
+      activePopups[0]?.v ||
+      currentVillage ||
+      villages.find(v => v.id === FEATURED_VILLAGE_ID);
 
     if (preferredVillage) {
       map.current.flyTo({
         center: preferredVillage.center,
-        zoom: preferredVillage.id === FEATURED_VILLAGE_ID ? FEATURED_VILLAGE_ZOOM : 5,
+        zoom: 8,
         duration: 1500,
       });
       setInitialCenterSet(true);
     }
-  }, [mapReady, currentVillage, villages, initialCenterSet]);
+  }, [mapReady, currentVillage, villages, initialCenterSet, parsePopupDates]);
 
   // Get village route slug - all villages use /:id format now
   const getVillageRoute = (village: Village | { id: string }) => {
