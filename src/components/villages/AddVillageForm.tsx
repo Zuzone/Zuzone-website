@@ -199,7 +199,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
       center: coordinates,
       dates,
       description: websiteMetadata?.description || `Welcome to ${villageName}`,
-      created_by: user.id,
+      created_by: user?.id || null,
       village_type: villageType,
       website_url: formattedWebsiteUrl || null,
       logo_url: websiteMetadata?.favicon_url || null,
