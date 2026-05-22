@@ -581,7 +581,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       {/* Desktop: bottom panel with toggle + gantt/list */}
       {!isMobile && !anyDialogOpen && (
         <div className="absolute left-0 right-0 bottom-0 max-h-56 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
-          <div className="flex items-center justify-center px-3 pt-2 pb-1 border-b border-border/50">
+          <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50 relative">
             <ToggleGroup
               type="single"
               value={villageTypeFilter}
@@ -597,7 +597,18 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 Permanent
               </ToggleGroupItem>
             </ToggleGroup>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPanelCollapsed(v => !v)}
+              className="h-7 w-7 p-0 rounded-full"
+              aria-label={panelCollapsed ? "Expand panel" : "Collapse panel"}
+              title={panelCollapsed ? "Expand" : "Collapse"}
+            >
+              {panelCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
+
 
           <div className="flex-1 min-h-0 overflow-hidden">
             {villageTypeFilter === 'popup' ? (
