@@ -181,7 +181,6 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
 
     setIsSubmitting(true);
 
-    const villageName = getVillageName();
     const villageType = getVillageType();
     const slug = villageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const dates = getFormattedDates();
