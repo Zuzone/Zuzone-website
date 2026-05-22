@@ -9,7 +9,7 @@ import { AddVillageForm } from "@/components/villages/AddVillageForm";
 
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PopupTimeline } from "@/components/PopupTimeline";
-import { useUserCount } from "@/hooks/useUserCount";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useUserCurrentVillage } from "@/hooks/useUserCurrentVillage";
 import { Button } from "@/components/ui/button";
