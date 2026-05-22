@@ -3,10 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { PortoProvider } from "@/components/PortoProvider";
-import { SolanaProvider } from "@/components/SolanaProvider";
-import { PrivyProvider } from "@/components/PrivyProvider";
-import { TonProvider } from "@/components/TonProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { getVillageSlugFromDomain, isCustomVillageDomain } from "@/lib/domainMapping";
 import Index from "./pages/Index";
@@ -39,66 +35,54 @@ const CustomDomainVillage = () => <Village overrideVillageSlug={customVillageSlu
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <PrivyProvider>
-        <PortoProvider>
-          <SolanaProvider>
-            <TonProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  {isCustomDomain ? (
-                    <UserProfilePopupProvider>
-                      <Routes>
-                        <Route path="/" element={<CustomDomainVillage />} />
-                        <Route path="/about" element={<CustomDomainVillage />} />
-                        <Route path="/map" element={<CustomDomainVillage />} />
-                        <Route path="/residents" element={<CustomDomainVillage />} />
-                        <Route path="/scenius" element={<CustomDomainVillage />} />
-                        <Route path="/events" element={<CustomDomainVillage />} />
-                        <Route path="/edit" element={<EditVillage overrideVillageSlug={customVillageSlug!} />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/auth/telegram-callback" element={<TelegramCallback />} />
-                        <Route path="/embed" element={<Embed />} />
-                        <Route path="/widget" element={<Widget />} />
-
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </UserProfilePopupProvider>
-                  ) : (
-                    <UserProfilePopupProvider>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/embed" element={<Embed />} />
-                        <Route path="/widget" element={<Widget />} />
-
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/auth/telegram-callback" element={<TelegramCallback />} />
-                        <Route path="/admin" element={<Admin />} />
-                        <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
-                        <Route path="/profile/:username" element={<Profile />} />
-                        <Route path="/notifications" element={<Notifications />} />
-                        {/* Village routes with category deep links */}
-                        <Route path="/:villageSlug" element={<Village />} />
-                        <Route path="/:villageSlug/about" element={<Village />} />
-                        <Route path="/:villageSlug/edit" element={<EditVillage />} />
-                        <Route path="/:villageSlug/map" element={<Village />} />
-                        <Route path="/:villageSlug/residents" element={<Village />} />
-                        <Route path="/:villageSlug/scenius" element={<Village />} />
-                        <Route path="/:villageSlug/bulletin" element={<Village />} />
-                        <Route path="/:villageSlug/events" element={<Village />} />
-                        <Route path="/:villageSlug/treasury" element={<Village />} />
-                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </UserProfilePopupProvider>
-                  )}
-                </BrowserRouter>
-              </TooltipProvider>
-            </TonProvider>
-          </SolanaProvider>
-        </PortoProvider>
-      </PrivyProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          {isCustomDomain ? (
+            <UserProfilePopupProvider>
+              <Routes>
+                <Route path="/" element={<CustomDomainVillage />} />
+                <Route path="/about" element={<CustomDomainVillage />} />
+                <Route path="/map" element={<CustomDomainVillage />} />
+                <Route path="/residents" element={<CustomDomainVillage />} />
+                <Route path="/scenius" element={<CustomDomainVillage />} />
+                <Route path="/events" element={<CustomDomainVillage />} />
+                <Route path="/edit" element={<EditVillage overrideVillageSlug={customVillageSlug!} />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/telegram-callback" element={<TelegramCallback />} />
+                <Route path="/embed" element={<Embed />} />
+                <Route path="/widget" element={<Widget />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </UserProfilePopupProvider>
+          ) : (
+            <UserProfilePopupProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/embed" element={<Embed />} />
+                <Route path="/widget" element={<Widget />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/telegram-callback" element={<TelegramCallback />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+                <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/:villageSlug" element={<Village />} />
+                <Route path="/:villageSlug/about" element={<Village />} />
+                <Route path="/:villageSlug/edit" element={<EditVillage />} />
+                <Route path="/:villageSlug/map" element={<Village />} />
+                <Route path="/:villageSlug/residents" element={<Village />} />
+                <Route path="/:villageSlug/scenius" element={<Village />} />
+                <Route path="/:villageSlug/bulletin" element={<Village />} />
+                <Route path="/:villageSlug/events" element={<Village />} />
+                <Route path="/:villageSlug/treasury" element={<Village />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </UserProfilePopupProvider>
+          )}
+        </BrowserRouter>
+      </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
