@@ -108,6 +108,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     return ranked.map(r => r.v);
   }, [villages, villageTypeFilter, parsePopupDates]);
 
+  // All villages shown on the map (popups + permanent merged)
+  const mapVillages = useMemo(() => villages, [villages]);
+
+
   // Re-sort every minute so the list stays fresh as time advances
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -287,7 +291,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
   // Create village markers
   const createVillageMarkers = useCallback(() => {
-    if (!map.current || filteredVillages.length === 0) return;
+    if (!map.current || mapVillages.length === 0) return;
 
     clusterMarkersRef.current.forEach((marker) => marker.remove());
     clusterMarkersRef.current.clear();
@@ -295,7 +299,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     const currentZoom = map.current.getZoom();
     const initialScale = getMarkerScale(currentZoom);
 
-    filteredVillages.forEach((village, index) => {
+    mapVillages.forEach((village, index) => {
       const isPast = isVillagePast(village);
       const isFeaturedVillage = village.id === FEATURED_VILLAGE_ID;
       const el = document.createElement("div");
@@ -384,14 +388,15 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
       clusterMarkersRef.current.set(village.id, marker);
     });
-  }, [filteredVillages, navigate, getMarkerScale, isVillagePast]);
+  }, [mapVillages, navigate, getMarkerScale, isVillagePast]);
 
-  // Create markers when filtered villages change
+  // Create markers when villages change
   useEffect(() => {
     if (mapReady) {
       createVillageMarkers();
     }
-  }, [mapReady, filteredVillages, createVillageMarkers]);
+  }, [mapReady, mapVillages, createVillageMarkers]);
+
 
   // Listen to zoom changes to scale markers
   useEffect(() => {
