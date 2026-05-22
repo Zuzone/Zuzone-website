@@ -291,7 +291,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
   // Create village markers
   const createVillageMarkers = useCallback(() => {
-    if (!map.current || filteredVillages.length === 0) return;
+    if (!map.current || mapVillages.length === 0) return;
 
     clusterMarkersRef.current.forEach((marker) => marker.remove());
     clusterMarkersRef.current.clear();
