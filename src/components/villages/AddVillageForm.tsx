@@ -42,6 +42,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [locationName, setLocationName] = useState("");
+  const [manualName, setManualName] = useState("");
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
@@ -129,8 +130,9 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
     }
   };
 
-  // Derive village name from metadata
+  // Derive village name from metadata or manual input
   const getVillageName = (): string => {
+    if (manualName.trim()) return manualName.trim();
     if (!websiteMetadata?.title) return "";
     // Clean up title (remove common suffixes)
     return websiteMetadata.title
@@ -161,27 +163,24 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
     return "Permanent";
   };
 
-  const canSubmit = coordinates && websiteMetadata?.title;
+  const canSubmit = coordinates && getVillageName().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-
-
 
     if (!coordinates) {
       toast.error("Please paste a valid Google Maps link");
       return;
     }
 
-    if (!websiteMetadata?.title) {
-      toast.error("Please paste a village website to extract info");
+    const villageName = getVillageName();
+    if (!villageName) {
+      toast.error("Please enter a village name or paste a website");
       return;
     }
 
     setIsSubmitting(true);
 
-    const villageName = getVillageName();
     const villageType = getVillageType();
     const slug = villageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const dates = getFormattedDates();
@@ -227,6 +226,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
     setGoogleMapsUrl("");
     setWebsiteUrl("");
     setLocationName("");
+    setManualName("");
     setCoordinates(null);
     setWebsiteMetadata(null);
     setOpen(false);
@@ -324,7 +324,23 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
                 )}
               </div>
             )}
+
+            {!websiteMetadata && !isScrapingWebsite && (
+              <div className="space-y-2 pt-1">
+                <Label htmlFor="manualName" className="text-xs text-muted-foreground">
+                  No website? Enter village name manually
+                </Label>
+                <Input
+                  id="manualName"
+                  placeholder="Village name..."
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+            )}
           </div>
+
 
           {/* Google Maps URL field */}
           <div className="space-y-2">
@@ -365,11 +381,11 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>
-                {!coordinates && !websiteMetadata?.title 
-                  ? "Paste both links to auto-fill village details"
-                  : !coordinates 
+                {!coordinates && !getVillageName()
+                  ? "Add a location and village name (or website) to continue"
+                  : !coordinates
                     ? "Paste a Google Maps link for location"
-                    : "Paste a website to extract village info"}
+                    : "Enter a village name or paste a website"}
               </span>
             </div>
           )}
