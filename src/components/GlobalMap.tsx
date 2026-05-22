@@ -50,6 +50,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [villageTypeFilter, setVillageTypeFilter] = useState<VillageType>("popup");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
+  const [manifestoOpen, setManifestoOpen] = useState(false);
+  const [eventsOpen, setEventsOpen] = useState(false);
+  const [zuletterOpen, setZuletterOpen] = useState(false);
+  const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
