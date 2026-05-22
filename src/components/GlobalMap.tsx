@@ -49,7 +49,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const { currentVillage } = useUserCurrentVillage(user?.id, villages);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [villageTypeFilter, setVillageTypeFilter] = useState<VillageType>("popup");
+  const [viewMode, setViewMode] = useState<"gantt" | "list">("gantt");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
   const [manifestoOpen, setManifestoOpen] = useState(false);
