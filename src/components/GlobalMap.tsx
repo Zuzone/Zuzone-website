@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
 import { ZuletterDialog } from "@/components/ZuletterDialog";
@@ -30,8 +30,8 @@ const DEFAULT_ZOOM = 8;
 const FEATURED_VILLAGE_ID = "renaissance-village";
 const FEATURED_VILLAGE_ZOOM = 8;
 
-// Padding to account for UI overlays (right sidebar, bottom timeline)
-const MAP_PADDING = { top: 80, bottom: 220, left: 0, right: 300 };
+// Symmetric padding so the globe stays centered in the viewport
+const MAP_PADDING = { top: 0, bottom: 0, left: 0, right: 0 };
 
 interface GlobalMapProps {
   mapboxToken: string;
@@ -54,6 +54,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [manifestoOpen, setManifestoOpen] = useState(false);
   const [eventsOpen, setEventsOpen] = useState(false);
   const [zuletterOpen, setZuletterOpen] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
@@ -580,7 +581,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       {/* Desktop: bottom panel with toggle + gantt/list */}
       {!isMobile && !anyDialogOpen && (
         <div className="absolute left-0 right-0 bottom-0 max-h-56 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
-          <div className="flex items-center justify-center px-3 pt-2 pb-1 border-b border-border/50">
+          <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50 relative">
             <ToggleGroup
               type="single"
               value={villageTypeFilter}
@@ -596,9 +597,22 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 Permanent
               </ToggleGroupItem>
             </ToggleGroup>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPanelCollapsed(v => !v)}
+              className="h-7 w-7 p-0 rounded-full"
+              aria-label={panelCollapsed ? "Expand panel" : "Collapse panel"}
+              title={panelCollapsed ? "Expand" : "Collapse"}
+            >
+              {panelCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
 
+
+          {!panelCollapsed && (
           <div className="flex-1 min-h-0 overflow-hidden">
+
             {villageTypeFilter === 'popup' ? (
               timelineVillages.length > 0 ? (
                 <PopupTimeline
@@ -636,13 +650,15 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               <p className="text-xs text-muted-foreground text-center py-6">No permanent villages</p>
             )}
           </div>
+          )}
         </div>
+
       )}
 
       {/* Mobile: split-screen bottom panel with toggle + gantt/list */}
       {isMobile && (
         <div className="absolute left-0 right-0 bottom-0 max-h-[50%] z-30 flex flex-col bg-background border-t border-border shadow-xl">
-          <div className="flex items-center justify-center px-3 pt-2 pb-1 border-b border-border/50">
+          <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50">
             <ToggleGroup
               type="single"
               value={villageTypeFilter}
@@ -658,9 +674,21 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 Permanent
               </ToggleGroupItem>
             </ToggleGroup>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPanelCollapsed(v => !v)}
+              className="h-7 w-7 p-0 rounded-full"
+              aria-label={panelCollapsed ? "Expand panel" : "Collapse panel"}
+              title={panelCollapsed ? "Expand" : "Collapse"}
+            >
+              {panelCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
 
+          {!panelCollapsed && (
           <div className="flex-1 min-h-0 overflow-hidden">
+
             {villageTypeFilter === 'popup' ? (
               timelineVillages.length > 0 ? (
                 <PopupTimeline
@@ -698,7 +726,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               <p className="text-xs text-muted-foreground text-center py-6">No permanent villages</p>
             )}
           </div>
+          )}
         </div>
+
       )}
     </div>
   );
