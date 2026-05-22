@@ -130,8 +130,9 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
     }
   };
 
-  // Derive village name from metadata
+  // Derive village name from metadata or manual input
   const getVillageName = (): string => {
+    if (manualName.trim()) return manualName.trim();
     if (!websiteMetadata?.title) return "";
     // Clean up title (remove common suffixes)
     return websiteMetadata.title
@@ -162,21 +163,19 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
     return "Permanent";
   };
 
-  const canSubmit = coordinates && websiteMetadata?.title;
+  const canSubmit = coordinates && getVillageName().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-
-
 
     if (!coordinates) {
       toast.error("Please paste a valid Google Maps link");
       return;
     }
 
-    if (!websiteMetadata?.title) {
-      toast.error("Please paste a village website to extract info");
+    const villageName = getVillageName();
+    if (!villageName) {
+      toast.error("Please enter a village name or paste a website");
       return;
     }
 
