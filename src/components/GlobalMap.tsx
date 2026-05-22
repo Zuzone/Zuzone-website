@@ -58,7 +58,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
-  const { profile, isAuthenticated } = useAuth();
 
   // Parse popup dates string -> { start, end } (best effort)
   const parsePopupDates = useCallback((dateStr?: string | null): { start: number; end: number } | null => {
