@@ -253,6 +253,11 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
+    if (newOpen) {
+      setUnlocked(false);
+      setPasswordInput("");
+      setPasswordError(null);
+    }
   };
 
 
