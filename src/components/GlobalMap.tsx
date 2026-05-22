@@ -667,22 +667,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               Permanent
             </ToggleGroupItem>
           </ToggleGroup>
-
-          <button
-            onClick={() => isAuthenticated ? navigate("/profile") : navigate("/auth")}
-            className="flex items-center justify-center h-9 w-9 rounded-full bg-card/95 backdrop-blur-sm border border-border/50 shadow-lg"
-          >
-            {isAuthenticated && profile?.avatar_url ? (
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                  {(profile.username || "U").slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
         </div>
       )}
     </div>
