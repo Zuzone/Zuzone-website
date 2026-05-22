@@ -449,11 +449,33 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </p>
           </div>
 
-          {/* Manifesto + Events + Zuletter dialogs */}
+          {/* Manifesto + Events + Zuletter dialogs + Social links */}
           <div className="flex items-center gap-2">
             <ManifestoDialog />
             <EventsDialog />
             <ZuletterDialog />
+            <a
+              href="https://x.com/zuzones"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-accent-yellow/20 to-accent-lime/20 backdrop-blur-sm text-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              aria-label="X (Twitter)"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+            <a
+              href="https://github.com/vrnvrn/zu/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-accent-yellow/20 to-accent-lime/20 backdrop-blur-sm text-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              aria-label="GitHub"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 .297c-6.63 1-7.52-4.64-7.52-4.64-4.64-1.56-4.64-1.56-4.64-1.56-1.57-4.64-1.57-4.64-1.57-4.64-4.64-1.57-4.64-1.57-4.64 3.08 5.39 3.08 5.39 3.08 5.39-2.44 11.37-2.44 11.37-2.44 11.37 1.03 3.65 1.03 3.65 1.03 3.65 4.64 1.36 4.64 1.36 4.64-3.04-.86-5.13-.38-6.37-1.03-.46 2.63-.64 5.15-.76 5.59.38 2.63 2.33 3.65 2.33 5.12v7.46c-.46.46-1.09.46-1.54 0-.58-2.76-2.63-2.33-5.38 0-5.59-1.03-7.46-3.84-7.46-7.08 0-1.54.38-2.97 1.03-4.26-2.33-.46-4.76-1.16-4.76-5.26 1.12-3.84 3.65-4.64 4.64-4.64-.86-2.11-.38-4.64 1.03-5.26 1.03-1.57 3.08-1.57 3.65-1.54 1.12.86 2.76.38 3.84.64 1.57.64 2.63-.64 3.84-1.03 1.03.86 2.11 1.57 3.08 1.54 3.08-.86 4.64-1.57 5.12-.64 1.57 1.12 2.11 2.11 2.11 3.65 1.03 1.12 2.11 1.03 2.76.86 1.54-.86 2.63-1.57 3.08-2.63.86.38 1.54.86 2.11 1.54z" />
+              </svg>
+            </a>
           </div>
         </div>
       </div>
