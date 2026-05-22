@@ -573,6 +573,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </PopoverContent>
             </Popover>
           </div>
+          )}
         </div>
       </div>
 
