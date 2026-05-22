@@ -324,7 +324,23 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
                 )}
               </div>
             )}
+
+            {!websiteMetadata && !isScrapingWebsite && (
+              <div className="space-y-2 pt-1">
+                <Label htmlFor="manualName" className="text-xs text-muted-foreground">
+                  No website? Enter village name manually
+                </Label>
+                <Input
+                  id="manualName"
+                  placeholder="Village name..."
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+            )}
           </div>
+
 
           {/* Google Maps URL field */}
           <div className="space-y-2">
