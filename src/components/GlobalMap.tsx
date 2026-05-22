@@ -610,7 +610,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           </div>
 
 
+          {!panelCollapsed && (
           <div className="flex-1 min-h-0 overflow-hidden">
+
             {villageTypeFilter === 'popup' ? (
               timelineVillages.length > 0 ? (
                 <PopupTimeline
