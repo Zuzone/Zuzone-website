@@ -512,8 +512,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </svg>
             </a>
           </div>
+          )}
 
           {/* Mobile: hamburger menu */}
+          {isMobile && (
           <div className="sm:hidden">
             <Popover>
               <PopoverTrigger asChild>
