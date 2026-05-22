@@ -595,7 +595,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
 
           {!panelCollapsed && (
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-2 flex flex-col overflow-hidden">
 
             {viewMode === 'gantt' ? (
               timelineVillages.length > 0 ? (
@@ -610,7 +610,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 <p className="text-xs text-muted-foreground text-center py-6">No popup villages</p>
               )
             ) : filteredVillages.length > 0 ? (
-              <div className="h-full overflow-y-auto p-2 space-y-1.5">
+              <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5">
                 {filteredVillages.map((village) => (
                   <button
                     key={village.id}
@@ -671,7 +671,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           </div>
 
           {!panelCollapsed && (
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-2 flex flex-col overflow-hidden">
 
             {viewMode === 'gantt' ? (
               timelineVillages.length > 0 ? (
@@ -686,7 +686,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 <p className="text-xs text-muted-foreground text-center py-6">No popup villages</p>
               )
             ) : filteredVillages.length > 0 ? (
-              <div className="h-full overflow-y-auto p-2 space-y-1.5">
+              <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5">
                 {filteredVillages.map((village) => (
                   <button
                     key={village.id}
