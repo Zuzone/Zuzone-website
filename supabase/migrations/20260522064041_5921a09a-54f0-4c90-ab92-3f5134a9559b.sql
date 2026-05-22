@@ -1,0 +1,1 @@
+UPDATE public.villages SET instagram_url = 'https://www.instagram.com/renaissance.village', village_type = 'popup' WHERE id = 'renaissance-village';
