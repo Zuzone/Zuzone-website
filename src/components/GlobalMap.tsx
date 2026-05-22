@@ -579,7 +579,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
       {/* Desktop: bottom panel with toggle + gantt/list */}
       {!isMobile && !anyDialogOpen && (
-        <div className="absolute left-0 right-0 bottom-1/4 max-h-56 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
+        <div className="absolute left-0 right-0 bottom-0 max-h-56 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
           <div className="flex items-center justify-center px-3 pt-2 pb-1 border-b border-border/50">
             <ToggleGroup
               type="single"
