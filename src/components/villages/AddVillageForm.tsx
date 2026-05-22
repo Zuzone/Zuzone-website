@@ -43,6 +43,12 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [unlocked, setUnlocked] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(UNLOCK_STORAGE_KEY) === "1";
+  });
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [locationName, setLocationName] = useState("");
@@ -52,6 +58,18 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const [isResolving, setIsResolving] = useState(false);
   const [isScrapingWebsite, setIsScrapingWebsite] = useState(false);
   const [websiteMetadata, setWebsiteMetadata] = useState<WebsiteMetadata | null>(null);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput.trim() === ADD_VILLAGE_PASSWORD) {
+      sessionStorage.setItem(UNLOCK_STORAGE_KEY, "1");
+      setUnlocked(true);
+      setPasswordError(null);
+      setPasswordInput("");
+    } else {
+      setPasswordError("Incorrect password");
+    }
+  };
 
   const resolveGoogleMapsUrl = async (url: string) => {
     if (!url.trim()) return;
