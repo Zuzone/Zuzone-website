@@ -108,6 +108,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     return ranked.map(r => r.v);
   }, [villages, villageTypeFilter, parsePopupDates]);
 
+  // All villages shown on the map (popups + permanent merged)
+  const mapVillages = useMemo(() => villages, [villages]);
+
+
   // Re-sort every minute so the list stays fresh as time advances
   const [, setTick] = useState(0);
   useEffect(() => {
