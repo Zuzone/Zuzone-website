@@ -397,7 +397,7 @@ export default function Admin() {
                 <TelegramIcon className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Villedge Bot Admin</h1>
+                <h1 className="text-xl font-bold">Zuzone Bot Admin</h1>
                 <p className="text-sm text-muted-foreground">Telegram notification bot dashboard</p>
               </div>
             </div>

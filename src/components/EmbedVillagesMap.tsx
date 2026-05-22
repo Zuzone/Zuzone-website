@@ -135,7 +135,7 @@ export const EmbedVillagesMap = ({
             rel="noopener noreferrer"
             className="font-display text-base font-semibold text-foreground hover:underline"
           >
-            Villedge
+            Zuzone
           </a>
           <a
             href={window.location.origin}

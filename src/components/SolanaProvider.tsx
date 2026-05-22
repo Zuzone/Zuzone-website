@@ -32,7 +32,7 @@ export const SolanaProvider = ({ children }: SolanaProviderProps) => {
           options: {
             projectId: walletConnectProjectId,
             metadata: {
-              name: 'Villedge',
+              name: 'Zuzone',
               description: 'Popup Villages Community App',
               url: window.location.origin,
               icons: [`${window.location.origin}/favicon.ico`],

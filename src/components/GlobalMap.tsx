@@ -419,7 +419,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="flex flex-col gap-1 w-fit">
             <div className="flex items-center gap-2">
               <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
-                Villedge
+                Zuzone
               </h1>
               <AddVillageForm onVillageAdded={() => window.location.reload()} />
               {isAdmin && (
@@ -435,7 +435,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               )}
             </div>
             <p className="font-body text-xs text-muted-foreground sm:text-sm md:text-base">
-              Explore communities around the world
+              The home for permanent hubs and pop-up cities.
             </p>
           </div>
 
@@ -455,7 +455,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
         <div className={`flex items-center justify-between ${sidebarCollapsed ? '' : 'mb-2 border-b border-border pb-2'}`}>
           <div className="min-w-0">
             <h3 className="font-display text-sm font-semibold text-foreground">
-              Villedge
+              Zuzone
             </h3>
             {!sidebarCollapsed && (
               <p className="text-xs text-muted-foreground">Click on a village to explore</p>

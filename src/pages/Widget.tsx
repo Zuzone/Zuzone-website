@@ -27,8 +27,8 @@ const Widget = () => {
   const [copied, setCopied] = useState(false);
 
   const origin =
-    typeof window !== "undefined" ? window.location.origin : "https://villedge.tech";
-  const docsOrigin = "https://villedge.tech";
+    typeof window !== "undefined" ? window.location.origin : "https://zuzone.tech";
+  const docsOrigin = "https://zuzone.tech";
 
   const src = useMemo(() => {
     const u = new URL(`${origin}/embed`);
@@ -44,7 +44,7 @@ const Widget = () => {
   style="border:0;border-radius:12px;overflow:hidden;max-width:100%;"
   loading="lazy"
   referrerpolicy="no-referrer-when-downgrade"
-  title="Villedge map"
+  title="Zuzone map"
 ></iframe>`;
 
   const copy = async () => {
@@ -59,7 +59,7 @@ const Widget = () => {
         <header className="mb-8 flex items-start justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
-              Embed the Villedge map
+              Embed the Zuzone map
             </h1>
             <p className="mt-2 max-w-2xl font-body text-sm text-muted-foreground sm:text-base">
               Drop our live map of popup villages into any website with one snippet.
@@ -71,7 +71,7 @@ const Widget = () => {
             href={origin}
             className="hidden items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 sm:inline-flex"
           >
-            Villedge
+            Zuzone
             <ExternalLink className="h-3 w-3" />
           </a>
         </header>
@@ -147,7 +147,7 @@ const Widget = () => {
                   height={280}
                   style={{ border: 0, display: "block" }}
                   loading="lazy"
-                  title="Villedge embed preview"
+                  title="Zuzone embed preview"
                 />
               </div>
             </CardContent>
@@ -223,7 +223,7 @@ const Widget = () => {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>• The widget is responsive — set <code>width="100%"</code> and a fixed pixel height.</p>
-            <p>• Clicking a marker opens that village in a new tab on villedge.tech.</p>
+            <p>• Clicking a marker opens that village in a new tab on zuzone.tech.</p>
             <p>• No script tags or API keys required.</p>
           </CardContent>
         </Card>

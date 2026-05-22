@@ -56,7 +56,7 @@ export function TonLoginButton({
             });
             if (sessionError) throw sessionError;
           }
-          toast.success('Welcome to Villedge!');
+          toast.success('Welcome to Zuzone!');
           onSuccess?.(!!data?.isNewUser);
         }
       } catch (err) {
