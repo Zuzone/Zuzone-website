@@ -28,8 +28,8 @@ export const EventsDialog = () => {
             </span>
           </div>
           <iframe
-            src="https://luma.com/embed/calendar/cal-4TZzgldrBxBU0Cd/events"
-            title="Zuzalu Events on Luma"
+            src="https://lu.ma/oenuqdgn?tk=Sl3wwv"
+            title="Zuzalu Embedded Event"
             className="w-full h-full rounded-md bg-background"
             style={{ border: "1px solid #bfcbda88" }}
             allowFullScreen
