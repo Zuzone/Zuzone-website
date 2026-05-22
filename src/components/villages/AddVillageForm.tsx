@@ -381,11 +381,11 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>
-                {!coordinates && !websiteMetadata?.title 
-                  ? "Paste both links to auto-fill village details"
-                  : !coordinates 
+                {!coordinates && !getVillageName()
+                  ? "Add a location and village name (or website) to continue"
+                  : !coordinates
                     ? "Paste a Google Maps link for location"
-                    : "Paste a website to extract village info"}
+                    : "Enter a village name or paste a website"}
               </span>
             </div>
           )}
