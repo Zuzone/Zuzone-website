@@ -20,6 +20,7 @@ interface PopupTimelineProps {
   activeVillage: PopupVillage;
   isZoomedIn?: boolean;
   onVillageClick: (village: PopupVillage) => void;
+  embedded?: boolean;
 }
 
 // Parse date string to get start and end dates
@@ -113,7 +114,7 @@ const villageColors: { [key: string]: string } = {
   "edge-city-austin": "#667EEA",
 };
 
-export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick }: PopupTimelineProps) => {
+export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick, embedded = false }: PopupTimelineProps) => {
   const isMobile = useIsMobile();
   const [isManuallyExpanded, setIsManuallyExpanded] = useState(true);
 
@@ -196,6 +197,60 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
 
     return result;
   }, [villagePositions]);
+
+  // ============ EMBEDDED LAYOUT (used inside mobile bottom panel) ============
+  if (embedded) {
+    return (
+      <div className="h-full w-full overflow-y-auto px-3 pt-2 pb-3">
+        <div className="relative mb-2 h-5">
+          {months.map((month, i) => (
+            <div
+              key={i}
+              className="absolute text-[10px] font-medium text-muted-foreground"
+              style={{ left: `${month.position}%` }}
+            >
+              {month.label}
+            </div>
+          ))}
+        </div>
+        <div className="relative rounded-lg bg-secondary/30" style={{ minHeight: `${Math.max(1, rows.length) * 30 + 8}px` }}>
+          <div className="absolute inset-0 flex">
+            {months.map((_, i) => (
+              <div key={i} className="h-full border-l border-border/30" style={{ width: `${100 / 12}%` }} />
+            ))}
+          </div>
+          <div className="absolute top-0 z-10 h-full w-0.5 bg-primary" style={{ left: `${todayPosition}%` }}>
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primary px-1 py-0.5 text-[9px] font-medium text-primary-foreground">
+              Today
+            </div>
+          </div>
+          {rows.map((row, rowIndex) => (
+            <div key={rowIndex} className="relative h-7">
+              {row.map(({ village, position }) => (
+                <button
+                  key={village.id}
+                  onClick={() => onVillageClick(village)}
+                  className={`absolute top-1 flex h-5 items-center gap-1 overflow-hidden rounded-full px-2 text-[11px] font-medium text-white transition-all active:scale-95 ${
+                    activeVillage.id === village.id ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""
+                  }`}
+                  style={{
+                    left: `${position.left}%`,
+                    width: `${position.width}%`,
+                    minWidth: "56px",
+                    backgroundColor: villageColors[village.id] || "#6B7280",
+                  }}
+                  title={`${village.name}\n${village.dates}`}
+                >
+                  <img src={village.logo} alt="" className="h-3.5 w-3.5 shrink-0 rounded-sm" />
+                  <span className="truncate">{village.name}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // ============ MOBILE VERTICAL LAYOUT ============
   if (isMobile) {
