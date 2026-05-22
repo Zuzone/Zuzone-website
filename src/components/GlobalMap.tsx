@@ -466,6 +466,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <ZuletterDialog open={zuletterOpen} onOpenChange={setZuletterOpen} />
 
           {/* Desktop: inline buttons */}
+          {!isMobile && (
           <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={() => setManifestoOpen(true)}
@@ -511,8 +512,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </svg>
             </a>
           </div>
+          )}
 
           {/* Mobile: hamburger menu */}
+          {isMobile && (
           <div className="sm:hidden">
             <Popover>
               <PopoverTrigger asChild>
@@ -570,6 +573,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </PopoverContent>
             </Popover>
           </div>
+          )}
         </div>
       </div>
 
