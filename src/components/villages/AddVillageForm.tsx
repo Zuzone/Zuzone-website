@@ -58,7 +58,6 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput.trim() === ADD_VILLAGE_PASSWORD) {
-      sessionStorage.setItem(UNLOCK_STORAGE_KEY, "1");
       setUnlocked(true);
       setPasswordError(null);
       setPasswordInput("");
