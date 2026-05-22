@@ -50,6 +50,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [villageTypeFilter, setVillageTypeFilter] = useState<VillageType>("popup");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
+  const [manifestoOpen, setManifestoOpen] = useState(false);
+  const [eventsOpen, setEventsOpen] = useState(false);
+  const [zuletterOpen, setZuletterOpen] = useState(false);
+  const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
@@ -426,7 +430,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       {/* Header overlay */}
       <div className="absolute left-0 right-0 top-0 z-10 pointer-events-none bg-gradient-to-b from-background/90 via-background/60 to-transparent p-3 pb-12 sm:p-4 sm:pb-16 md:p-6 md:pb-20">
         <div className="flex items-start justify-between pointer-events-auto">
-          <div className="flex flex-col gap-1 w-fit">
+          <div className={`flex flex-col gap-1 w-fit transition-opacity ${anyDialogOpen ? 'invisible opacity-0' : ''}`}>
             <div className="flex items-center gap-2">
               <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
                 Zuzone
@@ -451,9 +455,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
           {/* Manifesto + Events + Zuletter dialogs + Social links */}
           <div className="flex items-center gap-2">
-            <ManifestoDialog />
-            <EventsDialog />
-            <ZuletterDialog />
+            <ManifestoDialog open={manifestoOpen} onOpenChange={setManifestoOpen} />
+            <EventsDialog open={eventsOpen} onOpenChange={setEventsOpen} />
+            <ZuletterDialog open={zuletterOpen} onOpenChange={setZuletterOpen} />
             <a
               href="https://x.com/zuzones"
               target="_blank"
@@ -481,7 +485,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       </div>
 
       {/* Info sidebar - positioned above map markers and timeline */}
-      <div className={`absolute top-24 right-4 z-[100] hidden w-56 ${sidebarCollapsed ? '' : 'max-h-[320px]'} rounded-lg bg-card/95 p-3 shadow-card backdrop-blur-sm md:block lg:w-64`}>
+      <div className={`absolute top-24 right-4 z-[100] hidden w-56 ${sidebarCollapsed ? '' : 'max-h-[320px]'} rounded-lg bg-card/95 p-3 shadow-card backdrop-blur-sm md:block lg:w-64 ${anyDialogOpen ? 'md:hidden' : ''}`}>
         <div className={`flex items-center justify-between ${sidebarCollapsed ? '' : 'mb-2 border-b border-border pb-2'}`}>
           <div className="min-w-0">
             <h3 className="font-display text-sm font-semibold text-foreground">
@@ -553,7 +557,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
 
       {/* Timeline */}
-      {timelineVillages.length > 0 && (
+      {timelineVillages.length > 0 && !anyDialogOpen && (
         <PopupTimeline
           villages={timelineVillages}
           activeVillage={activeVillage}
