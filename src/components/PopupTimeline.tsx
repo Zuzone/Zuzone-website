@@ -114,7 +114,7 @@ const villageColors: { [key: string]: string } = {
   "edge-city-austin": "#667EEA",
 };
 
-export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick }: PopupTimelineProps) => {
+export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick, embedded = false }: PopupTimelineProps) => {
   const isMobile = useIsMobile();
   const [isManuallyExpanded, setIsManuallyExpanded] = useState(true);
 
