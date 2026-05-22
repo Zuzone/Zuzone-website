@@ -455,9 +455,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
           {/* Manifesto + Events + Zuletter dialogs + Social links */}
           <div className="flex items-center gap-2">
-            <ManifestoDialog />
-            <EventsDialog />
-            <ZuletterDialog />
+            <ManifestoDialog open={manifestoOpen} onOpenChange={setManifestoOpen} />
+            <EventsDialog open={eventsOpen} onOpenChange={setEventsOpen} />
+            <ZuletterDialog open={zuletterOpen} onOpenChange={setZuletterOpen} />
             <a
               href="https://x.com/zuzones"
               target="_blank"
