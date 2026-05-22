@@ -638,14 +638,45 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       </div>
 
 
-      {/* Timeline */}
-      {timelineVillages.length > 0 && !anyDialogOpen && (
+      {/* Timeline (popups) or Permanent vertical list */}
+      {villageTypeFilter === 'popup' && timelineVillages.length > 0 && !anyDialogOpen && (
         <PopupTimeline
           villages={timelineVillages}
           activeVillage={activeVillage}
           isZoomedIn={false}
           onVillageClick={handleTimelineVillageClick}
         />
+      )}
+
+      {villageTypeFilter === 'permanent' && !anyDialogOpen && filteredVillages.length > 0 && (
+        <div
+          className={
+            isMobile
+              ? "absolute right-0 top-20 bottom-16 z-20 w-44 bg-card/95 backdrop-blur-sm border-l border-border/50 shadow-lg overflow-y-auto p-2 space-y-1.5"
+              : "absolute bottom-0 left-0 right-0 z-20 bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg max-h-56 overflow-y-auto p-3"
+          }
+        >
+          <div className={isMobile ? "space-y-1.5" : "max-w-3xl mx-auto space-y-1.5"}>
+            {filteredVillages.map((village) => (
+              <button
+                key={village.id}
+                onClick={() => navigate(getVillageRoute(village))}
+                className="w-full flex items-center gap-3 p-2 rounded-lg border border-border/50 bg-background/60 hover:bg-secondary/60 transition-colors text-left"
+              >
+                <img
+                  src={village.logo_url || '/placeholder.svg'}
+                  alt={village.name}
+                  className="h-9 w-9 rounded object-cover flex-shrink-0"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground truncate">{village.name}</p>
+                  <p className="text-xs text-muted-foreground truncate" title={village.location}>{village.location}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Mobile bottom bar */}
