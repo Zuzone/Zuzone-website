@@ -299,7 +299,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     const currentZoom = map.current.getZoom();
     const initialScale = getMarkerScale(currentZoom);
 
-    filteredVillages.forEach((village, index) => {
+    mapVillages.forEach((village, index) => {
       const isPast = isVillagePast(village);
       const isFeaturedVillage = village.id === FEATURED_VILLAGE_ID;
       const el = document.createElement("div");
