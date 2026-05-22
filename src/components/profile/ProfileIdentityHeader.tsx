@@ -7,7 +7,7 @@ import { ProfileData } from "@/pages/Profile";
 import { ProfileAvatarUpload } from "./ProfileAvatarUpload";
 import { ProfileSocialLinks } from "./ProfileSocialLinks";
 import { LinkWalletDialog } from "./LinkWalletDialog";
-import { useAccount } from "wagmi";
+const useAccount = () => ({ address: undefined as string | undefined });
 import { usePersonalBalance } from "@/hooks/usePersonalBalance";
 import { PersonalTopUpDialog } from "@/components/PersonalTopUpDialog";
 import { supabase } from "@/integrations/supabase/client";

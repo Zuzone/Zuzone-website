@@ -1,3 +1,3 @@
-interface Props { open?: boolean; onOpenChange?: (o: boolean) => void; villageId?: string; villageName?: string; walletAddress?: string; }
+interface Props { walletAddress?: string; resolvedAddress?: string; solanaWalletAddress?: string; villageId?: string; villageName?: string; }
 export const TopUpDialog = (_p: Props) => null;
 export default TopUpDialog;
