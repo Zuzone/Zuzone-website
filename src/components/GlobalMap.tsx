@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ManifestoDialog } from "@/components/ManifestoDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 const ADMIN_USER_IDS = [
   "9807c494-ba07-4438-9a89-07ac13334e78", // dev
