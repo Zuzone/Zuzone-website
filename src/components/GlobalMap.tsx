@@ -399,9 +399,16 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     return () => { m.off('zoom', onZoom); };
   }, [mapReady, updateMarkerScales]);
 
+  // Resize the map when mobile/desktop changes (container size shifts)
+  useEffect(() => {
+    if (!map.current) return;
+    const t = setTimeout(() => map.current?.resize(), 50);
+    return () => clearTimeout(t);
+  }, [isMobile]);
+
   return (
     <div className="relative h-full w-full overflow-hidden" style={{ touchAction: 'manipulation', overscrollBehavior: 'contain' }}>
-      <div ref={mapContainer} className="h-full w-full" />
+      <div ref={mapContainer} className={isMobile ? "absolute top-0 left-0 right-0 h-1/2" : "h-full w-full"} />
 
       {mapError && (
         <div className="absolute inset-0 z-0 flex items-center justify-center bg-muted/20">
