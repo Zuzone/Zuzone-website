@@ -1,0 +1,751 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+async function tryResolveChatIdViaBotApi(botToken: string, chatId: string): Promise<string> {
+  // Telegram Bot API supports passing @username to getChat; this can return a numeric chat id.
+  // If resolution fails (e.g. bot lacks access), keep the original chatId.
+  if (!chatId?.startsWith("@")) return chatId;
+
+  try {
+    const url = `https://api.telegram.org/bot${botToken}/getChat?chat_id=${encodeURIComponent(chatId)}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json?.ok && json?.result?.id) {
+      return String(json.result.id);
+    }
+    console.log("Telegram getChat did not resolve username (continuing with @username)", {
+      chatId,
+      error_code: json?.error_code,
+      description: json?.description,
+    });
+  } catch (e) {
+    console.log("Telegram getChat lookup failed (continuing with @username)", e);
+  }
+
+  return chatId;
+}
+
+interface NotificationRequest {
+  type: "spot" | "event" | "donation" | "bulletin" | "test" | "resident" | "application_status" | "new_application" | "booking";
+  // Booking-specific fields
+  roomName?: string;
+  spotName?: string;
+  bookerName?: string;
+  startDate?: string;
+  endDate?: string;
+  price?: number;
+  bookingId?: string;
+  hostUserId?: string;
+  bookerUserId?: string;
+  name?: string;
+  description?: string;
+  location?: string;
+  startTime?: string;
+  category?: string;
+  // Resident-specific fields
+  residentName?: string;
+  stayDates?: string;
+  intention?: string;
+  socialProfile?: string;
+  botToken?: string; // Custom bot token for different villages (deprecated, use botTokenSecretName)
+  botTokenSecretName?: string; // Secret name to look up (e.g., "PROTOVILLE_BOT_TOKEN")
+  // Donation-specific fields
+  amount?: number;
+  amountUsd?: number;
+  symbol?: string;
+  from?: string;
+  fromName?: string;
+  txHash?: string;
+  chain?: string;
+  treasuryBalance?: number;
+  villageId?: string;
+  // Bulletin-specific fields
+  message?: string;
+  bulletinChatId?: string;
+  bulletinThreadId?: number;
+  // Test-specific fields
+  testChatId?: string;
+  testThreadId?: number;
+  // Application status notification fields
+  stayId?: string;
+  newStatus?: string;
+  villageName?: string;
+  applicantChatId?: string;
+}
+
+// Get chat ID from settings table, fallback to env variable
+async function getChatId(): Promise<string | null> {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    
+    const { data, error } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "telegram_chat_id")
+      .maybeSingle();
+    
+    if (!error && data?.value) {
+      return data.value;
+    }
+  } catch (e) {
+    console.log("Could not fetch chat ID from settings:", e);
+  }
+  
+  // Fallback to env variable
+  return Deno.env.get("TELEGRAM_CHAT_ID") || null;
+}
+
+// Look up notification route from database for village-specific routing
+interface NotificationRoute {
+  chatId: string;
+  threadId: number | null;
+  botTokenSecretName: string | null;
+}
+
+// Fetch the bot token from the villages table (direct or via secret name)
+async function getVillageBotToken(villageId: string): Promise<string | null> {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    
+    const { data, error } = await supabase
+      .from("villages")
+      .select("bot_token, bot_token_secret_name")
+      .eq("id", villageId)
+      .maybeSingle();
+    
+    if (error) {
+      console.log(`Error fetching village bot config for ${villageId}:`, error);
+      return null;
+    }
+    
+    // Priority: direct bot_token > bot_token_secret_name
+    if (data?.bot_token) {
+      console.log(`Using direct bot token for village ${villageId}`);
+      return data.bot_token;
+    }
+    
+    if (data?.bot_token_secret_name) {
+      const token = Deno.env.get(data.bot_token_secret_name);
+      if (token) {
+        console.log(`Using bot token from secret ${data.bot_token_secret_name} for village ${villageId}`);
+        return token;
+      }
+      console.log(`Secret ${data.bot_token_secret_name} not found for village ${villageId}`);
+    }
+    
+    return null;
+  } catch (e) {
+    console.log("Could not fetch village bot token:", e);
+    return null;
+  }
+}
+
+async function getNotificationRoute(villageId: string, notificationType: string): Promise<NotificationRoute | null> {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    
+    const { data, error } = await supabase
+      .from("notification_routes")
+      .select("chat_id, thread_id")
+      .eq("village_id", villageId)
+      .eq("notification_type", notificationType)
+      .eq("is_enabled", true)
+      .maybeSingle();
+    
+    if (error || !data) {
+      console.log(`No notification route found for ${villageId}/${notificationType}`);
+      return null;
+    }
+    
+    // Get bot token from village configuration (uses new function that checks both columns)
+    const botToken = await getVillageBotToken(villageId);
+    
+    return {
+      chatId: data.chat_id,
+      threadId: data.thread_id,
+      botTokenSecretName: null, // Not used anymore, token is fetched directly
+    };
+  } catch (e) {
+    console.log("Could not fetch notification route:", e);
+    return null;
+  }
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const defaultBotToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const defaultChatId = await getChatId();
+
+    const requestBody = await req.json();
+    const { 
+      type, name, description, location, startTime, category, 
+      amount, amountUsd, symbol, from, fromName, txHash, chain, treasuryBalance, villageId, 
+      message: bulletinMessage, bulletinChatId, bulletinThreadId, 
+      testChatId, testThreadId, 
+      residentName, stayDates, intention, socialProfile, 
+      botToken: customBotToken,
+      botTokenSecretName,
+      stayId, newStatus, villageName, applicantChatId,
+      roomName, spotName, bookerName, startDate, endDate, price,
+      bookingId, hostUserId, bookerUserId
+    }: NotificationRequest = requestBody;
+    
+    // Look up village-specific notification route for certain types
+    let routeConfig: NotificationRoute | null = null;
+    const routableTypes = ['spots', 'bulletin', 'donations', 'residents', 'events'];
+    
+    // Map notification type to route type in database
+    // Note: database stores singular form (e.g., 'spot' not 'spots')
+    const typeToRouteType: Record<string, string> = {
+      'spot': 'spot',
+      'bulletin': 'bulletin',
+      'donation': 'donation',
+      'resident': 'resident',
+      'event': 'event',
+      'new_application': 'new_application',
+    };
+    
+    const routeType = typeToRouteType[type];
+    if (villageId && routeType) {
+      routeConfig = await getNotificationRoute(villageId, routeType);
+      if (routeConfig) {
+        console.log(`Found notification route for ${villageId}/${routeType}: chat=${routeConfig.chatId}, thread=${routeConfig.threadId}`);
+      }
+    }
+    
+    // Determine which bot token to use:
+    // 1. If villageId is provided, look up from village config (bot_token or bot_token_secret_name)
+    // 2. Else if botTokenSecretName is provided, look it up from env
+    // 3. Else if customBotToken is provided directly, use it
+    // 4. Else fallback to default TELEGRAM_BOT_TOKEN
+    let effectiveBotToken = defaultBotToken;
+    
+    // Try to get village-specific bot token first
+    if (villageId) {
+      const villageBotToken = await getVillageBotToken(villageId);
+      if (villageBotToken) {
+        effectiveBotToken = villageBotToken;
+      }
+    } else if (botTokenSecretName) {
+      // Validate secret name format (alphanumeric + underscores, starts with letter)
+      const isValidSecretName = /^[A-Z][A-Z0-9_]*$/.test(botTokenSecretName);
+      if (isValidSecretName) {
+        const tokenFromSecret = Deno.env.get(botTokenSecretName);
+        if (tokenFromSecret) {
+          effectiveBotToken = tokenFromSecret;
+          console.log(`Using bot token from secret: ${botTokenSecretName}`);
+        } else {
+          console.log(`Secret ${botTokenSecretName} not found, falling back to default`);
+        }
+      }
+    } else if (customBotToken) {
+      effectiveBotToken = customBotToken;
+    }
+    
+    if (!effectiveBotToken) {
+      throw new Error("Telegram bot token not configured");
+    }
+    
+    // Use route config chat ID if available, else test/bulletin-specific, else applicant-specific, else default
+    let chatId = type === "application_status" && applicantChatId 
+      ? applicantChatId 
+      : (routeConfig?.chatId || testChatId || bulletinChatId || defaultChatId);
+    
+    if (!chatId) {
+      throw new Error("Telegram chat ID not configured");
+    }
+
+    // Parse Telegram URL formats
+    // Use route config thread ID if available, else test/bulletin-specific
+    let parsedThreadId: number | undefined = routeConfig?.threadId ?? testThreadId ?? bulletinThreadId ?? undefined;
+    
+    if (chatId.includes('t.me/')) {
+      // Support both Telegram link styles:
+      // - Private groups/channels (numeric): https://t.me/c/<numeric_id>/<message_or_topic_id>
+      // - Public groups/channels (username): https://t.me/<username>/<message_id>
+      // Some users also paste an invalid-but-common variant: https://t.me/c/<username>/<id>
+      // We treat that as a username and continue.
+
+      const cPathMatch = chatId.match(/t\.me\/c\/([^\/?#\s]+)(?:\/(\d+))?/);
+      if (cPathMatch) {
+        const idOrUsername = cPathMatch[1];
+        if (/^\d+$/.test(idOrUsername)) {
+          chatId = `-100${idOrUsername}`;
+        } else if (/^[a-zA-Z][a-zA-Z0-9_]{3,}$/.test(idOrUsername)) {
+          chatId = `@${idOrUsername}`;
+        } else {
+          throw new Error(
+            "Invalid Telegram URL format. For public channels use: https://t.me/<username>/<post_id>. For private groups use: https://t.me/c/<numeric_id>/<id>."
+          );
+        }
+
+        if (!parsedThreadId && cPathMatch[2]) {
+          parsedThreadId = parseInt(cPathMatch[2], 10);
+        }
+      } else {
+        const publicMatch = chatId.match(/t\.me\/([a-zA-Z][a-zA-Z0-9_]{3,})(?:\/(\d+))?/);
+        if (publicMatch) {
+          chatId = `@${publicMatch[1]}`;
+          if (!parsedThreadId && publicMatch[2]) {
+            parsedThreadId = parseInt(publicMatch[2], 10);
+          }
+        } else {
+          throw new Error(
+            "Invalid Telegram URL format. Use: https://t.me/<username>/<post_id> or https://t.me/c/<numeric_id>/<id>."
+          );
+        }
+      }
+    } else if (!chatId.startsWith('@') && !chatId.startsWith('-') && !/^\d+$/.test(chatId)) {
+      // If it looks like a username without @, add it
+      if (/^[a-zA-Z][a-zA-Z0-9_]{3,}$/.test(chatId)) {
+        chatId = `@${chatId}`;
+      }
+    }
+
+    // If destination is a public username, try resolving to a numeric chat id via Telegram API.
+    // This can help when Telegram expects an internal id, but will still fail if the bot lacks access.
+    chatId = await tryResolveChatIdViaBotApi(effectiveBotToken, chatId);
+
+    // Village-specific timezone mapping based on location
+    const villageTimezoneMap: Record<string, string> = {
+      'protoville': 'Asia/Ho_Chi_Minh',
+      'proof-of-retreat': 'Asia/Ho_Chi_Minh',
+      // Add more villages as needed, default to UTC if not found
+    };
+    const villageTimezone = villageTimezoneMap[villageId || ''] || 'UTC';
+
+    // Village-specific links (web pages or mini-apps)
+    const villageLinksMap: Record<string, { app: string; events: string; bulletin: string }> = {
+      'protoville': {
+        app: 'https://villedge.tech/protoville',
+        events: 'https://villedge.tech/protoville?tab=events',
+        bulletin: 'https://villedge.tech/protoville?tab=bulletin',
+      },
+      'proof-of-retreat': {
+        app: 'https://villedge.tech/proof-of-retreat',
+        events: 'https://villedge.tech/proof-of-retreat?tab=events',
+        bulletin: 'https://villedge.tech/proof-of-retreat?tab=bulletin',
+      },
+    };
+    const miniAppLinks = villageLinksMap[villageId || ''] || {
+      app: `https://villedge.tech/${villageId || ''}`,
+      events: `https://villedge.tech/${villageId || ''}?tab=events`,
+      bulletin: `https://villedge.tech/${villageId || ''}?tab=bulletin`,
+    };
+
+    let telegramMessage = "";
+
+    if (type === "test") {
+      telegramMessage = `🧪 <b>Test Connection</b>\n\n✅ Your Telegram bot is configured correctly!\n\n📅 ${new Date().toLocaleString()}`;
+    } else if (type === "spot") {
+      telegramMessage = `📍 <b>New Spot Added</b>\n\n`;
+      telegramMessage += `<b>${escapeHtml(name || "Unnamed")}</b>\n`;
+      if (category) telegramMessage += `Category: ${escapeHtml(category)}\n`;
+      if (description) telegramMessage += `\n${escapeHtml(description.slice(0, 200))}${description.length > 200 ? "..." : ""}`;
+      // Mini-app deep link for map spots
+      telegramMessage += `\n\n🔗 <a href="${miniAppLinks.app}">View on Map</a>`;
+    } else if (type === "event") {
+      telegramMessage = `🗓️ <b>New Event Added</b>\n\n`;
+      telegramMessage += `<b>${escapeHtml(name || "Unnamed")}</b>\n`;
+      if (startTime) {
+        const date = new Date(startTime);
+        // Format date and time in the village's local timezone
+        const dateFormatter = new Intl.DateTimeFormat("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          timeZone: villageTimezone,
+        });
+        const timeFormatter = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: villageTimezone,
+        });
+        telegramMessage += `📅 ${dateFormatter.format(date)}\n`;
+        telegramMessage += `🕐 ${timeFormatter.format(date)}\n`;
+      }
+      if (location) telegramMessage += `📌 ${escapeHtml(location)}\n`;
+      if (description) telegramMessage += `\n${escapeHtml(description.slice(0, 200))}${description.length > 200 ? "..." : ""}`;
+      // Mini-app deep link for events
+      telegramMessage += `\n\n🔗 <a href="${miniAppLinks.events}">View Events</a>`;
+    } else if (type === "donation") {
+      telegramMessage = `💰 <b>Treasury Donation Received</b>\n\n`;
+      
+      // Show donor name/address
+      const donor = fromName || (from ? `${from.slice(0, 6)}...${from.slice(-4)}` : "Anonymous");
+      telegramMessage += `From: <b>${escapeHtml(donor)}</b>\n`;
+      
+      // Show amount
+      if (amount && symbol) {
+        telegramMessage += `Amount: <b>${amount.toFixed(6)} ${escapeHtml(symbol)}</b>\n`;
+      }
+      if (amountUsd && amountUsd > 0) {
+        telegramMessage += `Value: <b>$${amountUsd.toFixed(2)} USD</b>\n`;
+      }
+      
+      // Show chain
+      if (chain) {
+        telegramMessage += `Chain: ${escapeHtml(chain)}\n`;
+      }
+      
+      // Show treasury balance
+      if (treasuryBalance && treasuryBalance > 0) {
+        telegramMessage += `\n💼 <b>Treasury Balance: $${treasuryBalance.toFixed(2)} USD</b>\n`;
+      }
+      
+      // Add transaction link
+      if (txHash && chain) {
+        const explorerUrl = getExplorerUrl(chain, txHash);
+        if (explorerUrl) {
+          telegramMessage += `\n🔗 <a href="${explorerUrl}">View Transaction</a>`;
+        }
+      }
+      
+      // Add top-up link
+      const topUpUrl = villageId 
+        ? `https://villedge.tech/${villageId}?tab=treasury`
+        : `https://villedge.tech`;
+      telegramMessage += `\n💳 <a href="${topUpUrl}">Top Up Treasury</a>`;
+      
+      telegramMessage += `\n\n🙏 Thank you for supporting the village!`;
+    } else if (type === "bulletin") {
+      // Bulletin notification - send the message with mini-app link
+      telegramMessage = `📢 <b>New Bulletin Post</b>\n\n"${escapeHtml(bulletinMessage || name || "")}"`;
+      // Mini-app deep link for bulletin
+      telegramMessage += `\n\n🔗 <a href="${miniAppLinks.bulletin}">View Bulletin</a>`;
+    } else if (type === "resident") {
+      // Resident/stay notification
+      telegramMessage = `👋 <b>New Resident Joining!</b>\n\n`;
+      telegramMessage += `<b>${escapeHtml(residentName || name || "Someone")}</b>`;
+      if (stayDates) {
+        telegramMessage += `\n📅 ${escapeHtml(stayDates)}`;
+      }
+      if (intention) {
+        telegramMessage += `\n\n💭 "${escapeHtml(intention.slice(0, 150))}${intention.length > 150 ? "..." : ""}"`;
+      }
+      if (socialProfile) {
+        telegramMessage += `\n\n🔗 <a href="${escapeHtml(socialProfile)}">Profile</a>`;
+      }
+      telegramMessage += `\n\n👥 <a href="${miniAppLinks.app}/residents">View Residents</a>`;
+    } else if (type === "new_application") {
+      // New application notification for hosts
+      telegramMessage = `📋 <b>New Application Received!</b>\n\n`;
+      telegramMessage += `<b>${escapeHtml(residentName || name || "Someone")}</b> has applied to join`;
+      if (stayDates) {
+        telegramMessage += `\n📅 ${escapeHtml(stayDates)}`;
+      }
+      if (intention) {
+        telegramMessage += `\n\n💭 "${escapeHtml(intention.slice(0, 150))}${intention.length > 150 ? "..." : ""}"`;
+      }
+      if (socialProfile) {
+        telegramMessage += `\n\n🔗 <a href="${escapeHtml(socialProfile)}">Profile</a>`;
+      }
+      // Link to applications dashboard
+      const applicationsUrl = villageId 
+        ? `https://villedge.tech/${villageId}/edit?tab=applications`
+        : miniAppLinks.app;
+      telegramMessage += `\n\n📝 <a href="${applicationsUrl}">Review Applications</a>`;
+    } else if (type === "application_status") {
+      // Application status update notification to the applicant
+      const statusEmoji = newStatus === "confirmed" ? "✅" : newStatus === "rejected" ? "❌" : "⏳";
+      const statusLabel = newStatus === "confirmed" ? "Confirmed" : newStatus === "rejected" ? "Rejected" : "Updated";
+      
+      telegramMessage = `${statusEmoji} <b>Application Status Update</b>\n\n`;
+      telegramMessage += `Your application to <b>${escapeHtml(villageName || "the village")}</b> has been <b>${statusLabel}</b>!\n\n`;
+      
+      if (newStatus === "confirmed") {
+        telegramMessage += `🎉 Congratulations! We look forward to seeing you.\n\n`;
+        telegramMessage += `🔗 <a href="${miniAppLinks.app}">View Village Details</a>`;
+      } else if (newStatus === "rejected") {
+        telegramMessage += `We appreciate your interest. Feel free to apply to other villages!`;
+      } else {
+        telegramMessage += `🔗 <a href="${miniAppLinks.app}">View Details</a>`;
+      }
+    } else if (type === "booking") {
+      // Create or refresh a relay row so the bot can route DM replies between host & guest
+      let hostChatId: string | null = null;
+      let bookerChatId: string | null = null;
+      let botUsername = "villedgebot";
+      try {
+        const sb = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        );
+
+        // Try to fetch bot username dynamically (for the deep link)
+        try {
+          const meRes = await fetch(`https://api.telegram.org/bot${defaultBotToken}/getMe`);
+          const meJson = await meRes.json();
+          if (meJson?.ok && meJson?.result?.username) botUsername = meJson.result.username;
+        } catch (_) { /* ignore */ }
+
+        // Look up existing chat_ids from any prior relay for these users
+        if (hostUserId) {
+          const { data: prior } = await sb
+            .from("booking_relays")
+            .select("host_chat_id")
+            .eq("host_user_id", hostUserId)
+            .not("host_chat_id", "is", null)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          hostChatId = prior?.host_chat_id ?? null;
+        }
+        if (bookerUserId) {
+          const { data: prior } = await sb
+            .from("booking_relays")
+            .select("booker_chat_id")
+            .eq("booker_user_id", bookerUserId)
+            .not("booker_chat_id", "is", null)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          bookerChatId = prior?.booker_chat_id ?? null;
+        }
+
+        if (bookingId) {
+          await sb.from("booking_relays").upsert({
+            booking_id: bookingId,
+            village_id: villageId ?? null,
+            host_user_id: hostUserId ?? null,
+            booker_user_id: bookerUserId,
+            host_chat_id: hostChatId,
+            booker_chat_id: bookerChatId,
+            end_date: endDate ?? null,
+            status: "active",
+          }, { onConflict: "booking_id" });
+        }
+      } catch (e) {
+        console.log("relay setup error:", e);
+      }
+
+      const hostLink = bookingId ? `https://t.me/${botUsername}?start=relay_${bookingId}_host` : null;
+      const guestLink = bookingId ? `https://t.me/${botUsername}?start=relay_${bookingId}_guest` : null;
+
+      telegramMessage = `🛏️ <b>New Room Booking</b>\n\n`;
+      if (spotName) telegramMessage += `🏠 <b>${escapeHtml(spotName)}</b>\n`;
+      if (roomName) telegramMessage += `Room: <b>${escapeHtml(roomName)}</b>\n`;
+      if (bookerName) telegramMessage += `Guest: <b>${escapeHtml(bookerName)}</b>\n`;
+      if (startDate && endDate) telegramMessage += `📅 ${escapeHtml(startDate)} → ${escapeHtml(endDate)}\n`;
+      if (typeof price === "number" && price > 0) telegramMessage += `💵 ${price} USD\n`;
+
+      // If we already have host's chat_id, send the host a DM directly (in addition to village notif)
+      if (hostChatId && defaultBotToken) {
+        try {
+          const dmText = `${telegramMessage}\n💬 Reply to this chat to message the guest. Type /end to close the relay.`;
+          await fetch(`https://api.telegram.org/bot${defaultBotToken}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: hostChatId,
+              text: dmText,
+              parse_mode: "HTML",
+              disable_web_page_preview: true,
+            }),
+          });
+        } catch (e) { console.log("host DM failed:", e); }
+      } else if (hostLink) {
+        telegramMessage += `\n👤 <a href="${hostLink}">Host: tap to enable replies</a>\n`;
+      }
+
+      telegramMessage += `\n🔗 <a href="${miniAppLinks.app}">View Village</a>`;
+
+      // Stash guest deep link so the response can return it to the app
+      (requestBody as any)._guestRelayLink = guestLink;
+    }
+
+    const telegramUrl = `https://api.telegram.org/bot${effectiveBotToken}/sendMessage`;
+
+    console.log(`Sending Telegram message to chat: ${chatId}${parsedThreadId ? ` (thread: ${parsedThreadId})` : ''}`);
+
+    const telegramPayload: Record<string, unknown> = {
+      chat_id: chatId,
+      text: telegramMessage,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+    };
+    
+    // Add thread ID for messages sent to specific topics
+    if (parsedThreadId) {
+      telegramPayload.message_thread_id = parsedThreadId;
+    }
+    
+    const response = await fetch(telegramUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(telegramPayload),
+    });
+
+    const result = await response.json();
+    
+    if (!result.ok) {
+      console.error("Telegram API error:", result);
+
+      const desc = String(result.description || "Failed to send Telegram message");
+
+      // If thread/topic is invalid, automatically retry without thread_id so notifications still deliver.
+      if (parsedThreadId && desc.toLowerCase().includes("message thread not found")) {
+        console.log(
+          `Thread ${parsedThreadId} not found for chat ${chatId}; retrying without message_thread_id...`
+        );
+
+        const retryBody = { ...telegramPayload };
+        delete (retryBody as any).message_thread_id;
+
+        const retryRes = await fetch(telegramUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(retryBody),
+        });
+
+        const retryJson = await retryRes.json();
+        if (retryJson?.ok) {
+          console.log("Telegram notification sent successfully (fallback without thread)");
+          return new Response(JSON.stringify({ success: true, fallback: "no_thread" }), {
+            status: 200,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        }
+
+        console.error("Telegram API error (retry without thread failed):", retryJson);
+        throw new Error(String(retryJson?.description || desc));
+      }
+
+      if (desc.toLowerCase().includes("chat not found")) {
+        throw new Error(
+          "Bad Request: chat not found. This usually means the @username is wrong OR the bot is not a member/admin of that chat/channel. Add the bot to the target chat (and make it an admin for channels), then retry."
+        );
+      }
+
+      // Bot isn't a member of the target chat — treat as non-fatal so app flows
+      // (bookings, applications, etc.) don't 500. Caller still needs to add the
+      // bot to that chat/channel for notifications to be delivered.
+      if (response.status === 403 || desc.toLowerCase().includes("not a member") || desc.toLowerCase().includes("forbidden")) {
+        console.warn(`Telegram 403 for chat ${chatId} — bot not a member. Skipping.`);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            skipped: true,
+            reason: "bot_not_member",
+            chatId,
+            description: desc,
+            guestRelayLink: (requestBody as any)._guestRelayLink ?? null,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      
+      if (desc.toLowerCase().includes("message thread not found")) {
+        throw new Error(
+          "Bad Request: message thread not found. The Thread ID doesn't exist in this chat. To find a valid Thread ID: open the topic/thread in Telegram, copy the message link, and extract the last number from the URL (e.g., https://t.me/c/123456789/42 → Thread ID is 42). Leave Thread ID empty to post to the main chat."
+        );
+      }
+
+      throw new Error(desc);
+    }
+
+    console.log("Telegram notification sent successfully");
+
+    // Mirror to default @villedgebot + default chat for global oversight,
+    // unless the primary send already used them (avoid duplicates).
+    try {
+      const usedDefaultBot = effectiveBotToken === defaultBotToken;
+      const usedDefaultChat = chatId === defaultChatId;
+      if (defaultBotToken && defaultChatId && !(usedDefaultBot && usedDefaultChat) && type !== "test" && type !== "application_status") {
+        let mirrorChat = defaultChatId;
+        let mirrorThread: number | undefined;
+        if (mirrorChat.includes("t.me/")) {
+          const cMatch = mirrorChat.match(/t\.me\/c\/([^\/?#\s]+)(?:\/(\d+))?/);
+          if (cMatch) {
+            mirrorChat = /^\d+$/.test(cMatch[1]) ? `-100${cMatch[1]}` : `@${cMatch[1]}`;
+            if (cMatch[2]) mirrorThread = parseInt(cMatch[2], 10);
+          } else {
+            const pMatch = mirrorChat.match(/t\.me\/([a-zA-Z][a-zA-Z0-9_]{3,})(?:\/(\d+))?/);
+            if (pMatch) {
+              mirrorChat = `@${pMatch[1]}`;
+              if (pMatch[2]) mirrorThread = parseInt(pMatch[2], 10);
+            }
+          }
+        }
+        const mirrorPayload: Record<string, unknown> = {
+          chat_id: mirrorChat,
+          text: `[mirror • ${villageId || "global"}]\n\n${telegramMessage}`,
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+        };
+        if (mirrorThread) mirrorPayload.message_thread_id = mirrorThread;
+        const mirrorRes = await fetch(`https://api.telegram.org/bot${defaultBotToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mirrorPayload),
+        });
+        const mirrorJson = await mirrorRes.json();
+        if (!mirrorJson?.ok && mirrorThread && String(mirrorJson?.description || "").toLowerCase().includes("thread not found")) {
+          delete (mirrorPayload as any).message_thread_id;
+          await fetch(`https://api.telegram.org/bot${defaultBotToken}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(mirrorPayload),
+          });
+        } else if (!mirrorJson?.ok) {
+          console.log("Mirror to default failed:", mirrorJson?.description);
+        }
+      }
+    } catch (mirrorErr) {
+      console.log("Mirror notification error (non-fatal):", mirrorErr);
+    }
+
+    return new Response(JSON.stringify({ success: true, guestRelayLink: (requestBody as any)._guestRelayLink ?? null }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error: any) {
+    console.error("Error sending Telegram notification:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+};
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function getExplorerUrl(chain: string, txHash: string): string | null {
+  const explorers: Record<string, string> = {
+    'ethereum': `https://etherscan.io/tx/${txHash}`,
+    'base': `https://basescan.org/tx/${txHash}`,
+    'optimism': `https://optimistic.etherscan.io/tx/${txHash}`,
+    'arbitrum': `https://arbiscan.io/tx/${txHash}`,
+    'polygon': `https://polygonscan.com/tx/${txHash}`,
+    'avalanche': `https://snowtrace.io/tx/${txHash}`,
+    'bsc': `https://bscscan.com/tx/${txHash}`,
+  };
+  return explorers[chain.toLowerCase()] || null;
+}
+
+serve(handler);

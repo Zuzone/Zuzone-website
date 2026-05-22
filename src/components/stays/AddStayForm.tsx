@@ -1,0 +1,573 @@
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { CalendarIcon, Plus, ExternalLink, CheckCircle2, Home } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { StayInput } from "@/hooks/useStays";
+import { useAuth } from "@/hooks/useAuth";
+import { useApplicationQuestions, ApplicationQuestion } from "@/hooks/useApplicationQuestions";
+import { useUserProjects } from "@/hooks/useUserProjects";
+import { useProfileSocialLinks, getSocialPlatform } from "@/hooks/useProfileSocialLinks";
+import { ApplicationSceniusBlock } from "./ApplicationSceniusBlock";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface AddStayFormProps {
+  villageId: string;
+  onAddStay: (stay: StayInput) => Promise<any>;
+  botUsername?: string;
+}
+
+const TelegramIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+);
+
+export const AddStayForm = ({ villageId, onAddStay, botUsername }: AddStayFormProps) => {
+  const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedStayId, setSubmittedStayId] = useState<string | null>(null);
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  
+  const { questions, loading: questionsLoading } = useApplicationQuestions(villageId);
+  const { projects, addProject, deleteProject } = useUserProjects(user?.id || null);
+  const { socialLinks, addLink } = useProfileSocialLinks(user?.id || null);
+  
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [isPermanent, setIsPermanent] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+
+  // Helper to get autofill value for a question
+  const getAutofillValue = (questionText: string): string => {
+    const lowerText = questionText.toLowerCase();
+    
+    // Name or Pseudonym
+    if (lowerText.includes("name") && (lowerText.includes("pseudonym") || lowerText.includes("별명"))) {
+      return profile?.username || "";
+    }
+    
+    // Email
+    if (lowerText.includes("email") || lowerText.includes("이메일")) {
+      return user?.email || "";
+    }
+    
+    // What are you building / working on - use Scenius projects
+    if ((lowerText.includes("building") || lowerText.includes("working on")) && 
+        (lowerText.includes("what") || lowerText.includes("어떤"))) {
+      if (projects.length > 0) {
+        return projects
+          .map((p) => `${p.title || p.url}${p.description ? `: ${p.description}` : ""}`)
+          .join("\n\n");
+      }
+    }
+    
+    // Social media links - autofill from profile
+    if (lowerText.includes("social") || lowerText.includes("twitter") || 
+        lowerText.includes("linkedin") || lowerText.includes("instagram") ||
+        lowerText.includes("소셜") || lowerText.includes("sns")) {
+      if (socialLinks.length > 0) {
+        return socialLinks.map((link) => link.url).join("\n");
+      }
+    }
+    
+    // Telegram
+    if (lowerText.includes("telegram") || lowerText.includes("텔레그램")) {
+      const telegramLink = socialLinks.find((link) => link.platform === "telegram");
+      if (telegramLink) return telegramLink.url;
+    }
+    
+    return "";
+  };
+
+  // Reset answers when questions change - with autofill
+  useEffect(() => {
+    const initialAnswers: Record<string, string | string[]> = {};
+    questions.forEach((q) => {
+      if (q.question_type === "checkbox") {
+        initialAnswers[q.id] = [];
+      } else {
+        initialAnswers[q.id] = getAutofillValue(q.question_text);
+      }
+    });
+    setAnswers(initialAnswers);
+  }, [questions, profile, user, projects, socialLinks]);
+
+const resetForm = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setIsPermanent(false);
+    setSubmittedStayId(null);
+    const initialAnswers: Record<string, string | string[]> = {};
+    questions.forEach((q) => {
+      if (q.question_type === "checkbox") {
+        initialAnswers[q.id] = [];
+      } else {
+        initialAnswers[q.id] = getAutofillValue(q.question_text);
+      }
+    });
+    setAnswers(initialAnswers);
+  };
+
+  const validateRequiredQuestions = (): boolean => {
+    for (const question of questions) {
+      if (question.is_required) {
+        const answer = answers[question.id];
+        if (question.question_type === "checkbox") {
+          if (!answer || (Array.isArray(answer) && answer.length === 0)) {
+            toast.error(`Please answer: ${question.question_text}`);
+            return false;
+          }
+        } else {
+          if (!answer || (typeof answer === "string" && !answer.trim())) {
+            toast.error(`Please answer: ${question.question_text}`);
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!startDate) {
+      toast.error("Please select an arrival date");
+      return;
+    }
+
+    const effectiveEndDate = isPermanent
+      ? new Date(startDate.getFullYear() + 50, startDate.getMonth(), startDate.getDate())
+      : endDate;
+
+    if (!effectiveEndDate) {
+      toast.error("Please select a departure date");
+      return;
+    }
+
+    if (!isPermanent && endDate && endDate < startDate) {
+      toast.error("Departure date must be after arrival date");
+      return;
+    }
+
+    if (!user) {
+      toast.error("You must be signed in to apply");
+      return;
+    }
+
+    if (projects.length === 0) {
+      toast.error("Please add at least one project to your Scenius");
+      return;
+    }
+
+    if (!validateRequiredQuestions()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Use profile data for the stay
+      const nickname = profile?.username || user.email?.split('@')[0] || "Anonymous";
+      
+      const stay: StayInput = {
+        village_id: villageId,
+        nickname: nickname.slice(0, 30),
+        villa: "Default",
+        start_date: format(startDate, "yyyy-MM-dd"),
+        end_date: format(effectiveEndDate, "yyyy-MM-dd"),
+        intention: profile?.bio || undefined,
+        social_profile: profile?.social_url || undefined,
+        offerings: profile?.offerings || undefined,
+        asks: profile?.asks || undefined,
+        project_description: profile?.project_description || undefined,
+        project_url: profile?.project_url || undefined,
+        status: "planning", // Always planning - only host can confirm
+        user_id: user.id,
+        is_permanent: isPermanent,
+      };
+
+      const result = await onAddStay(stay);
+      if (result) {
+        // Save application answers
+        const answersToInsert = Object.entries(answers)
+          .filter(([_, value]) => {
+            if (Array.isArray(value)) return value.length > 0;
+            return value && value.trim();
+          })
+          .map(([questionId, answer]) => ({
+            stay_id: result.id,
+            question_id: questionId,
+            answer: Array.isArray(answer) ? answer.join(", ") : answer,
+          }));
+
+        if (answersToInsert.length > 0) {
+          const { error: answersError } = await supabase
+            .from("stay_application_answers")
+            .insert(answersToInsert);
+
+          if (answersError) {
+            console.error("Error saving answers:", answersError);
+          }
+        }
+
+        // Sync projects and social links back to profile
+        await syncToProfile(questions, answers);
+
+        // Show success state with notification option
+        setSubmittedStayId(result.id);
+        toast.success("Application submitted! The host will review your request.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    resetForm();
+    setOpen(false);
+    // Redirect to profile page to show application status
+    if (profile?.username) {
+      navigate(`/profile/${profile.username}`);
+    } else if (user?.id) {
+      navigate(`/profile/${user.id}`);
+    }
+  };
+
+  const telegramLink = submittedStayId && botUsername 
+    ? `https://t.me/${botUsername}?start=stay_${submittedStayId}` 
+    : null;
+
+  // Sync "What are you building" and social links back to user's profile
+  const syncToProfile = async (
+    questions: ApplicationQuestion[],
+    answers: Record<string, string | string[]>
+  ) => {
+    if (!user?.id) return;
+
+    const existingProjectUrls = new Set(projects.map((p) => p.url.toLowerCase()));
+    const existingSocialUrls = new Set(socialLinks.map((l) => l.url.toLowerCase()));
+
+    for (const question of questions) {
+      const answer = answers[question.id];
+      if (!answer || (typeof answer === "string" && !answer.trim())) continue;
+
+      const lowerText = question.question_text.toLowerCase();
+      const answerText = typeof answer === "string" ? answer : "";
+
+      // Sync "What are you building" projects
+      if ((lowerText.includes("building") || lowerText.includes("working on")) &&
+          (lowerText.includes("what") || lowerText.includes("어떤"))) {
+        // Extract URLs from the answer
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = answerText.match(urlRegex) || [];
+        
+        for (const url of urls) {
+          if (!existingProjectUrls.has(url.toLowerCase())) {
+            await addProject(url);
+            existingProjectUrls.add(url.toLowerCase());
+          }
+        }
+      }
+
+      // Sync social media links
+      if (lowerText.includes("social") || lowerText.includes("twitter") || 
+          lowerText.includes("linkedin") || lowerText.includes("instagram") ||
+          lowerText.includes("소셜") || lowerText.includes("sns") ||
+          lowerText.includes("telegram") || lowerText.includes("텔레그램")) {
+        // Extract URLs from the answer
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = answerText.match(urlRegex) || [];
+        
+        for (const url of urls) {
+          if (!existingSocialUrls.has(url.toLowerCase()) && getSocialPlatform(url)) {
+            await addLink(url);
+            existingSocialUrls.add(url.toLowerCase());
+          }
+        }
+      }
+    }
+  };
+
+  const updateAnswer = (questionId: string, value: string | string[]) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const toggleCheckboxOption = (questionId: string, option: string) => {
+    setAnswers((prev) => {
+      const current = prev[questionId];
+      const currentArray = Array.isArray(current) ? current : [];
+      if (currentArray.includes(option)) {
+        return { ...prev, [questionId]: currentArray.filter((o) => o !== option) };
+      } else {
+        return { ...prev, [questionId]: [...currentArray, option] };
+      }
+    });
+  };
+
+  const renderQuestion = (question: ApplicationQuestion) => {
+    const answer = answers[question.id];
+    
+    switch (question.question_type) {
+      case "textarea":
+        return (
+          <Textarea
+            placeholder="Your answer..."
+            value={typeof answer === "string" ? answer : ""}
+            onChange={(e) => updateAnswer(question.id, e.target.value)}
+            className="min-h-[80px]"
+          />
+        );
+      
+      case "select":
+        return (
+          <Select
+            value={typeof answer === "string" ? answer : ""}
+            onValueChange={(value) => updateAnswer(question.id, value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <SelectContent>
+              {question.options?.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      
+      case "checkbox":
+        return (
+          <div className="space-y-2">
+            {question.options?.map((option) => {
+              const checked = Array.isArray(answer) && answer.includes(option);
+              return (
+                <div key={option} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`${question.id}-${option}`}
+                    checked={checked}
+                    onCheckedChange={() => toggleCheckboxOption(question.id, option)}
+                  />
+                  <Label
+                    htmlFor={`${question.id}-${option}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option}
+                  </Label>
+                </div>
+              );
+            })}
+          </div>
+        );
+      
+      default: // text
+        return (
+          <Input
+            placeholder="Your answer..."
+            value={typeof answer === "string" ? answer : ""}
+            onChange={(e) => updateAnswer(question.id, e.target.value)}
+          />
+        );
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen && submittedStayId) {
+        handleClose();
+      } else {
+        setOpen(isOpen);
+      }
+    }}>
+      <DialogTrigger asChild>
+        <Button variant="sage" size="sm" className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add yourself
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md max-h-[85vh] p-0 gap-0 flex flex-col overflow-hidden">
+        <DialogHeader className="shrink-0 p-6 pb-4">
+          <DialogTitle className="font-display text-xl">
+            {submittedStayId ? "Application Submitted!" : "Add yourself"}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6">
+          {/* Success State */}
+          {submittedStayId ? (
+            <div className="space-y-6 py-4">
+              <div className="text-center">
+                <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Your application has been submitted. The host will review it shortly.
+                </p>
+              </div>
+
+              {telegramLink && (
+                <div className="space-y-3 p-4 rounded-lg bg-[#0088cc]/10 border border-[#0088cc]/20">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <TelegramIcon className="h-4 w-4 text-[#0088cc]" />
+                    Get Status Updates
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Enable Telegram notifications to receive real-time updates when your application is reviewed.
+                  </p>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white"
+                  >
+                    <a href={telegramLink} target="_blank" rel="noopener noreferrer">
+                      <TelegramIcon className="h-4 w-4 mr-2" />
+                      Enable Notifications
+                      <ExternalLink className="h-3 w-3 ml-2" />
+                    </a>
+                  </Button>
+                </div>
+              )}
+
+              <Button variant="outline" className="w-full" onClick={handleClose}>
+                View My Applications
+              </Button>
+            </div>
+          ) : (
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Date Range */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  Arrival <span className="text-destructive">*</span>
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      {startDate ? format(startDate, "MMM d, yyyy") : "Pick date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  Departure {!isPermanent && <span className="text-destructive">*</span>}
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={isPermanent}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      {isPermanent ? "No end date" : (endDate ? format(endDate, "MMM d, yyyy") : "Pick date")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      disabled={(date) => startDate ? date < startDate : false}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Permanent Resident toggle */}
+            <button
+              type="button"
+              onClick={() => setIsPermanent((p) => !p)}
+              className={cn(
+                "w-full flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                isPermanent
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background text-muted-foreground hover:bg-accent/50"
+              )}
+            >
+              <Home className="h-4 w-4" />
+              {isPermanent ? "Permanent Resident ✓" : "I'm a Permanent Resident"}
+            </button>
+
+            {/* Scenius Block */}
+            <ApplicationSceniusBlock
+              projects={projects}
+              onAddProject={addProject}
+              onDeleteProject={deleteProject}
+            />
+
+            {/* Custom Questions */}
+            {questionsLoading ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                Loading questions...
+              </div>
+            ) : questions.length > 0 ? (
+              <div className="space-y-4 pt-2">
+                {questions.map((question) => (
+                  <div key={question.id} className="space-y-2">
+                    <Label className="text-sm">
+                      {question.question_text}
+                      {question.is_required && <span className="text-destructive ml-1">*</span>}
+                    </Label>
+                    {renderQuestion(question)}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Your application will be reviewed by the host
+            </p>
+
+            <Button 
+              type="submit" 
+              variant="sage" 
+              className="w-full" 
+              disabled={isSubmitting || !startDate || (!isPermanent && !endDate)}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Application"}
+            </Button>
+          </form>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
