@@ -645,17 +645,17 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50">
             <ToggleGroup
               type="single"
-              value={villageTypeFilter}
-              onValueChange={(value) => value && setVillageTypeFilter(value as VillageType)}
+              value={viewMode}
+              onValueChange={(value) => value && setViewMode(value as "gantt" | "list")}
               className="bg-card rounded-full border border-border/50 px-1 py-1"
             >
-              <ToggleGroupItem value="popup" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                Popups
+              <ToggleGroupItem value="gantt" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                <BarChart3 className="h-3.5 w-3.5" />
+                Gantt
               </ToggleGroupItem>
-              <ToggleGroupItem value="permanent" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                <Building2 className="h-3.5 w-3.5" />
-                Permanent
+              <ToggleGroupItem value="list" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                <LayoutList className="h-3.5 w-3.5" />
+                List
               </ToggleGroupItem>
             </ToggleGroup>
             <Button
