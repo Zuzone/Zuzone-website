@@ -1,10 +1,9 @@
-import { Calendar, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -45,16 +44,6 @@ export const EventsDialog = ({ open, onOpenChange }: { open?: boolean; onOpenCha
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <button
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
-        >
-          <Calendar className="h-4 w-4" />
-          Events
-        </button>
-      </DialogTrigger>
       <DialogContent className="max-w-md w-[90vw] p-0 gap-0 border border-border bg-background max-h-[80vh] flex flex-col">
         <DialogTitle className="sr-only">Zuzalu Events</DialogTitle>
         <div className="flex flex-col items-center gap-2 p-4 border-b border-border">

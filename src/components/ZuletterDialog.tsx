@@ -3,22 +3,11 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 export const ZuletterDialog = ({ open, onOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <button
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-accent-yellow/20 to-accent-lime/20 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
-        >
-          <Mail className="h-4 w-4 text-accent-yellow" />
-          Zuletter
-        </button>
-      </DialogTrigger>
       <DialogContent className="max-w-2xl w-[90vw] h-[80vh] p-1 gap-0 border border-border overflow-hidden flex flex-col bg-background">
         <DialogTitle className="sr-only">Zuletter Newsletter</DialogTitle>
         <div className="relative w-full h-full rounded-md overflow-hidden bg-background flex items-center justify-center">
