@@ -166,15 +166,8 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
-      toast.error("Please sign in to create a village", {
-        action: {
-          label: "Sign In",
-          onClick: () => navigate("/auth"),
-        },
-      });
-      return;
-    }
+
+
 
     if (!coordinates) {
       toast.error("Please paste a valid Google Maps link");
@@ -206,7 +199,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
       center: coordinates,
       dates,
       description: websiteMetadata?.description || `Welcome to ${villageName}`,
-      created_by: user.id,
+      created_by: user?.id || null,
       village_type: villageType,
       website_url: formattedWebsiteUrl || null,
       logo_url: websiteMetadata?.favicon_url || null,
@@ -242,17 +235,9 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && !user) {
-      toast.error("Please sign in to create a village", {
-        action: {
-          label: "Sign In",
-          onClick: () => navigate("/auth"),
-        },
-      });
-      return;
-    }
     setOpen(newOpen);
   };
+
 
   const hasSocials = websiteMetadata?.twitter_url || websiteMetadata?.instagram_url || websiteMetadata?.telegram_url;
 
