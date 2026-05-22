@@ -243,7 +243,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
               variant="ghost"
               size="sm"
               onClick={() => setIsManuallyExpanded(false)}
-              className="h-6 gap-1 text-xs text-muted-foreground hover:text-foreground"
+              className="h-6 gap-1 text-xs text-muted-foreground hover:text-foreground animate-blink"
             >
               <ChevronDown className="h-3 w-3" />
               Hide
