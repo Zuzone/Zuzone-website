@@ -1,0 +1,1 @@
+UPDATE public.villages SET logo_url = 'https://quyxbgxdbkvokebwgazh.supabase.co/storage/v1/object/public/village-thumbnails/renaissance-village/logo.png', dates = 'Nov 9 - Jan 9' WHERE id = 'renaissance-village';
