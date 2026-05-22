@@ -30,8 +30,8 @@ const DEFAULT_ZOOM = 8;
 const FEATURED_VILLAGE_ID = "renaissance-village";
 const FEATURED_VILLAGE_ZOOM = 8;
 
-// Padding to account for UI overlays (right sidebar, bottom timeline)
-const MAP_PADDING = { top: 80, bottom: 220, left: 0, right: 300 };
+// Symmetric padding so the globe stays centered in the viewport
+const MAP_PADDING = { top: 0, bottom: 0, left: 0, right: 0 };
 
 interface GlobalMapProps {
   mapboxToken: string;
