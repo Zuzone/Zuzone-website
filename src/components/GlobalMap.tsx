@@ -439,7 +439,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </p>
           </div>
 
-          {/* User count badge + Showtime + Auth button */}
+          {/* Manifesto + Events dialogs */}
           <div className="flex items-center gap-2">
             <ManifestoDialog />
             <EventsDialog />
