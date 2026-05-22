@@ -172,7 +172,7 @@ export function ProfileReferralSection({ isOwnProfile }: ProfileReferralSectionP
                           <Label htmlFor="customCode">Code</Label>
                           <Input
                             id="customCode"
-                            placeholder="e.g. VILLEDGE2026"
+                            placeholder="e.g. ZUZONE2026"
                             value={customCode}
                             onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
                             className="font-mono"

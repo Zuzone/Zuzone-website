@@ -228,7 +228,7 @@ export const useHousingRooms = (spotId: string | null) => {
       const guestLink = (notifyData as any)?.guestRelayLink as string | undefined;
       if (guestLink) {
         toast("Chat with the host on Telegram", {
-          description: "Tap to enable two-way messaging through @villedgebot.",
+          description: "Tap to enable two-way messaging through @zuzonebot.",
           action: {
             label: "Open chat",
             onClick: () => window.open(guestLink, "_blank"),

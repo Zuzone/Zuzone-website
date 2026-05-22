@@ -79,7 +79,7 @@ export const ProfileActivityHistory = ({ activities }: ProfileActivityHistoryPro
 
       {/* Activity source note */}
       <p className="text-xs text-muted-foreground mt-6 text-center italic">
-        Activity from Villedge platform
+        Activity from Zuzone platform
       </p>
     </section>
   );

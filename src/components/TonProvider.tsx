@@ -7,7 +7,7 @@ interface TonProviderProps {
 
 // TON Connect manifest must be at a publicly accessible URL
 // We use the published URL since the manifest needs to be stable and accessible
-const MANIFEST_URL = 'https://villedge.lovable.app/tonconnect-manifest.json';
+const MANIFEST_URL = 'https://zuzone.lovable.app/tonconnect-manifest.json';
 
 export const TonProvider = ({ children }: TonProviderProps) => {
   return (

@@ -117,7 +117,7 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
         if (insertError) throw insertError;
       }
 
-      toast.success('Welcome to Villedge! 🎉');
+      toast.success('Welcome to Zuzone! 🎉');
       onOpenChange(false);
       
       // Navigate to profile page
@@ -149,7 +149,7 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
               </div>
             </div>
             <DialogTitle className="text-center text-2xl font-display font-bold">
-              Welcome to Villedge!
+              Welcome to Zuzone!
             </DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">
               Choose a unique username to complete your profile
