@@ -54,6 +54,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [manifestoOpen, setManifestoOpen] = useState(false);
   const [eventsOpen, setEventsOpen] = useState(false);
   const [zuletterOpen, setZuletterOpen] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
