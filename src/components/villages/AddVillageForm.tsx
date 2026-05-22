@@ -42,10 +42,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [unlocked, setUnlocked] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem(UNLOCK_STORAGE_KEY) === "1";
-  });
+  const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
