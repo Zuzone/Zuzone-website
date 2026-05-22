@@ -274,6 +274,37 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
         <DialogHeader>
           <DialogTitle className="font-display text-xl">Add Village</DialogTitle>
         </DialogHeader>
+        {!unlocked ? (
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="addVillagePassword">Password required</Label>
+              <Input
+                id="addVillagePassword"
+                type="password"
+                autoFocus
+                placeholder="Enter password..."
+                value={passwordInput}
+                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(null); }}
+              />
+              {passwordError && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> {passwordError}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Adding villages is restricted. Ask an admin for the password.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="sage" className="flex-1" disabled={!passwordInput.trim()}>
+                Unlock
+              </Button>
+            </div>
+          </form>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Website URL field */}
           <div className="space-y-2">
