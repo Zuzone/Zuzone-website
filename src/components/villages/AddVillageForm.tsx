@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 
 // Password required to add a new village. Change here to update.
 const ADD_VILLAGE_PASSWORD = "yamibooga";
-const UNLOCK_STORAGE_KEY = "villedge:add-village-unlocked";
 
 interface WebsiteMetadata {
   title?: string;
@@ -43,10 +42,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [unlocked, setUnlocked] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem(UNLOCK_STORAGE_KEY) === "1";
-  });
+  const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
@@ -62,7 +58,6 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput.trim() === ADD_VILLAGE_PASSWORD) {
-      sessionStorage.setItem(UNLOCK_STORAGE_KEY, "1");
       setUnlocked(true);
       setPasswordError(null);
       setPasswordInput("");
@@ -258,6 +253,11 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
+    if (newOpen) {
+      setUnlocked(false);
+      setPasswordInput("");
+      setPasswordError(null);
+    }
   };
 
 
