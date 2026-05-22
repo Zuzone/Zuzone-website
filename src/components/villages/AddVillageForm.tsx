@@ -18,6 +18,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { VillageType } from "@/hooks/useVillages";
 import { cn } from "@/lib/utils";
 
+// Password required to add a new village. Change here to update.
+const ADD_VILLAGE_PASSWORD = "villedge2026";
+const UNLOCK_STORAGE_KEY = "villedge:add-village-unlocked";
+
 interface WebsiteMetadata {
   title?: string;
   description?: string;
@@ -39,6 +43,12 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [unlocked, setUnlocked] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(UNLOCK_STORAGE_KEY) === "1";
+  });
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [locationName, setLocationName] = useState("");
@@ -48,6 +58,18 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const [isResolving, setIsResolving] = useState(false);
   const [isScrapingWebsite, setIsScrapingWebsite] = useState(false);
   const [websiteMetadata, setWebsiteMetadata] = useState<WebsiteMetadata | null>(null);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput.trim() === ADD_VILLAGE_PASSWORD) {
+      sessionStorage.setItem(UNLOCK_STORAGE_KEY, "1");
+      setUnlocked(true);
+      setPasswordError(null);
+      setPasswordInput("");
+    } else {
+      setPasswordError("Incorrect password");
+    }
+  };
 
   const resolveGoogleMapsUrl = async (url: string) => {
     if (!url.trim()) return;
@@ -252,6 +274,37 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
         <DialogHeader>
           <DialogTitle className="font-display text-xl">Add Village</DialogTitle>
         </DialogHeader>
+        {!unlocked ? (
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="addVillagePassword">Password required</Label>
+              <Input
+                id="addVillagePassword"
+                type="password"
+                autoFocus
+                placeholder="Enter password..."
+                value={passwordInput}
+                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(null); }}
+              />
+              {passwordError && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> {passwordError}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Adding villages is restricted. Ask an admin for the password.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="sage" className="flex-1" disabled={!passwordInput.trim()}>
+                Unlock
+              </Button>
+            </div>
+          </form>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Website URL field */}
           <div className="space-y-2">
@@ -404,6 +457,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
