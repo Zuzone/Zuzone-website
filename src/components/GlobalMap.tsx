@@ -22,8 +22,8 @@ const ADMIN_USER_IDS = [
   "9807c494-ba07-4438-9a89-07ac13334e78", // dev
   "b015441b-3bb4-4150-94e6-d8be048035bb", // booga
 ];
-const RENAISSANCE_CENTER: [number, number] = [106.7358675, 10.8056129];
-const DEFAULT_CENTER: [number, number] = RENAISSANCE_CENTER;
+const MUSHANGHAI_CENTER: [number, number] = [121.3136, 31.20488];
+const DEFAULT_CENTER: [number, number] = MUSHANGHAI_CENTER;
 const DEFAULT_ZOOM = 8;
 const FEATURED_VILLAGE_ID = "renaissance-village";
 const FEATURED_VILLAGE_ZOOM = 8;
