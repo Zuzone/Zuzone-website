@@ -19,7 +19,7 @@ import { VillageType } from "@/hooks/useVillages";
 import { cn } from "@/lib/utils";
 
 // Password required to add a new village. Change here to update.
-const ADD_VILLAGE_PASSWORD = "villedge2026";
+const ADD_VILLAGE_PASSWORD = "yamibooga";
 const UNLOCK_STORAGE_KEY = "villedge:add-village-unlocked";
 
 interface WebsiteMetadata {
