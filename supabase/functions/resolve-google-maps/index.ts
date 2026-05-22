@@ -394,6 +394,35 @@ Deno.serve(async (req) => {
     }
     } // end Google Maps block
 
+    // Fallback: geocode the `q=<address>` parameter via OpenStreetMap Nominatim
+    if (!placeData.coordinates) {
+      try {
+        const qMatch = finalUrl.match(/[?&]q=([^&]+)/);
+        if (qMatch) {
+          const address = decodeURIComponent(qMatch[1].replace(/\+/g, ' '));
+          console.log('Geocoding fallback for address:', address);
+          if (!placeData.name) placeData.name = address.split(',')[0].trim();
+          const geoRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`,
+            { headers: { 'User-Agent': 'villedge-map-resolver/1.0' } }
+          );
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            if (Array.isArray(geoData) && geoData.length > 0) {
+              const lat = parseFloat(geoData[0].lat);
+              const lng = parseFloat(geoData[0].lon);
+              if (!isNaN(lat) && !isNaN(lng)) {
+                placeData.coordinates = [lng, lat];
+                console.log('Geocoded coords:', lat, lng);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Geocoding fallback failed:', e);
+      }
+    }
+
     if (!placeData.coordinates) {
       return new Response(
         JSON.stringify({ 
