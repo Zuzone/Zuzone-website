@@ -1,5 +1,4 @@
-import { ScrollText, PenLine, Check } from "lucide-react";
-import { useState } from "react";
+import { ScrollText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -7,16 +6,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useManifestoSignatures } from "@/hooks/useManifestoSignatures";
-import { AuthDialog } from "@/components/AuthDialog";
 
 export const ManifestoDialog = () => {
-  const { count, hasSigned, sign, isSigning, isLoggedIn } = useManifestoSignatures();
-  const [showAuth, setShowAuth] = useState(false);
-
   return (
-    <>
     <Dialog>
       <DialogTrigger asChild>
         <button
@@ -52,7 +44,5 @@ export const ManifestoDialog = () => {
         </div>
       </DialogContent>
     </Dialog>
-    <AuthDialog open={showAuth} onOpenChange={setShowAuth} />
-    </>
   );
 };
