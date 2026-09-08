@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,16 +10,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, MapPin, Loader2, Globe, Link2, Calendar, Check, AlertCircle } from "lucide-react";
+import { Plus, MapPin, Loader2, Globe, Link2, Calendar, Check, AlertCircle, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { VillageType } from "@/hooks/useVillages";
 import { cn } from "@/lib/utils";
-
-// Password required to add a new village. Change here to update.
-const ADD_VILLAGE_PASSWORD = "yamibooga";
+import { connectZupass, type ZupassSession } from "@/lib/zupass";
+import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 
 interface WebsiteMetadata {
   title?: string;
@@ -42,9 +41,10 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [unlocked, setUnlocked] = useState(false);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [zupass, setZupass] = useState<ZupassSession | null>(null);
+  const [zupassConnecting, setZupassConnecting] = useState(false);
+  const [zupassError, setZupassError] = useState<string | null>(null);
+  const zupassHostRef = useRef<HTMLDivElement>(null);
   const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [locationName, setLocationName] = useState("");
@@ -55,14 +55,18 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const [isScrapingWebsite, setIsScrapingWebsite] = useState(false);
   const [websiteMetadata, setWebsiteMetadata] = useState<WebsiteMetadata | null>(null);
 
-  const handleUnlock = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordInput.trim() === ADD_VILLAGE_PASSWORD) {
-      setUnlocked(true);
-      setPasswordError(null);
-      setPasswordInput("");
-    } else {
-      setPasswordError("Incorrect password");
+  const handleZupassConnect = async () => {
+    if (!zupassHostRef.current) return;
+    setZupassConnecting(true);
+    setZupassError(null);
+    try {
+      const session = await connectZupass(zupassHostRef.current);
+      setZupass(session);
+    } catch (err) {
+      console.error("Zupass connect failed", err);
+      setZupassError(err instanceof Error ? err.message : "Could not connect to Zupass");
+    } finally {
+      setZupassConnecting(false);
     }
   };
 
@@ -208,7 +212,13 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
       formattedWebsiteUrl = `https://${formattedWebsiteUrl}`;
     }
 
-    const { error } = await supabase.from('villages').insert({
+    if (!zupass) {
+      setIsSubmitting(false);
+      toast.error("Sign in with Zupass first");
+      return;
+    }
+
+    const village = {
       id: slug,
       name: villageName,
       location: locationName || "Location",
@@ -223,19 +233,38 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
       twitter_url: websiteMetadata?.twitter_url || null,
       instagram_url: websiteMetadata?.instagram_url || null,
       telegram_url: websiteMetadata?.telegram_url || null,
-    });
+    };
 
-    setIsSubmitting(false);
-
-    if (error) {
-      if (error.code === '23505') {
-        toast.error("A village with this name already exists");
-      } else {
-        toast.error("Failed to create village");
-        console.error(error);
+    try {
+      // The signed POD binds this Zupass identity to this specific village id; the
+      // edge worker verifies the signature server-side before inserting.
+      const pod = await zupass.sign({
+        zuzone: "add-village",
+        village_id: slug,
+        village_name: villageName,
+        ts: Date.now(),
+      });
+      const res = await fetch(`${PUBLIC_SITE_URL}/api/villages`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pod, village }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setIsSubmitting(false);
+        if (res.status === 409) toast.error("A village with this name already exists");
+        else toast.error(body?.error || "Failed to create village");
+        console.error("add village failed", res.status, body);
+        return;
       }
+    } catch (err) {
+      setIsSubmitting(false);
+      console.error("add village failed", err);
+      toast.error(err instanceof Error && /reject|cancel|denied/i.test(err.message) ? "Zupass signing was cancelled" : "Failed to create village");
       return;
     }
+
+    setIsSubmitting(false);
 
     toast.success(`${villageName} created successfully!`);
     
@@ -254,9 +283,7 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (newOpen) {
-      setUnlocked(false);
-      setPasswordInput("");
-      setPasswordError(null);
+      setZupassError(null);
     }
   };
 
@@ -274,38 +301,51 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
         <DialogHeader>
           <DialogTitle className="font-display text-xl">Add Village</DialogTitle>
         </DialogHeader>
-        {!unlocked ? (
-          <form onSubmit={handleUnlock} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="addVillagePassword">Password required</Label>
-              <Input
-                id="addVillagePassword"
-                type="password"
-                autoFocus
-                placeholder="Enter password..."
-                value={passwordInput}
-                onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(null); }}
-              />
-              {passwordError && (
+        {/* Host element for the Zupass connector iframe (renders its own modal dialog) */}
+        <div ref={zupassHostRef} />
+        {!zupass ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+              <p className="text-sm font-semibold flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-primary" /> Sign in with Zupass to add a village
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Anyone with a Zupass can add a pop-up city or hub. Zupass only shares your public identity
+                and signs a note saying you added this village, so entries are accountable, not anonymous.
+              </p>
+              {zupassError && (
                 <p className="text-xs text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" /> {passwordError}
+                  <AlertCircle className="h-3 w-3" /> {zupassError}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Adding villages is restricted. Ask an admin for the password.
-              </p>
             </div>
             <div className="flex gap-3 pt-2">
               <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" variant="sage" className="flex-1" disabled={!passwordInput.trim()}>
-                Unlock
+              <Button type="button" variant="sage" className="flex-1" onClick={handleZupassConnect} disabled={zupassConnecting}>
+                {zupassConnecting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Connecting…
+                  </>
+                ) : (
+                  "Continue with Zupass"
+                )}
               </Button>
             </div>
-          </form>
+            <p className="text-[11px] text-muted-foreground text-center">
+              No Zupass yet? Get one free at{" "}
+              <a href="https://zupass.org" target="_blank" rel="noopener noreferrer" className="underline">
+                zupass.org
+              </a>
+            </p>
+          </div>
         ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Check className="h-3.5 w-3.5 text-primary" />
+            Zupass connected · <span className="font-mono truncate max-w-[200px]">{zupass.publicKey}</span>
+          </div>
           {/* Website URL field */}
           <div className="space-y-2">
             <Label htmlFor="websiteUrl" className="flex items-center gap-2">

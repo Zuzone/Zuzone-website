@@ -1,0 +1,12 @@
+{
+  "name": "zuzone-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "@pcd/pod": "^0.5.1"
+  }
+}

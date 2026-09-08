@@ -15,6 +15,8 @@
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@lovable.dev/cloud-auth-js": "^1.0.0",
+    "@parcnet-js/app-connector": "^1.1.10",
+    "@pcd/pod": "^0.5.1",
     "@privy-io/react-auth": "^3.12.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

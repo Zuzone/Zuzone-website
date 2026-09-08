@@ -2,10 +2,12 @@
  * Zuzone edge worker.
  *
  * Serves the Vite build (SPA fallback) and adds what a static host cannot:
- *   GET /calendar.ics        iCalendar feed of every pop-up city (subscribe in Google/Apple/Outlook)
- *   GET /api/villages.json   public JSON of the directory
- *   GET /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
+ *   GET  /calendar.ics        iCalendar feed of every pop-up city (subscribe in Google/Apple/Outlook)
+ *   GET  /api/villages.json   public JSON of the directory
+ *   POST /api/villages        add a village, gated by a Zupass-signed POD (verified here)
+ *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
  */
+import { POD } from "@pcd/pod";
 
 const RESERVED = new Set(["admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
@@ -16,6 +18,11 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    if (path === "/api/villages") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+      if (request.method === "POST") return addVillage(request, env, ctx);
+    }
 
     if (request.method !== "GET" && request.method !== "HEAD") {
       return env.ASSETS.fetch(request);
@@ -32,6 +39,139 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-headers": "content-type",
+  "access-control-max-age": "86400",
+};
+
+// ---------- add village (Zupass-gated) ----------
+
+const POD_MAX_AGE_MS = 15 * 60 * 1000;
+const URL_RE = /^https?:\/\/[^\s]{3,500}$/i;
+
+function json(body, status = 200, extra = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", ...CORS, ...extra },
+  });
+}
+
+/**
+ * Anyone with a Zupass can add a village. The client asks Zupass to sign a POD
+ * { zuzone: "add-village", village_id, village_name, ts }; we verify the EdDSA
+ * signature, check the POD matches the submitted village and is fresh, then insert.
+ * The signer's public key is stored alongside the row so entries stay accountable.
+ */
+async function addVillage(request, env, ctx) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON body" }, 400);
+  }
+  const { pod: jsonPod, village: raw, dryRun } = body || {};
+  if (!jsonPod || !raw) return json({ error: "Expected { pod, village }" }, 400);
+
+  // 1. Verify the Zupass signature
+  let pod;
+  try {
+    pod = POD.fromJSON(jsonPod);
+    if (!pod.verifySignature()) return json({ error: "Zupass signature is invalid" }, 401);
+  } catch (e) {
+    return json({ error: `Malformed POD: ${e.message || e}` }, 400);
+  }
+  const entries = pod.content.asEntries();
+  const claim = {
+    zuzone: entries.zuzone?.value,
+    village_id: entries.village_id?.value,
+    ts: entries.ts?.value,
+  };
+  if (claim.zuzone !== "add-village") return json({ error: "POD is not an add-village authorisation" }, 401);
+  const ts = typeof claim.ts === "bigint" ? Number(claim.ts) : Number(claim.ts);
+  if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > POD_MAX_AGE_MS) {
+    return json({ error: "Zupass authorisation expired, sign in again" }, 401);
+  }
+
+  // 2. Validate the village payload
+  const v = validateVillage(raw);
+  if (v.error) return json({ error: v.error }, 422);
+  if (claim.village_id !== v.village.id) return json({ error: "POD was signed for a different village id" }, 401);
+
+  const row = { ...v.village, zupass_public_key: pod.signerPublicKey };
+  if (dryRun) return json({ ok: true, dryRun: true, signer: pod.signerPublicKey, village: row });
+
+  // 3. Insert (service role if configured, else anon — RLS decides)
+  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
+  const insert = async (payload) =>
+    fetch(`${env.SUPABASE_URL}/rest/v1/villages`, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "content-type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(payload),
+    });
+  let res = await insert(row);
+  if (res.status === 400) {
+    const err = await res.clone().json().catch(() => ({}));
+    // Column not yet added by the migration: insert without it rather than fail
+    if (err?.code === "42703" || /zupass_public_key/.test(err?.message || "")) {
+      const { zupass_public_key, ...withoutKey } = row;
+      res = await insert(withoutKey);
+    }
+  }
+  if (res.status === 409) return json({ error: "A village with this id already exists" }, 409);
+  if (!res.ok) {
+    const err = await res.text();
+    return json({ error: `Insert failed (${res.status})`, detail: err.slice(0, 400) }, 502);
+  }
+  const inserted = await res.json();
+  // Bust the edge cache so the feed/API/OG pick the new row up immediately
+  ctx.waitUntil(caches.default.delete(villagesCacheKey(env)));
+  return json({ ok: true, village: inserted[0] || row, signer: pod.signerPublicKey }, 201);
+}
+
+function validateVillage(raw) {
+  const s = (x, max) => (typeof x === "string" ? x.trim().slice(0, max) : "");
+  const id = s(raw.id, 120);
+  if (!/^[a-z0-9][a-z0-9-]{1,118}$/.test(id)) return { error: "Invalid village id" };
+  const name = s(raw.name, 160);
+  if (name.length < 2) return { error: "Village name is required" };
+  const center = raw.center;
+  if (!Array.isArray(center) || center.length !== 2 || !center.every((n) => typeof n === "number" && Number.isFinite(n))) {
+    return { error: "center must be [lng, lat]" };
+  }
+  const [lng, lat] = center;
+  if (Math.abs(lng) > 180 || Math.abs(lat) > 90) return { error: "center out of range" };
+  const village_type = raw.village_type === "permanent" ? "permanent" : "popup";
+  const url = (x) => {
+    const u = s(x, 500);
+    return u && URL_RE.test(u) ? u : null;
+  };
+  return {
+    village: {
+      id,
+      name,
+      location: s(raw.location, 200) || "Location",
+      center: [lng, lat],
+      dates: s(raw.dates, 64) || (village_type === "permanent" ? "Permanent" : "Coming soon"),
+      description: s(raw.description, 2000) || `Welcome to ${name}`,
+      village_type,
+      website_url: url(raw.website_url),
+      logo_url: url(raw.logo_url),
+      thumbnail_url: url(raw.thumbnail_url),
+      twitter_url: url(raw.twitter_url),
+      instagram_url: url(raw.instagram_url),
+      telegram_url: url(raw.telegram_url),
+      created_by: typeof raw.created_by === "string" && /^[0-9a-f-]{36}$/i.test(raw.created_by) ? raw.created_by : null,
+    },
+  };
+}
 
 // ---------- routing helpers ----------
 
@@ -54,9 +194,13 @@ function wantsHtml(request) {
 
 // ---------- data ----------
 
+function villagesCacheKey(env) {
+  return new Request(`${env.SUPABASE_URL}/rest/v1/villages?select=${VILLAGE_FIELDS}&order=created_at.asc`);
+}
+
 async function fetchVillages(env, ctx) {
   const cache = caches.default;
-  const cacheKey = new Request(`${env.SUPABASE_URL}/rest/v1/villages?select=${VILLAGE_FIELDS}&order=created_at.asc`);
+  const cacheKey = villagesCacheKey(env);
   let res = await cache.match(cacheKey);
   if (!res) {
     res = await fetch(cacheKey, {
