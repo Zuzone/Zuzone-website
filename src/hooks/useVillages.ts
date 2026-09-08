@@ -58,7 +58,10 @@ export const useVillages = () => {
 
       if (error) throw error;
 
-      const mappedVillages: Village[] = (data || []).map((v: any) => ({
+      const mappedVillages: Village[] = (data || [])
+        // Rows whose id starts with "_" are test/scratch entries, never shown publicly
+        .filter((v: any) => !String(v.id).startsWith("_"))
+        .map((v: any) => ({
         ...v,
         center: v.center as [number, number],
         created_by: v.created_by || null,

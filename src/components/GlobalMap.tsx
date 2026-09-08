@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
 import { ZuletterDialog } from "@/components/ZuletterDialog";
+import { CalendarFeedDialog } from "@/components/CalendarFeedDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { useNavigate } from "react-router-dom";
 import { AddVillageForm } from "@/components/villages/AddVillageForm";
@@ -55,8 +56,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [manifestoOpen, setManifestoOpen] = useState(false);
   const [eventsOpen, setEventsOpen] = useState(false);
   const [zuletterOpen, setZuletterOpen] = useState(false);
+  const [calendarFeedOpen, setCalendarFeedOpen] = useState(false);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen;
+  const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen || calendarFeedOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
@@ -449,6 +451,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <ManifestoDialog open={manifestoOpen} onOpenChange={setManifestoOpen} />
           <EventsDialog open={eventsOpen} onOpenChange={setEventsOpen} />
           <ZuletterDialog open={zuletterOpen} onOpenChange={setZuletterOpen} />
+          <CalendarFeedDialog open={calendarFeedOpen} onOpenChange={setCalendarFeedOpen} villageCount={villages.length} />
 
           {/* Desktop: inline buttons */}
           <div className="hidden sm:flex items-center gap-2">
@@ -465,6 +468,14 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             >
               <Calendar className="h-4 w-4" />
               Events
+            </button>
+            <button
+              onClick={() => setCalendarFeedOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              title="Subscribe to every pop-up city as a calendar feed"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Add to calendar
             </button>
             <button
               onClick={() => setZuletterOpen(true)}
@@ -485,7 +496,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </svg>
             </a>
             <a
-              href="https://github.com/vrnvrn/zu/"
+              href="https://github.com/boogaav/zuzone"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-accent-yellow/20 to-accent-lime/20 backdrop-blur-sm text-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
@@ -523,6 +534,12 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                     <Calendar className="h-4 w-4" /> Events
                   </button>
                   <button
+                    onClick={() => setCalendarFeedOpen(true)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
+                  >
+                    <CalendarPlus className="h-4 w-4" /> Add to calendar
+                  </button>
+                  <button
                     onClick={() => setZuletterOpen(true)}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
@@ -541,7 +558,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                     X (Twitter)
                   </a>
                   <a
-                    href="https://github.com/vrnvrn/zu/"
+                    href="https://github.com/boogaav/zuzone"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted"
