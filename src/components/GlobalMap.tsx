@@ -638,6 +638,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                   isZoomedIn={false}
                   onVillageClick={handleTimelineVillageClick}
                   embedded
+                  monthsVisible={12}
+                  pastMonths={6}
                 />
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-6">No popup villages</p>
@@ -714,8 +716,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                   isZoomedIn={false}
                   onVillageClick={handleTimelineVillageClick}
                   embedded
-                  monthsVisible={isPhone ? 4 : undefined}
-                  pastMonths={isPhone ? 6 : 0}
+                  monthsVisible={isPhone ? 4 : 12}
+                  pastMonths={6}
                 />
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-6">No popup villages</p>
