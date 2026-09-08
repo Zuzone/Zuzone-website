@@ -745,7 +745,7 @@ export const InteractiveMap = ({ mapboxToken, initialVillageId, initialCategory 
 
   return (
     <div className="relative h-full w-full overflow-hidden" style={{ touchAction: 'manipulation', overscrollBehavior: 'contain' }}>
-      <div ref={mapContainer} className="h-full w-full" />
+      <div ref={mapContainer} className="h-full w-full z-0 isolate" />
 
       {mapError && (
         <div className="absolute inset-0 z-0 flex items-center justify-center bg-muted/20">

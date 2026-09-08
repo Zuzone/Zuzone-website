@@ -253,3 +253,10 @@
     z-index: 10;
   }
 }
+
+/* Mobile: keep Mapbox's zoom controls clear of the header buttons */
+@media (max-width: 1023px) {
+  .mapboxgl-ctrl-top-right {
+    top: 3.5rem;
+  }
+}

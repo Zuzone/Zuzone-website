@@ -21,6 +21,8 @@ interface PopupTimelineProps {
   isZoomedIn?: boolean;
   onVillageClick: (village: PopupVillage) => void;
   embedded?: boolean;
+  /** Embedded only: time flows top→bottom, villages become vertical bars in packed lanes. */
+  vertical?: boolean;
 }
 
 // Parse date string to get start and end dates
@@ -102,19 +104,16 @@ const getTimelinePosition = (
   return { left: Math.max(0, left), width: Math.max(1, Math.min(width, 100 - left)) };
 };
 
-const villageColors: { [key: string]: string } = {
-  "proof-of-retreat": "#8E9456",
-  "network-school-v2": "#4A5568",
-  "ethchiangmai": "#6B7280",
-  "mars-college": "#C4733B",
-  "arc-montenegro": "#2D3748",
-  "ipe-village-ii": "#48BB78",
-  "zuafrique-2": "#ED8936",
-  "edge-esmeralda": "#667EEA",
-  "edge-city-austin": "#667EEA",
+const BAR_PALETTE = ["#41684D", "#8E9456", "#C4733B", "#3E5A74", "#5D4A6E", "#7D6330", "#4A5568", "#A0522D", "#2F6F73"];
+
+/** Stable, brand-toned bar color per village id. */
+const barColor = (id: string): string => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return BAR_PALETTE[h % BAR_PALETTE.length];
 };
 
-export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick, embedded = false }: PopupTimelineProps) => {
+export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick, embedded = false, vertical = false }: PopupTimelineProps) => {
   const isMobile = useIsMobile();
   const [isManuallyExpanded, setIsManuallyExpanded] = useState(true);
 
@@ -156,8 +155,9 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
 
   const rows = useMemo(() => {
     const result: typeof villagePositions[] = [];
-    const MIN_VISUAL_WIDTH_PCT = 6;
-    const GAP_PCT = 1.5;
+    // Horizontal pills need ~60px of label; vertical bars only need a 40px thumb, so pack tighter.
+    const MIN_VISUAL_WIDTH_PCT = vertical ? 4 : 6;
+    const GAP_PCT = vertical ? 0.6 : 1.5;
 
     const sorted = [...villagePositions].sort(
       (a, b) => a.position.left - b.position.left
@@ -196,7 +196,95 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
     });
 
     return result;
-  }, [villagePositions]);
+  }, [villagePositions, vertical]);
+
+  // ============ EMBEDDED VERTICAL LAYOUT (mobile bottom panel) ============
+  // Time runs downward: one band per month, "Today" as a horizontal rule near the top,
+  // villages as vertical bars packed into lanes (same packing as the horizontal Gantt).
+  if (embedded && vertical) {
+    const MONTH_PX = 84;
+    const totalPx = MONTH_PX * 12;
+    const laneCount = Math.max(1, rows.length);
+    const barHeightPx = (widthPct: number) => (widthPct / 100) * totalPx;
+    return (
+      <div className="h-full w-full overflow-y-auto overflow-x-hidden px-3 pt-3 pb-4 overscroll-contain">
+        <div className="relative flex gap-1.5" style={{ height: `${totalPx}px` }}>
+          {/* Months (Y axis) */}
+          <div className="relative w-8 shrink-0">
+            {months.map((month, i) => (
+              <div
+                key={i}
+                className="absolute left-0 pt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+                style={{ top: `${month.position}%` }}
+              >
+                {month.label}
+              </div>
+            ))}
+          </div>
+
+          {/* Track: lanes fill the width, but never get narrower than a thumb */}
+          <div className="relative min-w-0 flex-1 rounded-lg bg-secondary/30">
+            {/* Today rule sits above the (possibly horizontally scrolling) lanes */}
+            <div className="pointer-events-none absolute left-0 right-0 z-20 h-0.5 bg-primary" style={{ top: `${todayPosition}%` }}>
+              <div className="absolute left-1 top-1/2 -translate-y-1/2 rounded bg-primary px-1 py-0.5 text-[9px] font-medium text-primary-foreground shadow-sm">
+                Today
+              </div>
+            </div>
+            <div className="h-full overflow-x-auto overflow-y-hidden">
+            <div
+              className="relative grid h-full"
+              style={{ gridTemplateColumns: `repeat(${laneCount}, minmax(44px, 1fr))`, minWidth: `${laneCount * 44}px` }}
+            >
+              {/* Month bands */}
+              <div className="pointer-events-none absolute inset-0">
+                {months.map((_, i) => (
+                  <div key={i} className="absolute left-0 right-0 border-t border-border/40" style={{ top: `${(i / 12) * 100}%` }} />
+                ))}
+              </div>
+
+              {/* Lanes */}
+              {rows.map((row, laneIndex) => (
+                <div key={laneIndex} className="relative h-full">
+                  {row.map(({ village, position }) => {
+                    const px = barHeightPx(position.width);
+                    const showLabel = px >= 64;
+                    return (
+                      <button
+                        key={village.id}
+                        onClick={() => onVillageClick(village)}
+                        className={`absolute left-1 right-1 z-10 flex flex-col items-center gap-1 overflow-hidden rounded-xl px-0.5 py-1.5 text-white shadow-sm transition-all active:scale-95 ${
+                          activeVillage.id === village.id ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""
+                        }`}
+                        style={{
+                          top: `${position.left}%`,
+                          height: `${position.width}%`,
+                          minHeight: "40px",
+                          backgroundColor: barColor(village.id),
+                        }}
+                        title={`${village.name}\n${village.dates}`}
+                        aria-label={`${village.name}, ${village.dates}`}
+                      >
+                        <img src={village.logo} alt="" className="h-5 w-5 shrink-0 rounded-md bg-white/80 object-cover" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+                        {showLabel && (
+                          <span
+                            className="min-h-0 flex-1 truncate text-[10px] font-medium leading-none"
+                            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                          >
+                            {village.name}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ============ EMBEDDED LAYOUT (used inside mobile bottom panel) ============
   if (embedded) {
@@ -237,7 +325,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
                     left: `${position.left}%`,
                     width: `${position.width}%`,
                     minWidth: "56px",
-                    backgroundColor: villageColors[village.id] || "#6B7280",
+                    backgroundColor: barColor(village.id),
                   }}
                   title={`${village.name}\n${village.dates}`}
                 >
@@ -347,7 +435,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
                             top: `${position.left}%`,
                             height: `${position.width}%`,
                             minHeight: "48px",
-                            backgroundColor: villageColors[village.id] || "#6B7280",
+                            backgroundColor: barColor(village.id),
                           }}
                           title={`${village.name}\n${village.dates}`}
                         >
@@ -452,7 +540,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
                       left: `${position.left}%`,
                       width: `${position.width}%`,
                       minWidth: "60px",
-                      backgroundColor: villageColors[village.id] || "#6B7280",
+                      backgroundColor: barColor(village.id),
                     }}
                     title={`${village.name}\n${village.dates}`}
                   >
