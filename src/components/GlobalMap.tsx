@@ -18,7 +18,7 @@ import { useUserCurrentVillage } from "@/hooks/useUserCurrentVillage";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ManifestoDialog } from "@/components/ManifestoDialog";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsPhone } from "@/hooks/use-mobile";
 
 
 const ADMIN_USER_IDS = [
@@ -62,6 +62,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
+  const isPhone = useIsPhone();
 
   // Parse popup dates string -> { start, end } (best effort)
   const parsePopupDates = useCallback((dateStr?: string | null): { start: number; end: number } | null => {
@@ -457,21 +458,21 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={() => setManifestoOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <ScrollText className="h-4 w-4" />
               Manifesto
             </button>
             <button
               onClick={() => setEventsOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <Calendar className="h-4 w-4" />
               Events
             </button>
             <button
               onClick={() => setCalendarFeedOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
               title="Subscribe to every pop-up city as a calendar feed"
             >
               <CalendarPlus className="h-4 w-4" />
@@ -479,7 +480,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </button>
             <button
               onClick={() => setZuletterOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <ScrollText className="h-4 w-4" />
               Zuletter
@@ -698,7 +699,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                   isZoomedIn={false}
                   onVillageClick={handleTimelineVillageClick}
                   embedded
-                  vertical
+                  vertical={isPhone}
                 />
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-6">No popup villages</p>

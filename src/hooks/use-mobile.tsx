@@ -18,3 +18,20 @@ export function useIsMobile() {
 
   return !!isMobile;
 }
+
+// Phones only (below Tailwind's `sm`): used where a layout should differ from tablets too
+const PHONE_BREAKPOINT = 640;
+
+export function useIsPhone() {
+  const [isPhone, setIsPhone] = React.useState<boolean | undefined>(undefined);
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${PHONE_BREAKPOINT - 1}px)`);
+    const onChange = () => setIsPhone(window.innerWidth < PHONE_BREAKPOINT);
+    mql.addEventListener("change", onChange);
+    onChange();
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return !!isPhone;
+}

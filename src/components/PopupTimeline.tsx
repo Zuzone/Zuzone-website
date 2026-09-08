@@ -233,7 +233,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
             <div className="h-full overflow-x-auto overflow-y-hidden">
             <div
               className="relative grid h-full"
-              style={{ gridTemplateColumns: `repeat(${laneCount}, minmax(44px, 1fr))`, minWidth: `${laneCount * 44}px` }}
+              style={{ gridTemplateColumns: `repeat(${laneCount}, minmax(44px, 80px))`, minWidth: `${laneCount * 44}px` }}
             >
               {/* Month bands */}
               <div className="pointer-events-none absolute inset-0">
