@@ -30,6 +30,7 @@ export default {
 
     if (path === "/calendar.ics") return calendarFeed(env, ctx, url.origin);
     if (path === "/api/villages.json") return villagesJson(env, ctx);
+    if (path === "/api/_health") return health(env);
 
     const slug = villageSlugFromPath(path);
     if (slug && wantsHtml(request)) {
@@ -46,6 +47,19 @@ const CORS = {
   "access-control-allow-headers": "content-type",
   "access-control-max-age": "86400",
 };
+
+/** Reports whether the configured Supabase keys can reach the villages table (no secrets echoed). */
+async function health(env) {
+  const probe = async (key) => {
+    if (!key) return "unset";
+    const r = await fetch(`${env.SUPABASE_URL}/rest/v1/villages?select=id&limit=1`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+    return r.status;
+  };
+  const [anon, service] = await Promise.all([probe(env.SUPABASE_ANON_KEY), probe(env.SUPABASE_SERVICE_ROLE_KEY)]);
+  return json({ supabase_url: env.SUPABASE_URL, anon_key: anon, service_role_key: service });
+}
 
 // ---------- add village (Zupass-gated) ----------
 
@@ -104,8 +118,7 @@ async function addVillage(request, env, ctx) {
   if (dryRun) return json({ ok: true, dryRun: true, signer: pod.signerPublicKey, village: row });
 
   // 3. Insert (service role if configured, else anon — RLS decides)
-  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
-  const insert = async (payload) =>
+  const insertWith = (key, payload) =>
     fetch(`${env.SUPABASE_URL}/rest/v1/villages`, {
       method: "POST",
       headers: {
@@ -116,6 +129,15 @@ async function addVillage(request, env, ctx) {
       },
       body: JSON.stringify(payload),
     });
+  // Prefer the service role key; if it is missing or rejected (wrong project, rotated),
+  // fall back to the anon key so RLS decides.
+  const insert = async (payload) => {
+    if (env.SUPABASE_SERVICE_ROLE_KEY) {
+      const r = await insertWith(env.SUPABASE_SERVICE_ROLE_KEY, payload);
+      if (r.status !== 401 && r.status !== 403) return r;
+    }
+    return insertWith(env.SUPABASE_ANON_KEY, payload);
+  };
   let res = await insert(row);
   if (res.status === 400) {
     const err = await res.clone().json().catch(() => ({}));
