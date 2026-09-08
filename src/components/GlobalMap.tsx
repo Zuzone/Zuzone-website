@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, MessagesSquare, BookOpen } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
 import { ZuletterDialog } from "@/components/ZuletterDialog";
 import { CalendarFeedDialog } from "@/components/CalendarFeedDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AddVillageForm } from "@/components/villages/AddVillageForm";
 
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -456,6 +456,13 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
           {/* Desktop: inline buttons */}
           <div className="hidden sm:flex items-center gap-2">
+            <Link
+              to="/why-zuzalu"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+            >
+              <BookOpen className="h-4 w-4" />
+              Why Zuzalu
+            </Link>
             <button
               onClick={() => setManifestoOpen(true)}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
@@ -522,6 +529,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </PopoverTrigger>
               <PopoverContent align="end" className="w-48 p-2">
                 <div className="flex flex-col gap-1">
+                  <Link to="/why-zuzalu" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left">
+                    <BookOpen className="h-4 w-4" /> Why Zuzalu
+                  </Link>
                   <button
                     onClick={() => setManifestoOpen(true)}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
@@ -599,6 +609,14 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 List
               </ToggleGroupItem>
             </ToggleGroup>
+            <button
+              onClick={() => document.getElementById("zuthread")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+              title="Every village's X posts, newest first"
+            >
+              <MessagesSquare className="h-3.5 w-3.5" />
+              ZuThread
+            </button>
             <Button
               variant="ghost"
               size="sm"
@@ -676,6 +694,14 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 List
               </ToggleGroupItem>
             </ToggleGroup>
+            <button
+              onClick={() => document.getElementById("zuthread")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+              title="Every village's X posts, newest first"
+            >
+              <MessagesSquare className="h-3.5 w-3.5" />
+              ZuThread
+            </button>
             <Button
               variant="ghost"
               size="sm"

@@ -5,11 +5,13 @@
  *   GET  /calendar.ics        iCalendar feed of every pop-up city (subscribe in Google/Apple/Outlook)
  *   GET  /api/villages.json   public JSON of the directory
  *   POST /api/villages        add a village, gated by a Zupass-signed POD (verified here)
+ *   GET  /api/zuthread.json   every village's X posts, newest first (KV; refreshed on demand at most every 4h)
  *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
  */
 import { POD } from "@pcd/pod";
+import { refreshFeed } from "./zuthread.mjs";
 
-const RESERVED = new Set(["admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
+const RESERVED = new Set(["why-zuzalu", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
 const VILLAGE_FIELDS = "id,name,logo_url,thumbnail_url,center,dates,location,description,village_type,website_url,twitter_url,telegram_url,instagram_url,apply_url,updated_at";
 const CACHE_TTL = 300;
@@ -31,6 +33,7 @@ export default {
     if (path === "/calendar.ics") return calendarFeed(env, ctx, url.origin);
     if (path === "/api/villages.json") return villagesJson(env, ctx);
     if (path === "/api/_health") return health(env);
+    if (path === "/api/zuthread.json") return zuthreadJson(request, env, ctx);
 
     const slug = villageSlugFromPath(path);
     if (slug && wantsHtml(request)) {
@@ -193,6 +196,50 @@ function validateVillage(raw) {
       created_by: typeof raw.created_by === "string" && /^[0-9a-f-]{36}$/i.test(raw.created_by) ? raw.created_by : null,
     },
   };
+}
+
+// ---------- ZuThread ----------
+
+const ZUTHREAD_KEY = "feed:v1";
+const ZUTHREAD_LOCK = "refresh-lock";
+const ZUTHREAD_TTL_MS = 4 * 60 * 60 * 1000; // refresh at most every 4h (~$0.03 per refresh via monid)
+
+async function refreshZuthread(env, ctx) {
+  if (!env.MONID_API_KEY) return { skipped: "MONID_API_KEY not set" };
+  const villages = await fetchVillages(env, ctx);
+  const feed = await refreshFeed(villages, env.MONID_API_KEY);
+  // Keep the previous feed if every account failed (rate limit, outage)
+  if (feed.sources.length && feed.sources.every((s) => s.error)) return { skipped: "all sources failed", sample: feed.sources[0].error };
+  await env.ZUTHREAD.put(ZUTHREAD_KEY, JSON.stringify(feed));
+  return { ok: true, posts: feed.count };
+}
+
+/**
+ * Stale-while-revalidate: serve KV (or the static snapshot) immediately; if the feed is older
+ * than ZUTHREAD_TTL_MS and a monid key is configured, refresh in the background under a lock.
+ * No cron needed (the account's free cron quota is used up elsewhere).
+ */
+async function zuthreadJson(request, env, ctx) {
+  const headers = { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*", "cache-control": "public, max-age=300" };
+  let body = await env.ZUTHREAD.get(ZUTHREAD_KEY);
+  let source = "kv";
+  if (!body) {
+    const asset = await env.ASSETS.fetch(new Request(new URL("/zuthread.json", request.url)));
+    body = asset.ok ? await asset.text() : null;
+    source = "static";
+  }
+  let generatedAt = 0;
+  try { generatedAt = new Date(JSON.parse(body || "{}").generated_at || 0).getTime(); } catch { /* ignore */ }
+  const stale = !body || Date.now() - generatedAt > ZUTHREAD_TTL_MS;
+  if (stale && env.MONID_API_KEY) {
+    ctx.waitUntil((async () => {
+      if (await env.ZUTHREAD.get(ZUTHREAD_LOCK)) return;
+      await env.ZUTHREAD.put(ZUTHREAD_LOCK, "1", { expirationTtl: 600 });
+      try { await refreshZuthread(env, ctx); } finally { await env.ZUTHREAD.delete(ZUTHREAD_LOCK); }
+    })());
+  }
+  if (!body) return json({ generated_at: null, count: 0, sources: [], posts: [] });
+  return new Response(body, { headers: { ...headers, "x-zuthread-source": source, "x-zuthread-stale": String(stale) } });
 }
 
 // ---------- routing helpers ----------
