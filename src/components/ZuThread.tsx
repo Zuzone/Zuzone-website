@@ -127,7 +127,7 @@ const PostCard = ({ post }: { post: Post }) => {
  * ZuThread: every village's X posts in one chronological feed, newest first.
  * Data: /api/zuthread.json on the edge worker (KV, refreshed by cron; static snapshot fallback).
  */
-export const ZuThread = () => {
+export const ZuThread = ({ embedded = false }: { embedded?: boolean }) => {
   const [feed, setFeed] = useState<Feed | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [shown, setShown] = useState(PAGE);
@@ -140,34 +140,30 @@ export const ZuThread = () => {
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"));
   }, []);
 
-  // Deep link: /#zuthread scrolls here once the feed has rendered
-  useEffect(() => {
-    if (feed && window.location.hash === "#zuthread") {
-      document.getElementById("zuthread")?.scrollIntoView({ behavior: "auto" });
-    }
-  }, [feed]);
-
   const sources = useMemo(() => (feed ? feed.sources.filter((s) => !s.error && s.posts > 0) : []), [feed]);
   const posts = useMemo(() => {
     if (!feed) return [];
     return filter ? feed.posts.filter((p) => p.handle.toLowerCase() === filter) : feed.posts;
   }, [feed, filter]);
 
+  const Wrapper = embedded ? "div" : "section";
   return (
-    <section id="zuthread" className="border-t border-border bg-background scroll-mt-4">
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
+    <Wrapper id={embedded ? undefined : "zuthread"} className={embedded ? "bg-background" : "border-t border-border bg-background scroll-mt-4"}>
+      <div className={embedded ? "px-4 pb-6 pt-2 sm:px-6" : "mx-auto max-w-2xl px-4 py-10 sm:py-14"}>
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">ZuThread</h2>
+            <h2 className={`font-display font-semibold text-foreground ${embedded ? "text-2xl" : "text-3xl sm:text-4xl"}`}>ZuThread</h2>
             <p className="mt-1 text-sm text-muted-foreground sm:text-base">Every village's X posts, in one thread. Newest first.</p>
           </div>
-          <a href="#top" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
-            <ArrowUp className="h-3.5 w-3.5" /> Map
-          </a>
+          {!embedded && (
+            <a href="#top" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
+              <ArrowUp className="h-3.5 w-3.5" /> Map
+            </a>
+          )}
         </div>
 
         {sources.length > 0 && (
-          <div className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+          <div className={`mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] ${embedded ? "-mx-4 px-4 sm:-mx-6 sm:px-6" : "-mx-4 px-4"}`}>
             <button
               onClick={() => { setFilter(null); setShown(PAGE); }}
               className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${filter === null ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:bg-muted"}`}
@@ -211,6 +207,6 @@ export const ZuThread = () => {
           </div>
         )}
       </div>
-    </section>
+    </Wrapper>
   );
 };

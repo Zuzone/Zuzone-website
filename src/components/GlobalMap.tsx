@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, MessagesSquare, BookOpen } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
 import { ZuletterDialog } from "@/components/ZuletterDialog";
@@ -57,6 +57,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [eventsOpen, setEventsOpen] = useState(false);
   const [zuletterOpen, setZuletterOpen] = useState(false);
   const [calendarFeedOpen, setCalendarFeedOpen] = useState(false);
+
+  // Deep links: /#zuletter or /#zuthread open the Zuletter dialog (newsletter + ZuThread)
+  useEffect(() => {
+    if (/^#(zuletter|zuthread)$/.test(window.location.hash)) setZuletterOpen(true);
+  }, []);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen || calendarFeedOpen;
 
@@ -609,14 +614,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 List
               </ToggleGroupItem>
             </ToggleGroup>
-            <button
-              onClick={() => document.getElementById("zuthread")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-              title="Every village's X posts, newest first"
-            >
-              <MessagesSquare className="h-3.5 w-3.5" />
-              ZuThread
-            </button>
             <Button
               variant="ghost"
               size="sm"
@@ -694,14 +691,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 List
               </ToggleGroupItem>
             </ToggleGroup>
-            <button
-              onClick={() => document.getElementById("zuthread")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-              title="Every village's X posts, newest first"
-            >
-              <MessagesSquare className="h-3.5 w-3.5" />
-              ZuThread
-            </button>
             <Button
               variant="ghost"
               size="sm"
