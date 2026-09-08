@@ -140,6 +140,13 @@ export const ZuThread = () => {
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"));
   }, []);
 
+  // Deep link: /#zuthread scrolls here once the feed has rendered
+  useEffect(() => {
+    if (feed && window.location.hash === "#zuthread") {
+      document.getElementById("zuthread")?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [feed]);
+
   const sources = useMemo(() => (feed ? feed.sources.filter((s) => !s.error && s.posts > 0) : []), [feed]);
   const posts = useMemo(() => {
     if (!feed) return [];
