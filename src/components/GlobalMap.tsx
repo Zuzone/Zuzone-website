@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen, Activity } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsDialog } from "@/components/EventsDialog";
-import { ZuletterDialog } from "@/components/ZuletterDialog";
+import { ZupulseDialog } from "@/components/ZupulseDialog";
 import { CalendarFeedDialog } from "@/components/CalendarFeedDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { Link, useNavigate } from "react-router-dom";
@@ -55,15 +55,15 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [initialCenterSet, setInitialCenterSet] = useState(false);
   const [manifestoOpen, setManifestoOpen] = useState(false);
   const [eventsOpen, setEventsOpen] = useState(false);
-  const [zuletterOpen, setZuletterOpen] = useState(false);
+  const [zupulseOpen, setZupulseOpen] = useState(false);
   const [calendarFeedOpen, setCalendarFeedOpen] = useState(false);
 
-  // Deep links: /#zuletter or /#zuthread open the Zuletter dialog (newsletter + ZuThread)
+  // Deep links: /#zupulse (and the older #zuletter / #zuthread) open the Zupulse dialog (newsletter + ZuThread)
   useEffect(() => {
-    if (/^#(zuletter|zuthread)$/.test(window.location.hash)) setZuletterOpen(true);
+    if (/^#(zupulse|zuletter|zuthread)$/.test(window.location.hash)) setZupulseOpen(true);
   }, []);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const anyDialogOpen = manifestoOpen || eventsOpen || zuletterOpen || calendarFeedOpen;
+  const anyDialogOpen = manifestoOpen || eventsOpen || zupulseOpen || calendarFeedOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
@@ -453,10 +453,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </p>
           </div>
 
-          {/* Manifesto + Events + Zuletter dialogs + Social links */}
+          {/* Manifesto + Events + Zupulse dialogs + Social links */}
           <ManifestoDialog open={manifestoOpen} onOpenChange={setManifestoOpen} />
           <EventsDialog open={eventsOpen} onOpenChange={setEventsOpen} />
-          <ZuletterDialog open={zuletterOpen} onOpenChange={setZuletterOpen} />
+          <ZupulseDialog open={zupulseOpen} onOpenChange={setZupulseOpen} />
           <CalendarFeedDialog open={calendarFeedOpen} onOpenChange={setCalendarFeedOpen} villageCount={villages.length} />
 
           {/* Desktop: inline buttons */}
@@ -491,11 +491,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               Add to calendar
             </button>
             <button
-              onClick={() => setZuletterOpen(true)}
+              onClick={() => setZupulseOpen(true)}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
-              <ScrollText className="h-4 w-4" />
-              Zuletter
+              <Activity className="h-4 w-4" />
+              Zupulse
             </button>
             <a
               href="https://x.com/zuzones"
@@ -556,10 +556,10 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                     <CalendarPlus className="h-4 w-4" /> Add to calendar
                   </button>
                   <button
-                    onClick={() => setZuletterOpen(true)}
+                    onClick={() => setZupulseOpen(true)}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
-                    <ScrollText className="h-4 w-4" /> Zuletter
+                    <Activity className="h-4 w-4" /> Zupulse
                   </button>
                   <div className="h-px bg-border my-1" />
                   <a
