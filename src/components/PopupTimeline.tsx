@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronUp, ChevronDown, Calendar, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,8 +21,12 @@ interface PopupTimelineProps {
   isZoomedIn?: boolean;
   onVillageClick: (village: PopupVillage) => void;
   embedded?: boolean;
-  /** Embedded only: time flows top→bottom, villages become vertical bars in packed lanes. */
-  vertical?: boolean;
+  /** Embedded only: how many months fit the viewport. Undefined = all months fit (no scrolling). */
+  monthsVisible?: number;
+  /** How many months before the current one to include (scroll left to see them). */
+  pastMonths?: number;
+  /** How many months from the current one forward to include. */
+  futureMonths?: number;
 }
 
 // Parse date string to get start and end dates
@@ -113,24 +117,25 @@ const barColor = (id: string): string => {
   return BAR_PALETTE[h % BAR_PALETTE.length];
 };
 
-export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick, embedded = false, vertical = false }: PopupTimelineProps) => {
+export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onVillageClick, embedded = false, monthsVisible, pastMonths = 0, futureMonths = 12 }: PopupTimelineProps) => {
   const isMobile = useIsMobile();
   const [isManuallyExpanded, setIsManuallyExpanded] = useState(true);
 
   const isExpanded = isZoomedIn ? false : isManuallyExpanded;
 
+  const totalMonths = pastMonths + futureMonths;
   const { timelineStart, timelineEnd, months, todayPosition } = useMemo(() => {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 12, 0);
+    const start = new Date(now.getFullYear(), now.getMonth() - pastMonths, 1);
+    const end = new Date(start.getFullYear(), start.getMonth() + totalMonths, 0);
 
     const monthLabels: { label: string; position: number }[] = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < totalMonths; i++) {
       const month = new Date(start.getFullYear(), start.getMonth() + i, 1);
-      const position = (i / 12) * 100;
       monthLabels.push({
-        label: month.toLocaleDateString("en-US", { month: "short" }),
-        position,
+        // Show the year on January and on the first label so a long scroll stays legible
+        label: month.getMonth() === 0 || i === 0 ? month.toLocaleDateString("en-US", { month: "short", year: "2-digit" }) : month.toLocaleDateString("en-US", { month: "short" }),
+        position: (i / totalMonths) * 100,
       });
     }
 
@@ -138,7 +143,7 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
     const todayPos = ((now.getTime() - start.getTime()) / totalDuration) * 100;
 
     return { timelineStart: start, timelineEnd: end, months: monthLabels, todayPosition: Math.max(0, Math.min(100, todayPos)) };
-  }, []);
+  }, [pastMonths, totalMonths]);
 
   const villagePositions = useMemo(() => {
     return villages
@@ -155,9 +160,11 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
 
   const rows = useMemo(() => {
     const result: typeof villagePositions[] = [];
-    // Horizontal pills need ~60px of label; vertical bars only need a 40px thumb, so pack tighter.
-    const MIN_VISUAL_WIDTH_PCT = vertical ? 4 : 6;
-    const GAP_PCT = vertical ? 0.6 : 1.5;
+    // Pills need ~60px for a label. Percentages are of the whole strip, so scale them by how
+    // much of the strip is visible at once (a 4-of-18-month view makes each percent 4.5× wider).
+    const zoom = monthsVisible ? totalMonths / monthsVisible : 1;
+    const MIN_VISUAL_WIDTH_PCT = 6 / zoom;
+    const GAP_PCT = 1.5 / zoom;
 
     const sorted = [...villagePositions].sort(
       (a, b) => a.position.left - b.position.left
@@ -196,145 +203,69 @@ export const PopupTimeline = ({ villages, activeVillage, isZoomedIn = false, onV
     });
 
     return result;
-  }, [villagePositions, vertical]);
+  }, [villagePositions, monthsVisible, totalMonths]);
 
-  // ============ EMBEDDED VERTICAL LAYOUT (mobile bottom panel) ============
-  // Time runs downward: one band per month, "Today" as a horizontal rule near the top,
-  // villages as vertical bars packed into lanes (same packing as the horizontal Gantt).
-  if (embedded && vertical) {
-    const MONTH_PX = 84;
-    const totalPx = MONTH_PX * 12;
-    const laneCount = Math.max(1, rows.length);
-    const barHeightPx = (widthPct: number) => (widthPct / 100) * totalPx;
+  // Start the scrollable strip at the current month; the past sits to the left.
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || !monthsVisible || pastMonths === 0) return;
+    el.scrollLeft = (pastMonths / totalMonths) * el.scrollWidth;
+  }, [monthsVisible, pastMonths, totalMonths, rows.length]);
+
+  // ============ EMBEDDED LAYOUT (bottom panel; horizontally scrollable on phones) ============
+  if (embedded) {
+    const stripWidth = monthsVisible ? `${(totalMonths / monthsVisible) * 100}%` : "100%";
+    const monthWidth = `${100 / totalMonths}%`;
     return (
-      <div className="h-full w-full overflow-y-auto overflow-x-hidden px-3 pt-3 pb-4 overscroll-contain">
-        <div className="relative flex gap-1.5" style={{ height: `${totalPx}px` }}>
-          {/* Months (Y axis) */}
-          <div className="relative w-8 shrink-0">
+      <div ref={scrollerRef} className="w-full max-h-full overflow-x-auto overflow-y-auto overscroll-x-contain px-3 pt-2 pb-3 [scrollbar-width:thin]">
+        <div style={{ width: stripWidth }}>
+          <div className="relative mb-2 h-5">
             {months.map((month, i) => (
               <div
                 key={i}
-                className="absolute left-0 pt-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
-                style={{ top: `${month.position}%` }}
+                className="absolute text-[10px] font-medium text-muted-foreground"
+                style={{ left: `${month.position}%` }}
               >
                 {month.label}
               </div>
             ))}
           </div>
-
-          {/* Track: lanes fill the width, but never get narrower than a thumb */}
-          <div className="relative min-w-0 flex-1 rounded-lg bg-secondary/30">
-            {/* Today rule sits above the (possibly horizontally scrolling) lanes */}
-            <div className="pointer-events-none absolute left-0 right-0 z-20 h-0.5 bg-primary" style={{ top: `${todayPosition}%` }}>
-              <div className="absolute left-1 top-1/2 -translate-y-1/2 rounded bg-primary px-1 py-0.5 text-[9px] font-medium text-primary-foreground shadow-sm">
+          <div className="relative rounded-lg bg-secondary/30" style={{ minHeight: `${Math.max(1, rows.length) * 30 + 8}px` }}>
+            <div className="absolute inset-0 flex">
+              {months.map((_, i) => (
+                <div key={i} className="h-full border-l border-border/30" style={{ width: monthWidth }} />
+              ))}
+            </div>
+            <div className="absolute top-0 z-10 h-full w-0.5 bg-primary" style={{ left: `${todayPosition}%` }}>
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primary px-1 py-0.5 text-[9px] font-medium text-primary-foreground">
                 Today
               </div>
             </div>
-            <div className="h-full overflow-x-auto overflow-y-hidden">
-            <div
-              className="relative grid h-full"
-              style={{ gridTemplateColumns: `repeat(${laneCount}, minmax(44px, 80px))`, minWidth: `${laneCount * 44}px` }}
-            >
-              {/* Month bands */}
-              <div className="pointer-events-none absolute inset-0">
-                {months.map((_, i) => (
-                  <div key={i} className="absolute left-0 right-0 border-t border-border/40" style={{ top: `${(i / 12) * 100}%` }} />
+            {rows.map((row, rowIndex) => (
+              <div key={rowIndex} className="relative h-7">
+                {row.map(({ village, position }) => (
+                  <button
+                    key={village.id}
+                    onClick={() => onVillageClick(village)}
+                    className={`absolute top-1 flex h-5 items-center gap-1 overflow-hidden rounded-full px-2 text-[11px] font-medium text-white transition-all active:scale-95 ${
+                      activeVillage.id === village.id ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""
+                    }`}
+                    style={{
+                      left: `${position.left}%`,
+                      width: `${position.width}%`,
+                      minWidth: "56px",
+                      backgroundColor: barColor(village.id),
+                    }}
+                    title={`${village.name}\n${village.dates}`}
+                  >
+                    <img src={village.logo} alt="" className="h-3.5 w-3.5 shrink-0 rounded-sm" />
+                    <span className="truncate">{village.name}</span>
+                  </button>
                 ))}
               </div>
-
-              {/* Lanes */}
-              {rows.map((row, laneIndex) => (
-                <div key={laneIndex} className="relative h-full">
-                  {row.map(({ village, position }) => {
-                    const px = barHeightPx(position.width);
-                    const showLabel = px >= 64;
-                    return (
-                      <button
-                        key={village.id}
-                        onClick={() => onVillageClick(village)}
-                        className={`absolute left-1 right-1 z-10 flex flex-col items-center gap-1 overflow-hidden rounded-xl px-0.5 py-1.5 text-white shadow-sm transition-all active:scale-95 ${
-                          activeVillage.id === village.id ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""
-                        }`}
-                        style={{
-                          top: `${position.left}%`,
-                          height: `${position.width}%`,
-                          minHeight: "40px",
-                          backgroundColor: barColor(village.id),
-                        }}
-                        title={`${village.name}\n${village.dates}`}
-                        aria-label={`${village.name}, ${village.dates}`}
-                      >
-                        <img src={village.logo} alt="" className="h-5 w-5 shrink-0 rounded-md bg-white/80 object-cover" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
-                        {showLabel && (
-                          <span
-                            className="min-h-0 flex-1 truncate text-[10px] font-medium leading-none"
-                            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-                          >
-                            {village.name}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ============ EMBEDDED LAYOUT (used inside mobile bottom panel) ============
-  if (embedded) {
-    return (
-      <div className="w-full overflow-y-auto px-3 pt-2 pb-3 max-h-full">
-        <div className="relative mb-2 h-5">
-          {months.map((month, i) => (
-            <div
-              key={i}
-              className="absolute text-[10px] font-medium text-muted-foreground"
-              style={{ left: `${month.position}%` }}
-            >
-              {month.label}
-            </div>
-          ))}
-        </div>
-        <div className="relative rounded-lg bg-secondary/30" style={{ minHeight: `${Math.max(1, rows.length) * 30 + 8}px` }}>
-          <div className="absolute inset-0 flex">
-            {months.map((_, i) => (
-              <div key={i} className="h-full border-l border-border/30" style={{ width: `${100 / 12}%` }} />
             ))}
           </div>
-          <div className="absolute top-0 z-10 h-full w-0.5 bg-primary" style={{ left: `${todayPosition}%` }}>
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-primary px-1 py-0.5 text-[9px] font-medium text-primary-foreground">
-              Today
-            </div>
-          </div>
-          {rows.map((row, rowIndex) => (
-            <div key={rowIndex} className="relative h-7">
-              {row.map(({ village, position }) => (
-                <button
-                  key={village.id}
-                  onClick={() => onVillageClick(village)}
-                  className={`absolute top-1 flex h-5 items-center gap-1 overflow-hidden rounded-full px-2 text-[11px] font-medium text-white transition-all active:scale-95 ${
-                    activeVillage.id === village.id ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""
-                  }`}
-                  style={{
-                    left: `${position.left}%`,
-                    width: `${position.width}%`,
-                    minWidth: "56px",
-                    backgroundColor: barColor(village.id),
-                  }}
-                  title={`${village.name}\n${village.dates}`}
-                >
-                  <img src={village.logo} alt="" className="h-3.5 w-3.5 shrink-0 rounded-sm" />
-                  <span className="truncate">{village.name}</span>
-                </button>
-              ))}
-            </div>
-          ))}
         </div>
       </div>
     );
