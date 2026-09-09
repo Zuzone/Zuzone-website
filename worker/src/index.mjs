@@ -11,7 +11,7 @@
 import { POD } from "@pcd/pod";
 import { refreshFeed } from "./zuthread.mjs";
 
-const RESERVED = new Set(["why-zuzalu", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
+const RESERVED = new Set(["why-zuzalu", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
 const VILLAGE_FIELDS = "id,name,logo_url,thumbnail_url,center,dates,location,description,village_type,website_url,twitter_url,telegram_url,instagram_url,apply_url,updated_at";
 const CACHE_TTL = 300;
@@ -30,6 +30,7 @@ export default {
       return env.ASSETS.fetch(request);
     }
 
+    if (path === "/dossier" || path === "/dossier/") return Response.redirect(`${url.origin}/why-zuzalu#dossier`, 301);
     if (path === "/calendar.ics") return calendarFeed(env, ctx, url.origin);
     if (path === "/api/villages.json") return villagesJson(env, ctx);
     if (path === "/api/_health") return health(env);

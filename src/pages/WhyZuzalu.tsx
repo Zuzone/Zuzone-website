@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ExternalLink, Sparkles } from "lucide-react";
 import { PUBLIC_SITE_URL } from "@/lib/publicSite";
+import { DossierSection } from "@/components/why/DossierSection";
 
 /**
  * Why Zuzalu — an interactive reading of Vitalik Buterin's essay
  * "Why I Built Zuzalu" (Palladium Magazine, October 2023).
- * All prose here is paraphrase; only the pull-quotes are verbatim and each is under 15 words.
+ * Part I: the argument (interactive). Part II: the visual record and 2022–now timeline (DossierSection).
+ * All essay prose here is paraphrase; only the pull-quotes are verbatim and each is under 15 words.
  */
 
 const ESSAY_URL = "https://www.palladiummag.com/2023/10/06/why-i-built-zuzalu/";
@@ -269,7 +271,9 @@ const WhyZuzalu = () => {
   const [villageCount, setVillageCount] = useState<number | null>(null);
   useEffect(() => {
     document.title = "Why Zuzalu — Zuzone";
-    window.scrollTo(0, 0);
+    const target = window.location.hash ? document.querySelector(window.location.hash) : null;
+    if (target) setTimeout(() => target.scrollIntoView({ behavior: "auto" }), 50);
+    else window.scrollTo(0, 0);
     fetch(`${PUBLIC_SITE_URL}/api/villages.json`).then((r) => r.json()).then((d) => setVillageCount(d.count)).catch(() => {});
     return () => { document.title = "Zuzone"; };
   }, []);
@@ -282,9 +286,14 @@ const WhyZuzalu = () => {
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold hover:underline">
             <ArrowLeft className="h-4 w-4" /> Zuzone
           </Link>
-          <a href={ESSAY_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            Original essay <ExternalLink className="h-3 w-3" />
-          </a>
+          <nav className="flex items-center gap-3 text-xs text-muted-foreground">
+            <a href="#essay" className="hover:text-foreground">Essay</a>
+            <a href="#dossier" className="hover:text-foreground">Photos</a>
+            <a href="#timeline" className="hover:text-foreground">Timeline</a>
+            <a href={ESSAY_URL} target="_blank" rel="noopener noreferrer" className="hidden items-center gap-1 hover:text-foreground sm:inline-flex">
+              Original <ExternalLink className="h-3 w-3" />
+            </a>
+          </nav>
         </div>
       </header>
 
@@ -300,7 +309,18 @@ const WhyZuzalu = () => {
           <Stat n={100} prefix="~" label="apartments, one off-season resort" />
           <Stat n={8} label="organisers by February (four in January)" />
         </div>
+        <a href="#dossier" className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 hover:bg-muted">
+          <span>
+            <span className="block font-semibold">Part I is the argument. Part II is what it looked like.</span>
+            <span className="block text-sm text-muted-foreground">Photos and video from Montenegro 2023, ZuConnect Istanbul and the Chiang Mai Archipelago, plus the 2022–2026 timeline, further down this page.</span>
+          </span>
+          <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-primary" />
+        </a>
       </section>
+
+      <div id="essay" className="mx-auto max-w-3xl px-4 pt-6 scroll-mt-20">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Part I · The argument</p>
+      </div>
 
       <Section n="01" title="Places aren't fixed" lede="We treat cities as given: San Francisco means one culture and cost, Berlin another, and you pick your tradeoff. The essay's opening move is to ask whether an online tribe could instead materialise somewhere on purpose. The thinkers behind that question: Michel Maffesoli's tribes, David de Ugarte's phyles, Balaji Srinivasan's network state.">
         <div className="grid gap-3 sm:grid-cols-3">
@@ -359,6 +379,8 @@ const WhyZuzalu = () => {
         <Ladder />
         <div className="mt-4"><Quote q="Would 'Zuzaluism' meet the same fate?" ctx="on movements that grow fast and then plateau as niches" /></div>
       </Section>
+
+      <DossierSection />
 
       <section className="border-t border-border bg-card/60">
         <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
