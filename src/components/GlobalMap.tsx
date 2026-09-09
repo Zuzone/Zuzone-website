@@ -3,9 +3,9 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen, Activity } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { EventsDialog } from "@/components/EventsDialog";
-import { ZupulseDialog } from "@/components/ZupulseDialog";
-import { CalendarFeedDialog } from "@/components/CalendarFeedDialog";
+import { EventsContent } from "@/components/EventsDialog";
+import { ZupulseContent } from "@/components/ZupulseDialog";
+import { CalendarFeedContent } from "@/components/CalendarFeedDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { Link, useNavigate } from "react-router-dom";
 import { AddVillageForm } from "@/components/villages/AddVillageForm";
@@ -17,7 +17,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserCurrentVillage } from "@/hooks/useUserCurrentVillage";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { ManifestoDialog } from "@/components/ManifestoDialog";
+import { ManifestoContent } from "@/components/ManifestoDialog";
+import { SidePanel, type PanelKey } from "@/components/SidePanel";
 import { useIsMobile, useIsPhone } from "@/hooks/use-mobile";
 
 
@@ -53,17 +54,15 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   const [viewMode, setViewMode] = useState<"gantt" | "list">("gantt");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [initialCenterSet, setInitialCenterSet] = useState(false);
-  const [manifestoOpen, setManifestoOpen] = useState(false);
-  const [eventsOpen, setEventsOpen] = useState(false);
-  const [zupulseOpen, setZupulseOpen] = useState(false);
-  const [calendarFeedOpen, setCalendarFeedOpen] = useState(false);
+  // Header sections open in the right-hand panel; clicking the active one closes it
+  const [panel, setPanel] = useState<PanelKey | null>(null);
+  const togglePanel = useCallback((key: PanelKey) => setPanel((p) => (p === key ? null : key)), []);
 
   // Deep links: /#zupulse (and the older #zuletter / #zuthread) open the Zupulse dialog (newsletter + ZuThread)
   useEffect(() => {
-    if (/^#(zupulse|zuletter|zuthread)$/.test(window.location.hash)) setZupulseOpen(true);
+    if (/^#(zupulse|zuletter|zuthread)$/.test(window.location.hash)) setPanel("zupulse");
   }, []);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const anyDialogOpen = manifestoOpen || eventsOpen || zupulseOpen || calendarFeedOpen;
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
@@ -399,8 +398,26 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     return () => clearTimeout(t);
   }, [isMobile]);
 
+  // Keep Mapbox sized to its container when the side panel opens or closes
+  const mapArea = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = mapArea.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => map.current?.resize());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // The panel opens instantly, but give layout a tick before asking Mapbox to resize
+  useEffect(() => {
+    const t = setTimeout(() => map.current?.resize(), 50);
+    return () => clearTimeout(t);
+  }, [panel]);
+
+  const PANEL_TITLES: Record<PanelKey, string> = { manifesto: "Manifesto", events: "Events", calendar: "Add to calendar", zupulse: "Zupulse" };
+
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ touchAction: 'manipulation', overscrollBehavior: 'contain' }}>
+    <div className="flex h-full w-full overflow-hidden">
+    <div ref={mapArea} className="relative h-full min-w-0 flex-1 overflow-hidden" style={{ touchAction: 'manipulation', overscrollBehavior: 'contain' }}>
       <div ref={mapContainer} className="absolute inset-0 z-0 isolate" />
 
       {mapError && (
@@ -430,7 +447,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       {/* Header overlay */}
       <div className="absolute left-0 right-0 top-0 z-10 pointer-events-none bg-gradient-to-b from-background/90 via-background/60 to-transparent p-3 pb-12 sm:p-4 sm:pb-16 md:p-6 md:pb-20">
         <div className="flex items-start justify-between pointer-events-auto">
-          <div className={`flex flex-col gap-1 w-fit transition-opacity ${anyDialogOpen ? 'invisible opacity-0' : ''}`}>
+          <div className="flex flex-col gap-1 w-fit">
             <div className="flex items-center gap-2">
               <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
                 Zuzone
@@ -453,11 +470,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </p>
           </div>
 
-          {/* Manifesto + Events + Zupulse dialogs + Social links */}
-          <ManifestoDialog open={manifestoOpen} onOpenChange={setManifestoOpen} />
-          <EventsDialog open={eventsOpen} onOpenChange={setEventsOpen} />
-          <ZupulseDialog open={zupulseOpen} onOpenChange={setZupulseOpen} />
-          <CalendarFeedDialog open={calendarFeedOpen} onOpenChange={setCalendarFeedOpen} villageCount={villages.length} />
 
           {/* Desktop: inline buttons */}
           <div className="hidden sm:flex items-center gap-2">
@@ -469,21 +481,21 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               Why Zuzalu
             </Link>
             <button
-              onClick={() => setManifestoOpen(true)}
+              onClick={() => togglePanel("manifesto")}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <ScrollText className="h-4 w-4" />
               Manifesto
             </button>
             <button
-              onClick={() => setEventsOpen(true)}
+              onClick={() => togglePanel("events")}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <Calendar className="h-4 w-4" />
               Events
             </button>
             <button
-              onClick={() => setCalendarFeedOpen(true)}
+              onClick={() => togglePanel("calendar")}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
               title="Subscribe to every pop-up city as a calendar feed"
             >
@@ -491,7 +503,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               Add to calendar
             </button>
             <button
-              onClick={() => setZupulseOpen(true)}
+              onClick={() => togglePanel("zupulse")}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <Activity className="h-4 w-4" />
@@ -538,25 +550,25 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                     <BookOpen className="h-4 w-4" /> Why Zuzalu
                   </Link>
                   <button
-                    onClick={() => setManifestoOpen(true)}
+                    onClick={() => togglePanel("manifesto")}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
                     <ScrollText className="h-4 w-4" /> Manifesto
                   </button>
                   <button
-                    onClick={() => setEventsOpen(true)}
+                    onClick={() => togglePanel("events")}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
                     <Calendar className="h-4 w-4" /> Events
                   </button>
                   <button
-                    onClick={() => setCalendarFeedOpen(true)}
+                    onClick={() => togglePanel("calendar")}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
                     <CalendarPlus className="h-4 w-4" /> Add to calendar
                   </button>
                   <button
-                    onClick={() => setZupulseOpen(true)}
+                    onClick={() => togglePanel("zupulse")}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
                     <Activity className="h-4 w-4" /> Zupulse
@@ -596,7 +608,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
 
       {/* Desktop: bottom panel with toggle + gantt/list */}
-      {!isMobile && !anyDialogOpen && (
+      {!isMobile && (
         <div className="absolute left-0 right-0 bottom-0 max-h-56 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
           <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50 relative">
             <ToggleGroup
@@ -751,6 +763,14 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
         </div>
 
       )}
+    </div>
+
+    <SidePanel open={panel !== null} title={panel ? PANEL_TITLES[panel] : ""} onClose={() => setPanel(null)}>
+      {panel === "manifesto" && <ManifestoContent />}
+      {panel === "events" && <EventsContent />}
+      {panel === "calendar" && <CalendarFeedContent villageCount={villages.length} />}
+      {panel === "zupulse" && <ZupulseContent />}
+    </SidePanel>
     </div>
   );
 };

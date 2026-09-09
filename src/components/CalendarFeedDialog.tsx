@@ -13,7 +13,8 @@ interface CalendarFeedDialogProps {
  * Lets a visitor subscribe to every pop-up city as a live calendar feed.
  * The feed itself is generated at the edge (worker/src/index.mjs → /calendar.ics).
  */
-export const CalendarFeedDialog = ({ open, onOpenChange, villageCount }: CalendarFeedDialogProps) => {
+/** Subscribe rows (Google / webcal / copy), used by the side panel and the legacy dialog. */
+export const CalendarFeedContent = ({ villageCount }: { villageCount?: number }) => {
   const [copied, setCopied] = useState(false);
 
   const copyFeed = async () => {
@@ -30,20 +31,16 @@ export const CalendarFeedDialog = ({ open, onOpenChange, villageCount }: Calenda
     "flex items-center justify-between gap-3 w-full px-4 py-3 rounded-xl border border-border bg-muted/40 hover:bg-muted transition-colors text-left";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-display text-2xl flex items-center gap-2">
-            <CalendarPlus className="h-5 w-5 text-primary" />
-            Every pop-up city, in your calendar
-          </DialogTitle>
-          <DialogDescription>
-            One subscription, {villageCount ? `${villageCount} villages` : "all villages"} as all-day events. New pop-ups
-            appear automatically. Nothing to install.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-2 pt-1">
+    <div className="px-4 py-4 sm:px-5">
+      <p className="flex items-center gap-2 font-display text-xl font-semibold">
+        <CalendarPlus className="h-5 w-5 text-primary" />
+        Every pop-up city, in your calendar
+      </p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        One subscription, {villageCount ? `${villageCount} villages` : "all villages"} as all-day events. New pop-ups
+        appear automatically. Nothing to install.
+      </p>
+      <div className="flex flex-col gap-2 pt-4">
           <a href={GOOGLE_CALENDAR_SUBSCRIBE_URL} target="_blank" rel="noopener noreferrer" className={rowClass}>
             <span>
               <span className="block font-semibold text-sm">Google Calendar</span>
@@ -65,8 +62,16 @@ export const CalendarFeedDialog = ({ open, onOpenChange, villageCount }: Calenda
             </span>
             {copied ? <Check className="h-4 w-4 shrink-0 text-primary" /> : <Copy className="h-4 w-4 shrink-0 text-muted-foreground" />}
           </button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
+
+export const CalendarFeedDialog = ({ open, onOpenChange, villageCount }: CalendarFeedDialogProps) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="max-w-md p-0">
+      <DialogHeader className="sr-only"><DialogTitle>Calendar feed</DialogTitle><DialogDescription>Subscribe to every pop-up city</DialogDescription></DialogHeader>
+      <CalendarFeedContent villageCount={villageCount} />
+    </DialogContent>
+  </Dialog>
+);

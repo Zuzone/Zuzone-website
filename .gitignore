@@ -28,3 +28,4 @@ supabase/.branches
 supabase/.temp
 supabase/tmp
 
+.claude/

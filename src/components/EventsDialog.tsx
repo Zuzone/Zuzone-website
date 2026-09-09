@@ -31,29 +31,26 @@ const EVENTS = [
   },
 ];
 
-export const EventsDialog = ({ open, onOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) => {
+const useLumaCheckout = (active: boolean) => {
   useEffect(() => {
-    if (!open) return;
+    if (!active) return;
     if (document.getElementById("luma-checkout")) return;
     const script = document.createElement("script");
     script.id = "luma-checkout";
     script.src = "https://embed.lu.ma/checkout-button.js";
     script.async = true;
     document.body.appendChild(script);
-  }, [open]);
+  }, [active]);
+};
 
+/** Event list with Luma checkout buttons, used by the side panel (and the legacy dialog below). */
+export const EventsContent = () => {
+  useLumaCheckout(true);
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[90vw] p-0 gap-0 border border-border bg-background max-h-[80vh] flex flex-col">
-        <DialogTitle className="sr-only">Zuzalu Events</DialogTitle>
-        <div className="flex flex-col items-center gap-2 p-4 border-b border-border">
-          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full shadow-sm">
-            Demo Embedded
-          </div>
-          <h2 className="text-lg font-semibold text-foreground">Zuzalu Events</h2>
-        </div>
-
-        <ScrollArea className="flex-1">
+    <div>
+      <div className="flex items-center gap-2 px-4 pt-4">
+        <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full shadow-sm">Demo Embedded</span>
+      </div>
           <div className="p-4 space-y-3">
             {EVENTS.map((event) => (
               <div
@@ -78,7 +75,17 @@ export const EventsDialog = ({ open, onOpenChange }: { open?: boolean; onOpenCha
               </div>
             ))}
           </div>
-        </ScrollArea>
+    </div>
+  );
+};
+
+export const EventsDialog = ({ open, onOpenChange }: { open?: boolean; onOpenChange?: (open: boolean) => void } = {}) => {
+  useLumaCheckout(!!open);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md w-[90vw] p-0 gap-0 border border-border bg-background max-h-[80vh] flex flex-col">
+        <DialogTitle className="sr-only">Zuzalu Events</DialogTitle>
+        <ScrollArea className="flex-1"><EventsContent /></ScrollArea>
       </DialogContent>
     </Dialog>
   );
