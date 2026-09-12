@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUp, ExternalLink, Heart, MessageCircle, Play, Repeat2 } from "lucide-react";
+import { ArrowUp, ExternalLink, Heart, MessageCircle, Play, RefreshCw, Repeat2 } from "lucide-react";
 import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 import { timeAgo } from "@/lib/timeAgo";
 
@@ -127,18 +127,81 @@ const PostCard = ({ post }: { post: Post }) => {
  * ZuThread: every village's X posts in one chronological feed, newest first.
  * Data: /api/zuthread.json on the edge worker (KV, refreshed by cron; static snapshot fallback).
  */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export const ZuThread = ({ embedded = false }: { embedded?: boolean }) => {
   const [feed, setFeed] = useState<Feed | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [shown, setShown] = useState(PAGE);
   const [filter, setFilter] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const alive = useRef(true);
+  useEffect(() => () => { alive.current = false; }, []);
+
+  /** Load the feed, optionally bypassing the edge cache after a refresh. */
+  const load = useCallback(async (bust = false) => {
+    const url = `${PUBLIC_SITE_URL}/api/zuthread.json${bust ? `?t=${Date.now()}` : ""}`;
+    const res = await fetch(url, bust ? { cache: "no-store" } : undefined);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data: Feed = await res.json();
+    if (alive.current) setFeed(data);
+    return data;
+  }, []);
 
   useEffect(() => {
-    fetch(`${PUBLIC_SITE_URL}/api/zuthread.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then(setFeed)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"));
-  }, []);
+    load().catch((e) => setError(e instanceof Error ? e.message : "Failed to load"));
+  }, [load]);
+
+  /**
+   * Ask the worker to pull every village's timeline again. The pull runs server-side in the
+   * background (it costs real money, so it is rate limited there), and we follow its status.
+   */
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    setNote(null);
+    const before = feed?.generated_at ?? null;
+    try {
+      const res = await fetch(`${PUBLIC_SITE_URL}/api/zuthread/refresh`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+
+      if (res.status === 503) {
+        setNote("Live refresh isn't switched on for this site yet.");
+        return;
+      }
+      if (res.status === 429) {
+        const mins = Math.max(1, Math.ceil((body.retry_after_s || 60) / 60));
+        setNote(body.reason === "daily_cap" ? "Daily refresh limit reached." : `Just refreshed. Try again in ${mins} min.`);
+        return;
+      }
+      if (!res.ok && res.status !== 202) {
+        setNote(body.error || `Refresh failed (${res.status}).`);
+        return;
+      }
+
+      // Poll until the worker reports done, then reload the feed past the cache
+      const deadline = Date.now() + 150_000;
+      while (Date.now() < deadline && alive.current) {
+        await sleep(3000);
+        const st = await fetch(`${PUBLIC_SITE_URL}/api/zuthread/status`, { cache: "no-store" }).then((r) => r.json()).catch(() => null);
+        if (!st) continue;
+        if (st.state === "done") {
+          const data = await load(true);
+          setNote(data.generated_at && data.generated_at !== before ? null : "No new posts.");
+          return;
+        }
+        if (st.state === "error") {
+          setNote(st.error || "Refresh failed.");
+          return;
+        }
+      }
+      setNote("Still refreshing. Give it a minute and reload.");
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : "Refresh failed.");
+    } finally {
+      if (alive.current) setRefreshing(false);
+    }
+  }, [feed?.generated_at, load]);
 
   const sources = useMemo(() => (feed ? feed.sources.filter((s) => !s.error && s.posts > 0) : []), [feed]);
   const posts = useMemo(() => {
@@ -188,9 +251,22 @@ export const ZuThread = ({ embedded = false }: { embedded?: boolean }) => {
         )}
 
         {feed && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            {posts.length} posts · {sources.length} accounts{feed.generated_at ? ` · updated ${timeAgo(feed.generated_at)} ago` : ""}
-          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-xs text-muted-foreground">
+              {posts.length} posts · {sources.length} accounts{feed.generated_at ? ` · updated ${timeAgo(feed.generated_at)} ago` : ""}
+            </p>
+            <button
+              type="button"
+              onClick={refresh}
+              disabled={refreshing}
+              title="Pull the latest posts from every village"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Refreshing…" : "Refresh"}
+            </button>
+            {note && <span className="text-xs text-muted-foreground">{note}</span>}
+          </div>
         )}
 
         <div className="mt-5 space-y-3">

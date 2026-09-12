@@ -6,6 +6,7 @@
  *   GET  /api/villages.json   public JSON of the directory
  *   POST /api/villages        add a village, gated by a Zupass-signed POD (verified here)
  *   GET  /api/zuthread.json   every village's X posts, newest first (KV; refreshed on demand at most every 4h)
+ *   POST /api/zuthread/refresh  start a manual refresh (rate-limited); GET .../status to follow it
  *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
  */
 import { POD } from "@pcd/pod";
@@ -26,6 +27,11 @@ export default {
       if (request.method === "POST") return addVillage(request, env, ctx);
     }
 
+    if (path === "/api/zuthread/refresh") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+      if (request.method === "POST") return zuthreadRefresh(env, ctx);
+    }
+
     if (request.method !== "GET" && request.method !== "HEAD") {
       return env.ASSETS.fetch(request);
     }
@@ -35,6 +41,7 @@ export default {
     if (path === "/api/villages.json") return villagesJson(env, ctx);
     if (path === "/api/_health") return health(env);
     if (path === "/api/zuthread.json") return zuthreadJson(request, env, ctx);
+    if (path === "/api/zuthread/status") return zuthreadStatus(env);
 
     const slug = villageSlugFromPath(path);
     if (slug && wantsHtml(request)) {
@@ -203,7 +210,12 @@ function validateVillage(raw) {
 
 const ZUTHREAD_KEY = "feed:v1";
 const ZUTHREAD_LOCK = "refresh-lock";
-const ZUTHREAD_TTL_MS = 4 * 60 * 60 * 1000; // refresh at most every 4h (~$0.03 per refresh via monid)
+const ZUTHREAD_STATUS = "refresh-status";
+const ZUTHREAD_STAMP = "refresh-stamp";
+const ZUTHREAD_TTL_MS = 4 * 60 * 60 * 1000; // auto-refresh at most every 4h (~$0.03 per refresh via monid)
+// The refresh button is public, and every press costs real money, so it is rate limited twice:
+const ZUTHREAD_COOLDOWN_MS = 10 * 60 * 1000; // one manual refresh per 10 minutes, site-wide
+const ZUTHREAD_DAILY_CAP = 20; // and at most 20 a day (~$0.60 ceiling)
 
 async function refreshZuthread(env, ctx) {
   if (!env.MONID_API_KEY) return { skipped: "MONID_API_KEY not set" };
@@ -212,7 +224,70 @@ async function refreshZuthread(env, ctx) {
   // Keep the previous feed if every account failed (rate limit, outage)
   if (feed.sources.length && feed.sources.every((s) => s.error)) return { skipped: "all sources failed", sample: feed.sources[0].error };
   await env.ZUTHREAD.put(ZUTHREAD_KEY, JSON.stringify(feed));
-  return { ok: true, posts: feed.count };
+  return { ok: true, posts: feed.count, sources: feed.sources.filter((x) => !x.error).length };
+}
+
+async function setRefreshStatus(env, patch) {
+  await env.ZUTHREAD.put(ZUTHREAD_STATUS, JSON.stringify({ at: new Date().toISOString(), ...patch }), { expirationTtl: 86400 });
+}
+
+/** GET /api/zuthread/status — how the last (or running) refresh is doing. */
+async function zuthreadStatus(env) {
+  const raw = (await env.ZUTHREAD.get(ZUTHREAD_STATUS)) || '{"state":"idle"}';
+  const last = Number((await env.ZUTHREAD.get(ZUTHREAD_STAMP)) || 0);
+  const cooling = Math.max(0, Math.ceil((last + ZUTHREAD_COOLDOWN_MS - Date.now()) / 1000));
+  return new Response(JSON.stringify({ ...JSON.parse(raw), configured: !!env.MONID_API_KEY, retry_after_s: cooling }), {
+    headers: { "content-type": "application/json; charset=utf-8", ...CORS, "cache-control": "no-store" },
+  });
+}
+
+/**
+ * POST /api/zuthread/refresh — pull every village's timeline again, now.
+ * Pulling ~20 accounts takes longer than one request may last, so the work runs in the
+ * background and the client follows GET /api/zuthread/status.
+ */
+async function zuthreadRefresh(env, ctx) {
+  if (!env.MONID_API_KEY) {
+    return json({ error: "Live refresh is not configured on this deployment.", reason: "not_configured" }, 503, CORS);
+  }
+
+  const now = Date.now();
+  const last = Number((await env.ZUTHREAD.get(ZUTHREAD_STAMP)) || 0);
+  const waitS = Math.ceil((last + ZUTHREAD_COOLDOWN_MS - now) / 1000);
+  if (waitS > 0) {
+    return json({ error: "The thread was just refreshed.", reason: "cooldown", retry_after_s: waitS }, 429, { ...CORS, "retry-after": String(waitS) });
+  }
+
+  const capKey = `spend:${new Date().toISOString().slice(0, 10)}`;
+  const used = Number((await env.ZUTHREAD.get(capKey)) || 0);
+  if (used >= ZUTHREAD_DAILY_CAP) {
+    return json({ error: "Daily refresh limit reached. The thread still updates on its own.", reason: "daily_cap" }, 429, CORS);
+  }
+
+  if (await env.ZUTHREAD.get(ZUTHREAD_LOCK)) {
+    return json({ started: false, reason: "busy", state: "running" }, 202, CORS);
+  }
+
+  await env.ZUTHREAD.put(ZUTHREAD_LOCK, "1", { expirationTtl: 600 });
+  await env.ZUTHREAD.put(ZUTHREAD_STAMP, String(now));
+  await env.ZUTHREAD.put(capKey, String(used + 1), { expirationTtl: 172800 });
+  await setRefreshStatus(env, { state: "running", started_at: new Date(now).toISOString() });
+
+  ctx.waitUntil(
+    (async () => {
+      try {
+        const result = await refreshZuthread(env, ctx);
+        if (result.ok) await setRefreshStatus(env, { state: "done", posts: result.posts, sources: result.sources });
+        else await setRefreshStatus(env, { state: "error", error: result.skipped || "Refresh failed" });
+      } catch (e) {
+        await setRefreshStatus(env, { state: "error", error: String(e.message || e).slice(0, 300) });
+      } finally {
+        await env.ZUTHREAD.delete(ZUTHREAD_LOCK);
+      }
+    })(),
+  );
+
+  return json({ started: true, state: "running" }, 202, CORS);
 }
 
 /**

@@ -195,17 +195,27 @@ export function buildFeed(results, { now = new Date() } = {}) {
   };
 }
 
-/** Refresh every handle (sequentially, to be gentle on rate limits); never throws. */
+/**
+ * Refresh every handle; never throws. Runs a few accounts at a time so a manual refresh
+ * finishes in seconds, while still being gentle enough not to trip upstream rate limits.
+ */
 export async function refreshFeed(villages, apiKey, opts = {}) {
+  const { concurrency = 4, ...fetchOpts } = opts;
   const targets = handlesFromVillages(villages);
-  const results = [];
-  for (const t of targets) {
-    try {
-      const output = await fetchUserPosts(t.handle, apiKey, opts);
-      results.push({ ...t, output });
-    } catch (e) {
-      results.push({ ...t, output: null, error: String(e.message || e) });
+  const results = new Array(targets.length);
+  let next = 0;
+  const worker = async () => {
+    while (true) {
+      const i = next++;
+      if (i >= targets.length) return;
+      const t = targets[i];
+      try {
+        results[i] = { ...t, output: await fetchUserPosts(t.handle, apiKey, fetchOpts) };
+      } catch (e) {
+        results[i] = { ...t, output: null, error: String(e.message || e) };
+      }
     }
-  }
-  return buildFeed(results);
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, targets.length) }, worker));
+  return buildFeed(results.filter(Boolean));
 }

@@ -1,125 +1,101 @@
-# Welcome to your Lovable project
+# Zuzone
 
-## Project info
+**The home for permanent hubs and pop-up cities.** Every Zuzalu-style pop-up village on one
+globe, with a timeline of who is running when, per-village pages, a subscribable calendar feed,
+and a combined feed of what the villages are posting.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Live: **https://zuzone.boogaav.workers.dev**
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## What is in here
 
-**Use Lovable**
+| Area | What it does |
+| --- | --- |
+| **Globe** | Mapbox globe of every village, with a scrollable 18-month Gantt strip below it (6 months back, 12 forward). |
+| **Village pages** | `/:slug` — about, map, residents, scenius projects, events, treasury. |
+| **Why Zuzalu** | `/why-zuzalu` — an interactive reading of Vitalik's 2023 essay, plus the photo dossier and a 2022–now timeline. |
+| **Zupulse** | Header panel: the weekly Zuletter, and **ZuThread** — every village's X posts in one chronological feed. |
+| **Add a village** | Open to anyone with a [Zupass](https://zupass.org); the edge worker verifies a signed POD before writing. |
+| **Calendar feed** | `/calendar.ics` — every pop-up as all-day events, subscribable in Google/Apple/Outlook. |
+| **Open API** | `/api/villages.json` and `/api/zuthread.json`. |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Architecture
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+browser ──► Cloudflare Worker (worker/)  ──►  Supabase (Postgres + Auth + 20 edge functions)
+                 │                                  ▲
+                 │ serves the Vite build            │ villages, profiles, stays, events…
+                 │ + per-village Open Graph tags
+                 │ + /calendar.ics, /api/*
+                 └──► monid → TikHub (X timelines for ZuThread)
 ```
 
-**Edit a file directly in GitHub**
+- **Frontend** — Vite + React + TypeScript + Tailwind + shadcn/ui. Originally generated in
+  Lovable, now maintained here.
+- **Edge layer** — a Cloudflare Worker (`worker/src/index.mjs`) serves the built SPA and adds
+  what a static host cannot: Open Graph tags injected per village so shared links unfurl, the
+  iCalendar feed, the JSON APIs, and the Zupass-gated write path.
+- **Database** — Supabase project `xflmthlxogmbslglgdwj`. Schema lives in
+  `supabase/migrations/` and travels with the repo, seed villages included.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
-## Local Development Setup
-
-To switch from the default Cloud Supabase backend to a **Local Supabase** instance, follow these steps.
-
-### Prerequisite: Install Docker (Linux)
-You need Docker URL to run the local Supabase services.
+## Quick start
 
 ```bash
-# 1. Update package index
-sudo apt-get update
-
-# 2. Install Docker
-sudo apt-get install -y docker.io
-
-# 3. Start Docker service
-sudo systemctl start docker
-sudo systemctl enable docker
-
-# 4. Give yourself permission to run Docker (avoids using 'sudo' every time)
-sudo usermod -aG docker $USER
+npm install
+npm run dev          # http://localhost:8080
 ```
-> **Important:** After running step 4, you must **log out and log back in** for the permissions to take effect.
 
-### Step 1: Start Supabase Locally
-Once Docker is running, go to your project folder and start Supabase:
+That is all you need for frontend work. The committed `.env` points at the shared cloud
+Supabase and holds only the **publishable** anon key, which is safe in the clear and is what
+row-level security is designed around. There is no secret to obtain to run the app.
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server on port 8080 |
+| `npm run build` | Production build into `dist/` |
+| `npm run lint` | ESLint |
+| `npm run deploy` | `vite build` + `wrangler deploy` (needs Cloudflare access) |
+| `node scripts/zuthread-refresh.mjs` | Rebuild `public/zuthread.json` locally via the monid CLI |
+
+## Layout
+
+```
+src/
+  components/       GlobalMap (globe + Gantt), SidePanel, ZuThread, villages/, stays/, ui/
+  pages/            Index, Village, WhyZuzalu, Profile, Admin, …
+  hooks/            one hook per table — useVillages, useStays, useEvents, …
+  integrations/     Supabase client + generated types
+worker/
+  src/index.mjs     routing, OG injection, calendar feed, Zupass-verified writes
+  src/zuthread.mjs  X timeline fetch + normalization
+supabase/
+  migrations/       schema, in order; the seed migration carries the villages
+  functions/        20 edge functions (Telegram bots, wallets, Luma, auth)
+```
+
+## Deploying
+
+The Worker is the live site. A `git push` does **not** redeploy anything.
 
 ```bash
-npx supabase start
+npm run deploy                       # frontend + worker
+npx supabase db push                 # migrations
+npx supabase functions deploy --use-api
 ```
 
-This will print your local credentials (API URL, keys) to the terminal.
+Secrets live in Cloudflare and Supabase, never in the repo:
+`SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`, and the Telegram/wallet keys the edge functions use.
 
-### Step 2: Configure Environment
-Create a `.env.local` file to override the default cloud settings.
+## Notes worth knowing
 
-1.  Copy the template:
-    ```bash
-    cp .env.local.example .env.local
-    ```
-2.  Edit `.env.local` and paste the values from the `npx supabase start` output:
-    ```bash
-    VITE_SUPABASE_URL="http://127.0.0.1:54321"
-    VITE_SUPABASE_PUBLISHABLE_KEY="<paste-your-anon-key-here>"
-    ```
+- **Two lockfiles.** `bun.lock` is a leftover from Lovable; deploys and CI use **npm**.
+- **`zuzone.lovable.app`** still exists and points at the *old* Lovable backend. Ignore it.
+- **Lovable created some tables outside migrations.** `comments` and `villages.landing_blocks`
+  were captured retroactively; if you add a column through a GUI, write the migration too.
+- **ZuThread costs money.** Free X timeline sources are all dead; refreshes go through monid at
+  roughly $0.0015 per account, so the refresh path is rate limited in the Worker.
 
-### Step 3: Run the App
-Now run the development server, which will automatically use your local configuration:
+## Contributing
 
-```bash
-npm run dev
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md).
