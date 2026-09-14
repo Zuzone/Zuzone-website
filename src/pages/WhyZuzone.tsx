@@ -436,7 +436,13 @@ const WhyZuzone = () => {
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Epilogue</p>
           <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">Zuzalu became many</h2>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            The essay ended without a next step. The ecosystem supplied one: not a single permanent city but dozens of pop-ups, each a few weeks to a few months, each run by a different crew. Zuzone came later, as an independent coordination layer between them{villageCount ? `: ${villageCount} villages and hubs so far` : ""}.
+            Instead of one permanent city, the ideas travelled: dozens of pop-ups lasting a few weeks to a few months, each
+            run by its own crew, and permanent hubs that carry the work year-round. Zuzone came later, as an independent
+            coordination layer between them{villageCount ? `, with ${villageCount} villages and hubs so far` : ""}.
+          </p>
+          <p className="mt-4 max-w-2xl font-display text-xl leading-snug text-foreground sm:text-2xl">
+            Zuzone brings permanent hubs together — helping them stay connected, share what they learn, and carry the
+            Zuzalu experiment forward.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">See the map <ArrowRight className="h-4 w-4" /></Link>
