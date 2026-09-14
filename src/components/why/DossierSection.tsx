@@ -3,8 +3,8 @@ import { ChevronDown, ExternalLink, Play, X } from "lucide-react";
 import { DOSSIER_CHAPTERS, DOSSIER_EMBLEM, DOSSIER_SOURCES, type DossierChapter, type DossierPhoto } from "@/data/zuzaluDossier";
 
 /**
- * Part II of the Why Zuzone page: the visual record, three chapters of photos and video
- * restyled from the research dossier.
+ * Part II of the Why Zuzone page: the visual record in chronological order. Chapters I-III come
+ * from the research dossier (Zuzalu events); IV onward summarise Zuzone newsletter issues.
  */
 
 const Lightbox = ({ photo, onClose }: { photo: DossierPhoto; onClose: () => void }) => (
@@ -18,7 +18,10 @@ const Lightbox = ({ photo, onClose }: { photo: DossierPhoto; onClose: () => void
 );
 
 const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expanded: boolean; onToggle: () => void; onOpen: (p: DossierPhoto) => void }) => {
-  const counts = [`${ch.photos.length} photos`, ch.videos.length ? `${ch.videos.length} videos` : null].filter(Boolean).join(" and ");
+  const n = (k: number, one: string) => `${k} ${one}${k === 1 ? "" : "s"}`;
+  const parts = [ch.photos.length ? n(ch.photos.length, "photo") : null, ch.articles?.length ? n(ch.articles.length, "article") : null, ch.videos.length ? n(ch.videos.length, "video") : null].filter(Boolean) as string[];
+  const counts = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0] || "more";
+  const photoPreview = ch.photos.length >= 3;
   return (
     <section id={ch.id} className="scroll-mt-24 py-3">
       <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
@@ -31,13 +34,20 @@ const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expan
         </div>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{ch.lede}</p>
 
-        {!expanded && (
+        {!expanded && photoPreview && (
           <div className="mt-4 grid grid-cols-4 gap-2" aria-hidden="true">
             {ch.photos.slice(0, 4).map((p) => (
               <img key={p.src} src={p.src} alt="" loading="lazy" decoding="async" className="aspect-square w-full rounded-lg bg-muted object-cover" />
             ))}
           </div>
         )}
+        {!expanded && !photoPreview && ch.articles?.length ? (
+          <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+            {ch.articles.slice(0, 4).map((a) => (
+              <li key={a.title} className="flex gap-2"><span className="text-primary">·</span>{a.title}</li>
+            ))}
+          </ul>
+        ) : null}
 
         <button
           type="button"
@@ -52,7 +62,8 @@ const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expan
 
       {expanded && (
         <div className="pb-6 pt-5">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {ch.stats.length > 0 && (
+          <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {ch.stats.map((st) => (
               <div key={st.label} className="rounded-xl border border-border bg-card p-3">
                 <p className="font-display text-2xl font-semibold text-primary">{st.value}</p>
@@ -60,7 +71,24 @@ const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expan
               </div>
             ))}
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
+          )}
+          {ch.articles?.length ? (
+            <div className="mb-6 space-y-3">
+              {ch.articles.map((a) => (
+                <article key={a.title} className="rounded-xl border border-border bg-card p-4">
+                  <h4 className="font-semibold leading-snug text-foreground">{a.title}</h4>
+                  {a.byline && <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wide text-primary">by {a.byline}</p>}
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{a.summary}</p>
+                </article>
+              ))}
+              {ch.source && (
+                <a href={ch.source.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                  {ch.source.label} on zuzone.org <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          ) : null}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
             {ch.photos.map((p) => (
               <figure key={p.src} className={`m-0 ${p.hero ? "col-span-2" : ""}`}>
                 <button type="button" onClick={() => onOpen(p)} className="block w-full overflow-hidden rounded-xl bg-muted">
@@ -134,7 +162,7 @@ export const DossierSection = () => {
           </div>
         </div>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-          Three chapters of photographs and video, from the Montenegro prototype through ZuConnect Istanbul to the Chiang Mai Archipelago.
+          From the Montenegro prototype through ZuConnect Istanbul and the Chiang Mai Archipelago, to the ecosystem as the Zuzone newsletter covered it in 2026. In chronological order.
         </p>
         <nav className="mt-4 flex flex-wrap gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
           {DOSSIER_CHAPTERS.map((c) => <a key={c.id} href={`#${c.id}`} onClick={(e) => { e.preventDefault(); openAndGo(c.id); }} className="rounded-full border border-border px-3 py-1 text-muted-foreground hover:text-foreground">{c.num} · {c.title.replace(/^Zuzalu /, "")}</a>)}

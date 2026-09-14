@@ -342,7 +342,7 @@ const WhyZuzone = () => {
         <a href="#dossier" className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 hover:bg-muted">
           <span>
             <span className="block font-semibold">See what it looked like</span>
-            <span className="block text-sm text-muted-foreground">Photos and video from Montenegro 2023, ZuConnect Istanbul and the Chiang Mai Archipelago, further down this page.</span>
+            <span className="block text-sm text-muted-foreground">Montenegro 2023, ZuConnect Istanbul and the Chiang Mai Archipelago, then the ecosystem in 2026 through the Zuzone newsletter, further down this page.</span>
           </span>
           <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-primary" />
         </a>
