@@ -269,12 +269,13 @@ const Quote = ({ q, ctx }: { q: string; ctx: string }) => (
 
 const WhyZuzalu = () => {
   const [villageCount, setVillageCount] = useState<number | null>(null);
+  const [visibleIds, setVisibleIds] = useState<Set<string> | null>(null);
   useEffect(() => {
     document.title = "Why Zuzalu — Zuzone";
     const target = window.location.hash ? document.querySelector(window.location.hash) : null;
     if (target) setTimeout(() => target.scrollIntoView({ behavior: "auto" }), 50);
     else window.scrollTo(0, 0);
-    fetch(`${PUBLIC_SITE_URL}/api/villages.json`).then((r) => r.json()).then((d) => setVillageCount(d.count)).catch(() => {});
+    fetch(`${PUBLIC_SITE_URL}/api/villages.json`).then((r) => r.json()).then((d) => { setVillageCount(d.count); setVisibleIds(new Set(d.villages.map((v: { id: string }) => v.id))); }).catch(() => {});
     return () => { document.title = "Zuzone"; };
   }, []);
   const mapUrl = useMemo(tribeMapUrl, []);
@@ -380,7 +381,7 @@ const WhyZuzalu = () => {
         <div className="mt-4"><Quote q="Would 'Zuzaluism' meet the same fate?" ctx="on movements that grow fast and then plateau as niches" /></div>
       </Section>
 
-      <DossierSection />
+      <DossierSection visibleIds={visibleIds} />
 
       <section className="border-t border-border bg-card/60">
         <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">

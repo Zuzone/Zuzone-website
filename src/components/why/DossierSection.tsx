@@ -18,10 +18,11 @@ const KIND_COLOR: Record<string, string> = {
   prelude: "bg-muted-foreground/50",
 };
 
-const Segs = ({ segs }: { segs: TimelineSeg[] }) => (
+/** Village links render only while that village is public; hidden ones read as plain text. */
+const Segs = ({ segs, visibleIds }: { segs: TimelineSeg[]; visibleIds: Set<string> | null }) => (
   <>
     {segs.map((s, i) =>
-      s.href ? (
+      s.href && visibleIds?.has(s.href.replace(/^\//, "")) ? (
         <Link key={i} to={s.href} className="font-medium text-primary underline-offset-2 hover:underline" title="Open on the Zuzone map">{s.t}</Link>
       ) : (
         <span key={i}>{s.t}</span>
@@ -89,7 +90,7 @@ const Chapter = ({ ch, onOpen }: { ch: DossierChapter; onOpen: (p: DossierPhoto)
   </section>
 );
 
-export const DossierSection = () => {
+export const DossierSection = ({ visibleIds = null }: { visibleIds?: Set<string> | null }) => {
   const [open, setOpen] = useState<DossierPhoto | null>(null);
   return (
     <div id="dossier" className="scroll-mt-20">
@@ -127,7 +128,7 @@ export const DossierSection = () => {
                   <span className={`mt-1 h-3 w-[3px] shrink-0 rounded ${KIND_COLOR[r.kind] || "bg-muted-foreground/50"}`} />
                   {r.when}
                 </span>
-                <span className={`col-span-2 text-sm leading-relaxed sm:col-span-1 ${["montenegro", "istanbul", "chiangmai"].includes(r.kind) ? "font-medium" : ""}`}><Segs segs={r.what} /></span>
+                <span className={`col-span-2 text-sm leading-relaxed sm:col-span-1 ${["montenegro", "istanbul", "chiangmai"].includes(r.kind) ? "font-medium" : ""}`}><Segs segs={r.what} visibleIds={visibleIds} /></span>
               </li>
             ))}
           </ol>

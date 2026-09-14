@@ -57,6 +57,7 @@ row-level security is designed around. There is no secret to obtain to run the a
 | `npm run lint` | ESLint |
 | `npm run deploy` | `vite build` + `wrangler deploy` (needs Cloudflare access) |
 | `node scripts/zuthread-refresh.mjs` | Rebuild `public/zuthread.json` locally via the monid CLI |
+| `node scripts/og-card/build.mjs` | Regenerate the social share image from the visible villages |
 
 ## Layout
 
@@ -93,6 +94,9 @@ Secrets live in Cloudflare and Supabase, never in the repo:
 - **`zuzone.lovable.app`** still exists and points at the *old* Lovable backend. Ignore it.
 - **Lovable created some tables outside migrations.** `comments` and `villages.landing_blocks`
   were captured retroactively; if you add a column through a GUI, write the migration too.
+- **The directory is curated.** `villages.hidden = true` removes a village from the map, timeline,
+  calendar, APIs and ZuThread without deleting it. Unhide with
+  `UPDATE villages SET hidden = false WHERE id = '<id>';`, then rerun the share-card script.
 - **ZuThread costs money.** Free X timeline sources are all dead; refreshes go through monid at
   roughly $0.0015 per account, so the refresh path is rate limited in the Worker.
 

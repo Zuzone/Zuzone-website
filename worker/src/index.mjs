@@ -14,7 +14,7 @@ import { refreshFeed } from "./zuthread.mjs";
 
 const RESERVED = new Set(["why-zuzalu", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
-const VILLAGE_FIELDS = "id,name,logo_url,thumbnail_url,center,dates,location,description,village_type,website_url,twitter_url,telegram_url,instagram_url,apply_url,updated_at";
+const VILLAGE_FIELDS = "id,name,logo_url,thumbnail_url,center,dates,location,description,village_type,website_url,twitter_url,telegram_url,instagram_url,apply_url,updated_at,hidden";
 const CACHE_TTL = 300;
 
 export default {
@@ -227,6 +227,35 @@ async function refreshZuthread(env, ctx) {
   return { ok: true, posts: feed.count, sources: feed.sources.filter((x) => !x.error).length };
 }
 
+/**
+ * Filter a stored feed down to villages that are currently public. The feed was built from
+ * whatever villages existed at refresh time, so this runs on every read: hiding a village takes
+ * effect immediately, without paying for a refresh. A handle shared by several villages (Edge City,
+ * The Mu) is re-attributed to one that is still visible.
+ */
+async function visibleFeed(body, env, ctx) {
+  let feed;
+  try { feed = JSON.parse(body); } catch { return body; }
+  let visible;
+  try { visible = new Map((await fetchVillages(env, ctx)).map((v) => [v.id, v])); } catch { return body; }
+  const posts = [];
+  for (const p of feed.posts || []) {
+    const ids = (p.villages || [p.village_id]).filter((id) => visible.has(id));
+    if (!ids.length) continue;
+    if (!visible.has(p.village_id)) {
+      const v = visible.get(ids[0]);
+      p.village_id = v.id; p.village_name = v.name; p.village_logo = v.logo_url || null;
+    }
+    p.villages = ids;
+    posts.push(p);
+  }
+  const sources = (feed.sources || [])
+    .map((src) => ({ ...src, villages: (src.villages || []).filter((id) => visible.has(id)) }))
+    .filter((src) => src.villages.length)
+    .map((src) => ({ ...src, posts: posts.filter((p) => p.handle === src.handle).length }));
+  return JSON.stringify({ ...feed, posts, sources, count: posts.length });
+}
+
 async function setRefreshStatus(env, patch) {
   await env.ZUTHREAD.put(ZUTHREAD_STATUS, JSON.stringify({ at: new Date().toISOString(), ...patch }), { expirationTtl: 86400 });
 }
@@ -315,6 +344,7 @@ async function zuthreadJson(request, env, ctx) {
     })());
   }
   if (!body) return json({ generated_at: null, count: 0, sources: [], posts: [] });
+  body = await visibleFeed(body, env, ctx);
   return new Response(body, { headers: { ...headers, "x-zuthread-source": source, "x-zuthread-stale": String(stale) } });
 }
 
@@ -357,7 +387,7 @@ async function fetchVillages(env, ctx) {
     ctx.waitUntil(cache.put(cacheKey, res.clone()));
   }
   const rows = await res.json();
-  return rows.filter((v) => !String(v.id).startsWith("_"));
+  return rows.filter((v) => !v.hidden && !String(v.id).startsWith("_")).map(({ hidden, ...v }) => v);
 }
 
 async function villagesJson(env, ctx) {

@@ -125,10 +125,13 @@ export const InteractiveMap = ({ mapboxToken, initialVillageId, initialCategory 
           setActiveVillage(targetVillage);
           return;
         }
+        // Hidden or unknown village: don't show a different village under this URL
+        navigate("/", { replace: true });
+        return;
       }
       setActiveVillage(villages[0]);
     }
-  }, [villages, activeVillage, initialVillageId]);
+  }, [villages, activeVillage, initialVillageId, navigate]);
 
   // Fly to active village when map is ready (for village-specific routes)
   useEffect(() => {
