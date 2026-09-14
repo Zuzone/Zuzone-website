@@ -62,7 +62,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   useEffect(() => {
     if (/^#(zupulse|zuletter|zuthread)$/.test(window.location.hash)) setPanel("zupulse");
   }, []);
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
+  // The Gantt/List panel starts folded so the globe gets the screen; picking a view opens it
+  const [panelCollapsed, setPanelCollapsed] = useState(true);
 
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
@@ -595,11 +596,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               onValueChange={(value) => value && setViewMode(value as "gantt" | "list")}
               className="bg-card rounded-full border border-border/50 px-1 py-1"
             >
-              <ToggleGroupItem value="gantt" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              <ToggleGroupItem value="gantt" onClick={() => setPanelCollapsed(false)} className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 <BarChart3 className="h-3.5 w-3.5" />
                 Gantt
               </ToggleGroupItem>
-              <ToggleGroupItem value="list" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              <ToggleGroupItem value="list" onClick={() => setPanelCollapsed(false)} className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 <LayoutList className="h-3.5 w-3.5" />
                 List
               </ToggleGroupItem>
@@ -674,11 +675,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               onValueChange={(value) => value && setViewMode(value as "gantt" | "list")}
               className="bg-card rounded-full border border-border/50 px-1 py-1"
             >
-              <ToggleGroupItem value="gantt" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              <ToggleGroupItem value="gantt" onClick={() => setPanelCollapsed(false)} className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 <BarChart3 className="h-3.5 w-3.5" />
                 Gantt
               </ToggleGroupItem>
-              <ToggleGroupItem value="list" className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              <ToggleGroupItem value="list" onClick={() => setPanelCollapsed(false)} className="gap-1 text-xs rounded-full px-3 py-1 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                 <LayoutList className="h-3.5 w-3.5" />
                 List
               </ToggleGroupItem>
