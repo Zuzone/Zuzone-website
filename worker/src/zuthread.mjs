@@ -12,6 +12,15 @@ export const ZUTHREAD_MAX_AGE_DAYS = 120;
 /** Villages whose twitter_url points at a person or junk; null = skip, string = use this handle. */
 export const HANDLE_OVERRIDES = {};
 
+/**
+ * Accounts that belong in the thread without being a village. Their pseudo-village ids are
+ * always treated as visible, and the client links them to the home page.
+ */
+export const EXTRA_SOURCES = [
+  { handle: "zuzones", villages: [{ id: "zuzone", name: "Zuzone", logo: "/favicon.ico" }] },
+];
+export const EXTRA_SOURCE_IDS = new Set(EXTRA_SOURCES.flatMap((x) => x.villages.map((v) => v.id)));
+
 /** Extract an X screen name from a profile or status URL; null for anything else. */
 export function handleFromUrl(url) {
   if (!url || typeof url !== "string") return null;
@@ -35,7 +44,8 @@ export function handlesFromVillages(villages) {
     if (!byHandle.has(key)) byHandle.set(key, { handle, villages: [] });
     byHandle.get(key).villages.push({ id: v.id, name: v.name, logo: v.logo_url || null });
   }
-  return [...byHandle.values()];
+  const extras = EXTRA_SOURCES.filter((x) => !byHandle.has(x.handle.toLowerCase()));
+  return [...extras, ...byHandle.values()];
 }
 
 // ---------- monid client (server side) ----------

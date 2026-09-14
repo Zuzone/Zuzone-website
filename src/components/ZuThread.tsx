@@ -46,6 +46,9 @@ function linkify(text: string): ReactNode[] {
   return out;
 }
 
+/** Posts from Zuzone's own account link home; everything else links to its village page. */
+const villageHref = (id: string) => (id === "zuzone" ? "/" : `/${id}`);
+
 const fmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
 
 const PostCard = ({ post }: { post: Post }) => {
@@ -57,7 +60,7 @@ const PostCard = ({ post }: { post: Post }) => {
       {post.is_retweet && (
         <p className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Repeat2 className="h-3.5 w-3.5" />
-          {post.village_id ? <Link to={`/${post.village_id}`} className="font-medium hover:underline">{post.village_name}</Link> : post.village_name} reposted
+          {post.village_id ? <Link to={villageHref(post.village_id)} className="font-medium hover:underline">{post.village_name}</Link> : post.village_name} reposted
         </p>
       )}
       <header className="flex items-start gap-3">
@@ -69,7 +72,7 @@ const PostCard = ({ post }: { post: Post }) => {
             <span className="text-xs text-muted-foreground">· {timeAgo(post.created_at)}</span>
           </div>
           {!post.is_retweet && post.village_id && (
-            <Link to={`/${post.village_id}`} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <Link to={villageHref(post.village_id)} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               {post.village_logo && <img src={post.village_logo} alt="" className="h-3.5 w-3.5 rounded-sm" loading="lazy" />}
               {post.village_name}
             </Link>
