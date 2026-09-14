@@ -26,8 +26,8 @@ export const DOSSIER_CHAPTERS: DossierChapter[] = [
     "label": "months"
    },
    {
-    "value": "$1,800",
-    "label": "per month, subsidised"
+    "value": "0",
+    "label": "tokens or DAOs, by design"
    }
   ],
   "photos": [
@@ -45,7 +45,7 @@ export const DOSSIER_CHAPTERS: DossierChapter[] = [
    },
    {
     "src": "/zuzalu/03-bfa368.jpg",
-    "caption": "Vitalik presenting the Zuzalu Quadratic Billboard experiment.",
+    "caption": "Vitalik presenting at Zuzalu.",
     "credit": "Bernardo Vicente",
     "hero": false
    },
@@ -133,7 +133,7 @@ export const DOSSIER_CHAPTERS: DossierChapter[] = [
   "title": "ZuConnect Istanbul",
   "place": "Minoa Pera, Beyoğlu, Istanbul",
   "dates": "29 Oct – 11 Nov 2023",
-  "lede": "The sequel, compressed. Two weeks in an 1896 Beyoğlu building with a bookstore, café, co-working floors and a red-seat theatre. Zupass grew into ticketing and polls; Vitalik ran a quadratic funding round inside the city.",
+  "lede": "The sequel, compressed. Two weeks in an 1896 Beyoğlu building with a bookstore, café, co-working floors and a red-seat theatre. Zupass grew into ticketing and polls.",
   "stats": [
    {
     "value": "~300",
@@ -313,7 +313,7 @@ export const DOSSIER_CHAPTERS: DossierChapter[] = [
    },
    {
     "src": "/zuzalu/39-81cba0.jpg",
-    "caption": "The $60K “tools for human flourishing” hackathon.",
+    "caption": "The “tools for human flourishing” hackathon.",
     "credit": "Edge City",
     "hero": false
    },
@@ -384,4 +384,4 @@ export const DOSSIER_CHAPTERS: DossierChapter[] = [
   ]
  }
 ];
-export const DOSSIER_SOURCES = "Sources: Vitalik Buterin’s essays (2022, 2023, 2025), the Gitcoin case study, Decrypt, CoinDesk, Matters Lab, Edge City, Invisible Garden, Noah Chon Lee, Bernardo Vicente, the StreamETH archive and Luma. Photos belong to the credited authors.";
+export const DOSSIER_SOURCES = "Sources: Vitalik Buterin’s essays (2022, 2023, 2025), Decrypt, CoinDesk, Matters Lab, Edge City, Invisible Garden, Noah Chon Lee, Bernardo Vicente, the StreamETH archive and Luma. Photos belong to the credited authors.";
