@@ -5,7 +5,9 @@ import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 import { DossierSection } from "@/components/why/DossierSection";
 
 /**
- * Why Zuzone — why this directory exists, told through Vitalik Buterin's essay
+ * Why Zuzone — Zuzalu (2023) was the experiment; Zuzone is an independent coordination layer that
+ * came later for the ecosystem that grew out of it. Keep that separation explicit in any copy here.
+ * The argument is told through Vitalik Buterin's essay
  * "Why I Built Zuzalu" (Palladium Magazine, October 2023).
  * Part I: the argument, collapsed by default. Part II: the photo record (DossierSection).
  * All essay prose here is paraphrase; only the pull-quotes are verbatim and each is under 15 words.
@@ -307,10 +309,31 @@ const WhyZuzone = () => {
       <section className="mx-auto max-w-3xl px-4 pb-6 pt-14 sm:pt-20">
         <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"><Sparkles className="h-3.5 w-3.5" /> An interactive reading</p>
         <h1 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Why Zuzone</h1>
-        <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Zuzone exists because of one experiment. In spring 2023, Vitalik Buterin and a handful of friends rented a resort in Montenegro for two months and invited about two hundred people to live there. Six months later he wrote down why, and the pop-up cities on this map grew out of that answer.
+        <p className="mt-5 max-w-2xl font-display text-2xl leading-snug text-foreground sm:text-3xl">
+          Zuzalu began as an experiment. What followed became an ecosystem.
         </p>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-4 max-w-2xl space-y-3 text-lg leading-relaxed text-muted-foreground">
+          <p>
+            In spring 2023, around two hundred people came together in Montenegro for two months to experiment with new
+            ways of living, building and coordinating.
+          </p>
+          <p>
+            Since then, independent communities, pop-up cities and permanent hubs have carried those ideas in different
+            directions around the world.
+          </p>
+          <p>
+            Zuzone helps connect them, creating a coordination layer where communities can share knowledge, collaborate
+            and support one another while remaining independent. It gathers the values from those experiments and helps
+            permanent hubs and pop-up cities sustain their projects.
+          </p>
+        </div>
+        <p className="mt-4 max-w-2xl rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          Zuzone was not part of Zuzalu 2023. It is an independent project that came later, built for the communities
+          that grew out of it.
+        </p>
+
+        <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Zuzalu · Montenegro, 2023</p>
+        <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat n={200} label="residents" />
           <Stat n={2} label="months, from March 25, 2023" />
           <Stat n={100} prefix="~" label="apartments, one off-season resort" />
@@ -413,7 +436,7 @@ const WhyZuzone = () => {
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Epilogue</p>
           <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">Zuzalu became many</h2>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            The essay ended without a next step. The ecosystem supplied one: not a single permanent city but dozens of pop-ups, each a few weeks to a few months, each run by a different crew. Zuzone is the map of them{villageCount ? `, ${villageCount} villages and hubs so far` : ""}.
+            The essay ended without a next step. The ecosystem supplied one: not a single permanent city but dozens of pop-ups, each a few weeks to a few months, each run by a different crew. Zuzone came later, as an independent coordination layer between them{villageCount ? `: ${villageCount} villages and hubs so far` : ""}.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">See the map <ArrowRight className="h-4 w-4" /></Link>
