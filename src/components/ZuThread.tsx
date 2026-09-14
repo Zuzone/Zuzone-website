@@ -253,7 +253,7 @@ export const ZuThread = ({ embedded = false }: { embedded?: boolean }) => {
         {feed && (
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
             <p className="text-xs text-muted-foreground">
-              {posts.length} posts · {sources.length} accounts{feed.generated_at ? ` · updated ${timeAgo(feed.generated_at)} ago` : ""}
+              {posts.length} posts · {sources.length} accounts{feed.generated_at ? ` · updated ${timeAgo(feed.generated_at) === "now" ? "just now" : `${timeAgo(feed.generated_at)} ago`}` : ""}
             </p>
             <button
               type="button"

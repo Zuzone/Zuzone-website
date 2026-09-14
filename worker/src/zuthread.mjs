@@ -43,7 +43,13 @@ export function handlesFromVillages(villages) {
 const MONID_API = "https://api.monid.ai";
 const TIKHUB_ENDPOINT = "/api/v1/twitter/web/fetch_user_post_tweet";
 
-export async function fetchUserPosts(handle, apiKey, { fetchImpl = fetch, maxWaitMs = 25000 } = {}) {
+/**
+ * Start a TikHub run through monid and wait for it. monid has no server-side wait, so this
+ * polls; the schedule is budgeted because every request counts against the Worker's
+ * per-invocation subrequest limit (50 on the free plan). A typical run finishes in ~5s, so
+ * the first poll waits 5s: usually 3 requests per account, never more than 1 + maxPolls.
+ */
+export async function fetchUserPosts(handle, apiKey, { fetchImpl = fetch, firstPollMs = 5000, pollMs = 2000, maxPolls = 8 } = {}) {
   const headers = { Authorization: `Bearer ${apiKey}`, "content-type": "application/json" };
   const res = await fetchImpl(`${MONID_API}/v1/run`, {
     method: "POST",
@@ -52,16 +58,26 @@ export async function fetchUserPosts(handle, apiKey, { fetchImpl = fetch, maxWai
   });
   if (!res.ok) throw new Error(`monid run ${res.status}: ${(await res.text()).slice(0, 200)}`);
   let run = await res.json();
-  const started = Date.now();
-  while (run.status !== "COMPLETED") {
-    if (run.status === "FAILED" || run.status === "STOPPED") throw new Error(`monid run ${run.status}`);
-    if (Date.now() - started > maxWaitMs) throw new Error("monid run timeout");
-    await new Promise((r) => setTimeout(r, 1500));
+  for (let polls = 0; run.status !== "COMPLETED"; polls++) {
+    if (["FAILED", "STOPPED", "BLOCKED", "TIME_OUT"].includes(run.status)) throw new Error(`monid run ${run.status}`);
+    if (polls >= maxPolls) throw new Error("monid run timeout");
+    await new Promise((r) => setTimeout(r, polls === 0 ? firstPollMs : pollMs));
     const poll = await fetchImpl(`${MONID_API}/v1/runs/${encodeURIComponent(run.runId)}`, { headers });
     if (!poll.ok) throw new Error(`monid poll ${poll.status}`);
     run = await poll.json();
   }
   return run.output;
+}
+
+/** Fetch one account and keep only what buildFeed needs, so partial results stay small. */
+export async function fetchAccount(target, apiKey, opts) {
+  try {
+    const output = await fetchUserPosts(target.handle, apiKey, opts);
+    const u = output?.user || {};
+    return { ...target, output: { timeline: output?.timeline || [], user: { name: u.name, avatar: u.avatar, sub_count: u.sub_count, followers_count: u.followers_count } } };
+  } catch (e) {
+    return { ...target, output: null, error: String(e.message || e) };
+  }
 }
 
 // ---------- normalization ----------

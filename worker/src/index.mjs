@@ -10,7 +10,7 @@
  *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
  */
 import { POD } from "@pcd/pod";
-import { refreshFeed } from "./zuthread.mjs";
+import { buildFeed, fetchAccount, handlesFromVillages } from "./zuthread.mjs";
 
 const RESERVED = new Set(["why-zuzone", "why-zuzalu", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
@@ -26,6 +26,8 @@ export default {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
       if (request.method === "POST") return addVillage(request, env, ctx);
     }
+
+    if (path === "/api/zuthread/_batch" && request.method === "POST") return zuthreadBatch(request, env, ctx);
 
     if (path === "/api/zuthread/refresh") {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -219,14 +221,70 @@ const ZUTHREAD_TTL_MS = 4 * 60 * 60 * 1000; // auto-refresh at most every 4h (~$
 const ZUTHREAD_COOLDOWN_MS = 10 * 60 * 1000; // one manual refresh per 10 minutes, site-wide
 const ZUTHREAD_DAILY_CAP = 20; // and at most 20 a day (~$0.60 ceiling)
 
+// Accounts pulled per Worker invocation. Each costs up to 9 subrequests (1 run + 8 polls),
+// so 4 stays under the free plan's 50 with room to spare; the rest is handed to a fresh
+// invocation through the SELF service binding, which gets its own budget.
+const ZUTHREAD_BATCH = 4;
+
+async function jobToken(env, startedAt) {
+  const bytes = new TextEncoder().encode(`${env.MONID_API_KEY}:${startedAt}`);
+  return [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Begin a refresh: work out which accounts to pull, then run the first batch. */
 async function refreshZuthread(env, ctx) {
   if (!env.MONID_API_KEY) return { skipped: "MONID_API_KEY not set" };
-  const villages = await fetchVillages(env, ctx);
-  const feed = await refreshFeed(villages, env.MONID_API_KEY);
-  // Keep the previous feed if every account failed (rate limit, outage)
-  if (feed.sources.length && feed.sources.every((s) => s.error)) return { skipped: "all sources failed", sample: feed.sources[0].error };
-  await env.ZUTHREAD.put(ZUTHREAD_KEY, JSON.stringify(feed));
-  return { ok: true, posts: feed.count, sources: feed.sources.filter((x) => !x.error).length };
+  const targets = handlesFromVillages(await fetchVillages(env, ctx));
+  await runRefreshBatch(env, ctx, { started_at: new Date().toISOString(), targets, results: [] });
+  return { ok: true };
+}
+
+/**
+ * Pull the next batch. The job travels in the request body rather than KV, because KV is only
+ * eventually consistent and the next invocation starts milliseconds later.
+ */
+async function runRefreshBatch(env, ctx, job) {
+  const batch = job.targets.slice(job.results.length, job.results.length + ZUTHREAD_BATCH);
+  job.results.push(...(await Promise.all(batch.map((t) => fetchAccount(t, env.MONID_API_KEY)))));
+
+  if (job.results.length < job.targets.length) {
+    await setRefreshStatus(env, { state: "running", started_at: job.started_at, progress: `${job.results.length}/${job.targets.length}` });
+    const res = await env.SELF.fetch("https://zuzone.internal/api/zuthread/_batch", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-job-token": await jobToken(env, job.started_at) },
+      body: JSON.stringify(job),
+    });
+    if (!res.ok) throw new Error(`batch handoff failed (${res.status})`);
+    return;
+  }
+
+  const feed = buildFeed(job.results);
+  const ok = feed.sources.filter((x) => !x.error).length;
+  if (!ok) {
+    // Keep the previous feed if every account failed (rate limit, outage)
+    await setRefreshStatus(env, { state: "error", error: `Every account failed: ${(feed.sources[0]?.error || "").slice(0, 160)}` });
+  } else {
+    await env.ZUTHREAD.put(ZUTHREAD_KEY, JSON.stringify(feed));
+    await setRefreshStatus(env, { state: "done", posts: feed.count, sources: ok, total: feed.sources.length });
+  }
+  await env.ZUTHREAD.delete(ZUTHREAD_LOCK);
+}
+
+/** Internal: continue a refresh in a fresh invocation. Only the worker itself can sign the token. */
+async function zuthreadBatch(request, env, ctx) {
+  if (!env.MONID_API_KEY) return new Response("not configured", { status: 503 });
+  let job;
+  try { job = await request.json(); } catch { return new Response("bad job", { status: 400 }); }
+  if (!job?.started_at || request.headers.get("x-job-token") !== (await jobToken(env, job.started_at))) {
+    return new Response("forbidden", { status: 403 });
+  }
+  ctx.waitUntil(
+    runRefreshBatch(env, ctx, job).catch(async (e) => {
+      await setRefreshStatus(env, { state: "error", error: String(e.message || e).slice(0, 300) });
+      await env.ZUTHREAD.delete(ZUTHREAD_LOCK);
+    }),
+  );
+  return new Response("accepted", { status: 202 });
 }
 
 /**
@@ -305,17 +363,10 @@ async function zuthreadRefresh(env, ctx) {
   await setRefreshStatus(env, { state: "running", started_at: new Date(now).toISOString() });
 
   ctx.waitUntil(
-    (async () => {
-      try {
-        const result = await refreshZuthread(env, ctx);
-        if (result.ok) await setRefreshStatus(env, { state: "done", posts: result.posts, sources: result.sources });
-        else await setRefreshStatus(env, { state: "error", error: result.skipped || "Refresh failed" });
-      } catch (e) {
-        await setRefreshStatus(env, { state: "error", error: String(e.message || e).slice(0, 300) });
-      } finally {
-        await env.ZUTHREAD.delete(ZUTHREAD_LOCK);
-      }
-    })(),
+    refreshZuthread(env, ctx).catch(async (e) => {
+      await setRefreshStatus(env, { state: "error", error: String(e.message || e).slice(0, 300) });
+      await env.ZUTHREAD.delete(ZUTHREAD_LOCK);
+    }),
   );
 
   return json({ started: true, state: "running" }, 202, CORS);
@@ -342,7 +393,11 @@ async function zuthreadJson(request, env, ctx) {
     ctx.waitUntil((async () => {
       if (await env.ZUTHREAD.get(ZUTHREAD_LOCK)) return;
       await env.ZUTHREAD.put(ZUTHREAD_LOCK, "1", { expirationTtl: 600 });
-      try { await refreshZuthread(env, ctx); } finally { await env.ZUTHREAD.delete(ZUTHREAD_LOCK); }
+      await setRefreshStatus(env, { state: "running", started_at: new Date().toISOString(), auto: true });
+      await refreshZuthread(env, ctx).catch(async (e) => {
+        await setRefreshStatus(env, { state: "error", error: String(e.message || e).slice(0, 300) });
+        await env.ZUTHREAD.delete(ZUTHREAD_LOCK);
+      });
     })());
   }
   if (!body) return json({ generated_at: null, count: 0, sources: [], posts: [] });
