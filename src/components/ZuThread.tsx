@@ -216,7 +216,7 @@ export const ZuThread = ({ embedded = false }: { embedded?: boolean }) => {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className={`font-display font-semibold text-foreground ${embedded ? "text-2xl" : "text-3xl sm:text-4xl"}`}>ZuThread</h2>
-            <p className="mt-1 text-sm text-muted-foreground sm:text-base">Every village's X posts, in one thread. Newest first.</p>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">The shared thread of the Zuzalu ecosystem: villages and permanent hubs. Newest first.</p>
           </div>
           {!embedded && (
             <a href="#top" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
