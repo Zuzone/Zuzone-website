@@ -474,11 +474,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           {/* Desktop: inline buttons */}
           <div className="hidden sm:flex items-center gap-2">
             <Link
-              to="/why-zuzalu"
+              to="/why-zuzone"
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <BookOpen className="h-4 w-4" />
-              Why Zuzalu
+              Why Zuzone
             </Link>
             <button
               onClick={() => togglePanel("manifesto")}
@@ -535,8 +535,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               </PopoverTrigger>
               <PopoverContent align="end" className="w-48 p-2">
                 <div className="flex flex-col gap-1">
-                  <Link to="/why-zuzalu" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left">
-                    <BookOpen className="h-4 w-4" /> Why Zuzalu
+                  <Link to="/why-zuzone" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left">
+                    <BookOpen className="h-4 w-4" /> Why Zuzone
                   </Link>
                   <button
                     onClick={() => togglePanel("manifesto")}

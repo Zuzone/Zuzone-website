@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, ExternalLink, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, ExternalLink, Sparkles } from "lucide-react";
 import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 import { DossierSection } from "@/components/why/DossierSection";
 
 /**
- * Why Zuzalu — an interactive reading of Vitalik Buterin's essay
+ * Why Zuzone — why this directory exists, told through Vitalik Buterin's essay
  * "Why I Built Zuzalu" (Palladium Magazine, October 2023).
- * Part I: the argument (interactive). Part II: the visual record and 2022–now timeline (DossierSection).
+ * Part I: the argument, collapsed by default. Part II: the photo record (DossierSection).
  * All essay prose here is paraphrase; only the pull-quotes are verbatim and each is under 15 words.
  */
 
@@ -251,6 +251,8 @@ const Stat = ({ n, prefix = "", suffix = "", label }: { n: number; prefix?: stri
   );
 };
 
+const ESSAY_PARTS = ["Places aren't fixed", "A tribe that is already distributed", "The gap between a house and a conference", "The recipe", "Plan the scaffolding, let the rest emerge", "Diversity by design", "The verdict", "Where does this go?"];
+
 const Section = ({ n, title, children, lede }: { n: string; title: string; lede?: string; children: React.ReactNode }) => (
   <section className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
     <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{n}</p>
@@ -267,15 +269,20 @@ const Quote = ({ q, ctx }: { q: string; ctx: string }) => (
   </figure>
 );
 
-const WhyZuzalu = () => {
+const WhyZuzone = () => {
   const [villageCount, setVillageCount] = useState<number | null>(null);
-  const [visibleIds, setVisibleIds] = useState<Set<string> | null>(null);
+  // Part I is long; it starts folded unless someone deep-links into it
+  const [essayOpen, setEssayOpen] = useState(() => window.location.hash === "#essay");
+  const openEssay = useCallback(() => {
+    setEssayOpen(true);
+    setTimeout(() => document.getElementById("essay")?.scrollIntoView({ behavior: "smooth" }), 30);
+  }, []);
   useEffect(() => {
-    document.title = "Why Zuzalu — Zuzone";
+    document.title = "Why Zuzone";
     const target = window.location.hash ? document.querySelector(window.location.hash) : null;
     if (target) setTimeout(() => target.scrollIntoView({ behavior: "auto" }), 50);
     else window.scrollTo(0, 0);
-    fetch(`${PUBLIC_SITE_URL}/api/villages.json`).then((r) => r.json()).then((d) => { setVillageCount(d.count); setVisibleIds(new Set(d.villages.map((v: { id: string }) => v.id))); }).catch(() => {});
+    fetch(`${PUBLIC_SITE_URL}/api/villages.json`).then((r) => r.json()).then((d) => setVillageCount(d.count)).catch(() => {});
     return () => { document.title = "Zuzone"; };
   }, []);
   const mapUrl = useMemo(tribeMapUrl, []);
@@ -288,9 +295,8 @@ const WhyZuzalu = () => {
             <ArrowLeft className="h-4 w-4" /> Zuzone
           </Link>
           <nav className="flex items-center gap-3 text-xs text-muted-foreground">
-            <a href="#essay" className="hover:text-foreground">Essay</a>
+            <a href="#essay" onClick={(e) => { e.preventDefault(); openEssay(); }} className="hover:text-foreground">Essay</a>
             <a href="#dossier" className="hover:text-foreground">Photos</a>
-            <a href="#timeline" className="hover:text-foreground">Timeline</a>
             <a href={ESSAY_URL} target="_blank" rel="noopener noreferrer" className="hidden items-center gap-1 hover:text-foreground sm:inline-flex">
               Original <ExternalLink className="h-3 w-3" />
             </a>
@@ -300,9 +306,9 @@ const WhyZuzalu = () => {
 
       <section className="mx-auto max-w-3xl px-4 pb-6 pt-14 sm:pt-20">
         <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"><Sparkles className="h-3.5 w-3.5" /> An interactive reading</p>
-        <h1 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Why Zuzalu</h1>
+        <h1 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Why Zuzone</h1>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          In spring 2023, Vitalik Buterin and a handful of friends rented a resort in Montenegro for two months and invited about two hundred people to live there. Six months later he wrote down why. This page walks through that essay: the gap it tried to fill, the recipe, what worked, what didn't, and where it might go.
+          Zuzone exists because of one experiment. In spring 2023, Vitalik Buterin and a handful of friends rented a resort in Montenegro for two months and invited about two hundred people to live there. Six months later he wrote down why, and the pop-up cities on this map grew out of that answer.
         </p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat n={200} label="residents" />
@@ -312,16 +318,38 @@ const WhyZuzalu = () => {
         </div>
         <a href="#dossier" className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 hover:bg-muted">
           <span>
-            <span className="block font-semibold">Part I is the argument. Part II is what it looked like.</span>
-            <span className="block text-sm text-muted-foreground">Photos and video from Montenegro 2023, ZuConnect Istanbul and the Chiang Mai Archipelago, plus the 2022–2026 timeline, further down this page.</span>
+            <span className="block font-semibold">See what it looked like</span>
+            <span className="block text-sm text-muted-foreground">Photos and video from Montenegro 2023, ZuConnect Istanbul and the Chiang Mai Archipelago, further down this page.</span>
           </span>
           <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-primary" />
         </a>
       </section>
 
       <div id="essay" className="mx-auto max-w-3xl px-4 pt-6 scroll-mt-20">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Part I · The argument</p>
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Part I · The argument</p>
+          <h2 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">Why I Built Zuzalu, in eight parts</h2>
+          {!essayOpen && (
+            <ol className="mt-4 grid gap-x-6 gap-y-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+              {ESSAY_PARTS.map((t, i) => (
+                <li key={t} className="flex gap-2"><span className="font-mono text-xs text-primary">{String(i + 1).padStart(2, "0")}</span>{t}</li>
+              ))}
+            </ol>
+          )}
+          <button
+            type="button"
+            onClick={() => (essayOpen ? setEssayOpen(false) : openEssay())}
+            aria-expanded={essayOpen}
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {essayOpen ? "Collapse the argument" : "Read the argument"}
+            <ChevronDown className={`h-4 w-4 transition-transform ${essayOpen ? "rotate-180" : ""}`} />
+          </button>
+        </div>
       </div>
+
+      {essayOpen && (
+      <>
 
       <Section n="01" title="Places aren't fixed" lede="We treat cities as given: San Francisco means one culture and cost, Berlin another, and you pick your tradeoff. The essay's opening move is to ask whether an online tribe could instead materialise somewhere on purpose. The thinkers behind that question: Michel Maffesoli's tribes, David de Ugarte's phyles, Balaji Srinivasan's network state.">
         <div className="grid gap-3 sm:grid-cols-3">
@@ -352,11 +380,6 @@ const WhyZuzalu = () => {
           <Stat n={33} suffix="%" label="cap on any single nationality" />
           <Stat n={4} label="target communities, deliberately mixed" />
         </div>
-        <ol className="relative mt-6 border-l border-border pl-5">
-          {[["January 2023", "Four people start planning."], ["February", "Eight. A resort is found; a hundred apartments are booked at once."], ["March 25", "Residents arrive. Breakfast, Zupass and a bookable room are ready; nothing else is."], ["Late May", "Two months later, the pop-up closes. The question of what it was begins."]].map(([d, t]) => (
-            <li key={d} className="mb-4"><span className="absolute -left-[5px] mt-1.5 h-2.5 w-2.5 rounded-full bg-primary" /><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{d}</p><p className="text-sm">{t}</p></li>
-          ))}
-        </ol>
       </Section>
 
       <Section n="05" title="Plan the scaffolding, let the rest emerge" lede="Only a thin core was organised centrally: food, identity, a venue, a way to book the room. Everything memorable grew on top of it. Click around the rings.">
@@ -380,8 +403,10 @@ const WhyZuzalu = () => {
         <Ladder />
         <div className="mt-4"><Quote q="Would 'Zuzaluism' meet the same fate?" ctx="on movements that grow fast and then plateau as niches" /></div>
       </Section>
+      </>
+      )}
 
-      <DossierSection visibleIds={visibleIds} />
+      <DossierSection />
 
       <section className="border-t border-border bg-card/60">
         <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
@@ -401,4 +426,4 @@ const WhyZuzalu = () => {
   );
 };
 
-export default WhyZuzalu;
+export default WhyZuzone;

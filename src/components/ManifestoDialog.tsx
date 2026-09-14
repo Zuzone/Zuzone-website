@@ -25,8 +25,8 @@ export const ManifestoContent = () => (
             Helping hubs build, grow sustainably, and collaborate across the ecosystem. Creating a stronger, more connected global network in a Zuzalu-aligned way.
           </p>
           <div className="flex flex-wrap gap-2 pt-3">
-            <a href="/why-zuzalu" className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted">Why Zuzalu →</a>
-            <a href="/why-zuzalu#dossier" className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted">Photos &amp; timeline →</a>
+            <a href="/why-zuzone" className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted">Why Zuzone →</a>
+            <a href="/why-zuzone#dossier" className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted">Photos →</a>
           </div>
         </div>
   </div>
