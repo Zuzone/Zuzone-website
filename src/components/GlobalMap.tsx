@@ -452,7 +452,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
                 Zuzone
               </h1>
-              <AddVillageForm onVillageAdded={() => window.location.reload()} />
+              <AddVillageForm />
               {isAdmin && (
                 <Button
                   variant="ghost"

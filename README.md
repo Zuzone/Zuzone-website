@@ -16,7 +16,7 @@ Live: **https://zuzone.boogaav.workers.dev**
 | **Village pages** | `/:slug` — about, map, residents, scenius projects, events, treasury. |
 | **Why Zuzone** | `/why-zuzone` — why the directory exists: an interactive reading of Vitalik's 2023 essay (collapsed by default) and the photo dossier. |
 | **Zupulse** | Header panel: the weekly Zuletter, and **ZuThread** — every village's X posts in one chronological feed. |
-| **Add a village** | Open to anyone with a [Zupass](https://zupass.org); the edge worker verifies a signed POD before writing. |
+| **Add a village** | Open to anyone with a [Zupass](https://zupass.org); the edge worker verifies a signed POD, and the village stays hidden until the team approves it. |
 | **Calendar feed** | `/calendar.ics` — every pop-up as all-day events, subscribable in Google/Apple/Outlook. |
 | **Open API** | `/api/villages.json` and `/api/zuthread.json`. |
 
@@ -97,6 +97,9 @@ Secrets live in Cloudflare and Supabase, never in the repo:
 - **The directory is curated.** `villages.hidden = true` removes a village from the map, timeline,
   calendar, APIs and ZuThread without deleting it. Unhide with
   `UPDATE villages SET hidden = false WHERE id = '<id>';`, then rerun the share-card script.
+- **Reviewing submissions.** New villages arrive with `hidden = true` and a `zupass_public_key`.
+  List the queue with `SELECT id, name, website_url, created_at FROM villages WHERE hidden AND zupass_public_key IS NOT NULL ORDER BY created_at DESC;`
+  and approve with `UPDATE villages SET hidden = false WHERE id = '<id>';`.
 - **ZuThread costs money.** Free X timeline sources are all dead; refreshes go through monid at
   roughly $0.0015 per account, so the refresh path is rate limited in the Worker.
 

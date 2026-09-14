@@ -266,7 +266,9 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
 
     setIsSubmitting(false);
 
-    toast.success(`${villageName} created successfully!`);
+    toast.success(`Thanks! ${villageName} was submitted for review.`, {
+      description: "It will appear on the map once the Zuzone team approves it.",
+    });
     
     // Reset form
     setGoogleMapsUrl("");
@@ -310,8 +312,15 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
                 <KeyRound className="h-4 w-4 text-primary" /> Sign in with Zupass to add a village
               </p>
               <p className="text-xs text-muted-foreground">
-                Anyone with a Zupass can add a pop-up city or hub. Zupass only shares your public identity
-                and signs a note saying you added this village, so entries are accountable, not anonymous.
+                Everyone with a Zupass can add a new hub. After you submit it, the Zuzone team reviews and
+                approves it before it appears on the map.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Questions? DM{" "}
+                <a href="https://x.com/zuzones" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline">
+                  Zuzone on X
+                </a>
+                .
               </p>
               {zupassError && (
                 <p className="text-xs text-destructive flex items-center gap-1">

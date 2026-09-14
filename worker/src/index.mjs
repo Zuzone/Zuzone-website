@@ -126,7 +126,8 @@ async function addVillage(request, env, ctx) {
   if (v.error) return json({ error: v.error }, 422);
   if (claim.village_id !== v.village.id) return json({ error: "POD was signed for a different village id" }, 401);
 
-  const row = { ...v.village, zupass_public_key: pod.signerPublicKey };
+  // Submissions arrive hidden and wait for the Zuzone team to approve them (see README)
+  const row = { ...v.village, zupass_public_key: pod.signerPublicKey, hidden: true };
   if (dryRun) return json({ ok: true, dryRun: true, signer: pod.signerPublicKey, village: row });
 
   // 3. Insert (service role if configured, else anon — RLS decides)
@@ -155,7 +156,7 @@ async function addVillage(request, env, ctx) {
     const err = await res.clone().json().catch(() => ({}));
     // Column not yet added by the migration: insert without it rather than fail
     if (err?.code === "42703" || /zupass_public_key/.test(err?.message || "")) {
-      const { zupass_public_key, ...withoutKey } = row;
+      const { zupass_public_key, ...withoutKey } = row; // hidden stays set
       res = await insert(withoutKey);
     }
   }
