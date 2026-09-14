@@ -23,7 +23,11 @@ const project = (lon, lat) => {
 };
 const [cx, cy] = project(CLON, CLAT);
 
-const { villages } = await (await fetch(`${API}/api/villages.json`)).json();
+// Read Supabase directly: the worker's /api cache can lag a few minutes behind a change
+const env = Object.fromEntries(readFileSync(".env", "utf8").split("\n").filter((l) => l.includes("=")).map((l) => { const [k, ...r] = l.split("="); return [k.trim(), r.join("=").trim().replace(/^"|"$/g, "")]; }));
+const villages = await (await fetch(`${env.VITE_SUPABASE_URL}/rest/v1/villages?select=id,center&hidden=is.false`, {
+  headers: { apikey: env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+})).json();
 const pins = villages
   .map((v) => project(v.center[0], v.center[1]))
   .map(([x, y]) => [x - cx + W / 2, y - cy + H / 2])
