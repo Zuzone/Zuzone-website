@@ -91,7 +91,7 @@ async function health(env) {
       return "unrecognised";
     }
   };
-  return json({ supabase_url: env.SUPABASE_URL, anon_key: anon, service_role_key: service, anon_kind: kind(env.SUPABASE_ANON_KEY), service_kind: kind(env.SUPABASE_SERVICE_ROLE_KEY) });
+  return json({ supabase_url: env.SUPABASE_URL, anon_key: anon, service_role_key: service, anon_kind: kind(env.SUPABASE_ANON_KEY), service_kind: kind(env.SUPABASE_SERVICE_ROLE_KEY), luma_sync: env.LUMA_API_KEY ? "configured" : "not configured" });
 }
 
 // ---------- newsletter signups ----------
@@ -136,7 +136,45 @@ async function newsletterSubscribe(request, env, ctx) {
     console.error("newsletter insert failed", res.status, (await res.text()).slice(0, 300));
     return json({ error: "Something went wrong. Please try again." }, 502);
   }
+  // Forward to Luma in the background; the signup is already safe in our table either way
+  ctx.waitUntil(syncSubscribersToLuma(env).catch((e) => console.error("luma sync failed", String(e))));
   return json({ ok: true });
+}
+
+/**
+ * Import every not-yet-synced subscriber into the Zuzone Luma calendar, so Luma newsletters
+ * reach them (Luma handles sending and unsubscribes). Runs after each signup, which also
+ * backfills anyone who signed up before LUMA_API_KEY was set. Needs Luma Plus on the calendar;
+ * the API key itself identifies the calendar. Tag defaults to "Zuzone newsletter".
+ */
+async function syncSubscribersToLuma(env) {
+  if (!env.LUMA_API_KEY || !env.SUPABASE_SERVICE_ROLE_KEY) return;
+  const sb = { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` };
+  const rows = await (await fetch(
+    `${env.SUPABASE_URL}/rest/v1/newsletter_subscribers?select=id,email&luma_synced_at=is.null&unsubscribed_at=is.null&order=created_at.asc&limit=100`,
+    { headers: sb },
+  )).json();
+  if (!Array.isArray(rows) || !rows.length) return;
+
+  const tag = env.LUMA_CONTACT_TAG || "Zuzone newsletter";
+  const importContacts = (withTag) => fetch("https://public-api.luma.com/v1/calendars/contacts/import", {
+    method: "POST",
+    headers: { "x-luma-api-key": env.LUMA_API_KEY, "content-type": "application/json" },
+    body: JSON.stringify({ contacts: rows.map((r) => ({ email: r.email })), ...(withTag ? { tags: [tag] } : {}) }),
+  });
+  let res = await importContacts(true);
+  // If the tag doesn't exist on the calendar yet, still get the people in
+  if (!res.ok && res.status !== 401 && res.status !== 403) res = await importContacts(false);
+
+  const patch = res.ok
+    ? { luma_synced_at: new Date().toISOString(), luma_error: null }
+    : { luma_error: `${res.status} ${(await res.text()).slice(0, 200)}` };
+  await fetch(`${env.SUPABASE_URL}/rest/v1/newsletter_subscribers?id=in.(${rows.map((r) => r.id).join(",")})`, {
+    method: "PATCH",
+    headers: { ...sb, "content-type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) console.error("luma import failed", patch.luma_error);
 }
 
 // ---------- add village (Zupass-gated) ----------

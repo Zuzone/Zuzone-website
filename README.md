@@ -104,7 +104,10 @@ Secrets live in Cloudflare and Supabase, never in the repo:
 - **Newsletter signups** land in the `newsletter_subscribers` table (written only by the Worker;
   no public access). Export the active list with
   `SELECT email, created_at FROM newsletter_subscribers WHERE unsubscribed_at IS NULL ORDER BY created_at;`
-  or from the Supabase Table Editor (Export → CSV).
+  or from the Supabase Table Editor (Export → CSV). With the `LUMA_API_KEY` worker secret set
+  (Luma Plus calendar), each signup is also imported into the Zuzone Luma calendar with the tag
+  `Zuzone newsletter` (override with `LUMA_CONTACT_TAG`), and earlier signups are backfilled on the
+  next signup. `luma_synced_at` / `luma_error` show the state; `/api/_health` shows `luma_sync`.
 - **ZuThread costs money.** Free X timeline sources are all dead; refreshes go through monid at
   roughly $0.0015 per account, so the refresh path is rate limited in the Worker.
 
