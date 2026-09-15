@@ -9,6 +9,7 @@ import { CalendarFeedContent } from "@/components/CalendarFeedDialog";
 import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { Link, useNavigate } from "react-router-dom";
 import { AddVillageForm } from "@/components/villages/AddVillageForm";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PopupTimeline } from "@/components/PopupTimeline";
@@ -598,7 +599,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
       {/* Desktop: bottom panel with toggle + gantt/list */}
       {!isMobile && (
-        <div className="absolute left-0 right-0 bottom-0 max-h-56 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
+        <div className="absolute left-0 right-0 bottom-0 max-h-72 z-20 flex flex-col bg-card/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
+          <NewsletterSubscribe source="home-desktop" />
           <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50 relative">
             <ToggleGroup
               type="single"
@@ -677,7 +679,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
       {/* Mobile: split-screen bottom panel with toggle + gantt/list */}
       {isMobile && (
-        <div className="absolute left-0 right-0 bottom-0 max-h-[50%] z-30 flex flex-col bg-background border-t border-border shadow-xl">
+        <div className="absolute left-0 right-0 bottom-0 max-h-[60%] z-30 flex flex-col bg-background border-t border-border shadow-xl">
+          <NewsletterSubscribe source="home-mobile" compact />
           <div className="flex items-center justify-center gap-2 px-3 pt-2 pb-1 border-b border-border/50">
             <ToggleGroup
               type="single"

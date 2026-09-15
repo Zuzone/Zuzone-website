@@ -101,6 +101,10 @@ Secrets live in Cloudflare and Supabase, never in the repo:
 - **Reviewing submissions.** New villages arrive with `hidden = true` and a `zupass_public_key`.
   List the queue with `SELECT id, name, website_url, created_at FROM villages WHERE hidden AND zupass_public_key IS NOT NULL ORDER BY created_at DESC;`
   and approve with `UPDATE villages SET hidden = false WHERE id = '<id>';`.
+- **Newsletter signups** land in the `newsletter_subscribers` table (written only by the Worker;
+  no public access). Export the active list with
+  `SELECT email, created_at FROM newsletter_subscribers WHERE unsubscribed_at IS NULL ORDER BY created_at;`
+  or from the Supabase Table Editor (Export → CSV).
 - **ZuThread costs money.** Free X timeline sources are all dead; refreshes go through monid at
   roughly $0.0015 per account, so the refresh path is rate limited in the Worker.
 

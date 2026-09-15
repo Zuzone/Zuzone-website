@@ -5,6 +5,7 @@
  *   GET  /calendar.ics        iCalendar feed of every pop-up city (subscribe in Google/Apple/Outlook)
  *   GET  /api/villages.json   public JSON of the directory
  *   POST /api/villages        add a village, gated by a Zupass-signed POD (verified here)
+ *   POST /api/newsletter/subscribe  save a newsletter signup (honeypot + per-IP rate limit)
  *   GET  /api/zuthread.json   every village's X posts, newest first (KV; refreshed on demand at most every 4h)
  *   POST /api/zuthread/refresh  start a manual refresh (rate-limited); GET .../status to follow it
  *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
@@ -21,6 +22,11 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    if (path === "/api/newsletter/subscribe") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+      if (request.method === "POST") return newsletterSubscribe(request, env, ctx);
+    }
 
     if (path === "/api/villages") {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -72,7 +78,65 @@ async function health(env) {
     return r.status;
   };
   const [anon, service] = await Promise.all([probe(env.SUPABASE_ANON_KEY), probe(env.SUPABASE_SERVICE_ROLE_KEY)]);
-  return json({ supabase_url: env.SUPABASE_URL, anon_key: anon, service_role_key: service });
+  // Report what kind of key each secret is (never the key itself): a public read succeeds with
+  // either, so the role claim is what shows whether writes will bypass row-level security.
+  const kind = (key) => {
+    if (!key) return "unset";
+    if (key.startsWith("sb_secret_")) return "secret-key";
+    if (key.startsWith("sb_publishable_")) return "publishable-key";
+    try {
+      const payload = JSON.parse(atob(key.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      return `jwt:${payload.role}:${payload.ref}`;
+    } catch {
+      return "unrecognised";
+    }
+  };
+  return json({ supabase_url: env.SUPABASE_URL, anon_key: anon, service_role_key: service, anon_kind: kind(env.SUPABASE_ANON_KEY), service_kind: kind(env.SUPABASE_SERVICE_ROLE_KEY) });
+}
+
+// ---------- newsletter signups ----------
+
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,253}\.[a-z]{2,24}$/i;
+const SUBSCRIBE_LIMIT = 5; // signups per IP per hour
+
+/**
+ * Save a signup to newsletter_subscribers. Always answers the same way for new and existing
+ * addresses, so the form can't be used to check who is subscribed. Bots filling the hidden
+ * `website` field get a fake success.
+ */
+async function newsletterSubscribe(request, env, ctx) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+  if (body?.website) return json({ ok: true });
+
+  const email = String(body?.email || "").trim().toLowerCase();
+  if (email.length > 254 || !EMAIL_RE.test(email)) return json({ error: "Please enter a valid email address." }, 422);
+
+  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  const ipHash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`newsletter:${ip}`)))]
+    .slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const rateKey = `sub-rate:${ipHash}:${new Date().toISOString().slice(0, 13)}`;
+  const used = Number((await env.ZUTHREAD.get(rateKey)) || 0);
+  if (used >= SUBSCRIBE_LIMIT) return json({ error: "Too many attempts. Please try again later." }, 429);
+  ctx.waitUntil(env.ZUTHREAD.put(rateKey, String(used + 1), { expirationTtl: 3700 }));
+
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) return json({ error: "Signups are not configured." }, 503);
+  const source = String(body?.source || "home").slice(0, 60);
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/newsletter_subscribers?on_conflict=email`, {
+    method: "POST",
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      "content-type": "application/json",
+      Prefer: "resolution=ignore-duplicates,return=minimal",
+    },
+    body: JSON.stringify({ email, source }),
+  });
+  if (!res.ok) {
+    console.error("newsletter insert failed", res.status, (await res.text()).slice(0, 300));
+    return json({ error: "Something went wrong. Please try again." }, 502);
+  }
+  return json({ ok: true });
 }
 
 // ---------- add village (Zupass-gated) ----------
