@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Activity, Mail } from "lucide-react";
 import {
   Dialog,
@@ -23,6 +24,9 @@ export const ZupulseContent = () => (
         <Mail className="h-4 w-4" />
         Read the Zuletter
       </a>
+      <p className="mt-3 text-sm">
+        <Link to="/newsletter" className="font-medium text-primary hover:underline">Read past Zuzone newsletter issues →</Link>
+      </p>
     </section>
     <div className="pt-6">
       <ZuThread embedded />

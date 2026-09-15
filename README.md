@@ -15,6 +15,7 @@ Live: **https://zuzone.boogaav.workers.dev**
 | **Globe** | Mapbox globe of every village, with a scrollable 18-month Gantt strip below it (6 months back, 12 forward). |
 | **Village pages** | `/:slug` — about, map, residents, scenius projects, events, treasury. |
 | **Why Zuzone** | `/why-zuzone` — why the directory exists: an interactive reading of Vitalik's 2023 essay (collapsed by default) and the photo dossier. |
+| **Newsletter** | `/newsletter` — Zuzone newsletter issues, newest first, summarised with photos; data in `src/data/zuzoneNewsletter.ts`. |
 | **Zupulse** | Header panel: the weekly Zuletter, and **ZuThread** — every village's X posts in one chronological feed. |
 | **Add a village** | Open to anyone with a [Zupass](https://zupass.org); the edge worker verifies a signed POD, and the village stays hidden until the team approves it. |
 | **Calendar feed** | `/calendar.ics` — every pop-up as all-day events, subscribable in Google/Apple/Outlook. |
@@ -64,7 +65,7 @@ row-level security is designed around. There is no secret to obtain to run the a
 ```
 src/
   components/       GlobalMap (globe + Gantt), SidePanel, ZuThread, villages/, stays/, ui/
-  pages/            Index, Village, WhyZuzone, Profile, Admin, …
+  pages/            Index, Village, WhyZuzone, Newsletter, Profile, Admin, …
   hooks/            one hook per table — useVillages, useStays, useEvents, …
   integrations/     Supabase client + generated types
 worker/

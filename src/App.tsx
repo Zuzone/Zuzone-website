@@ -18,6 +18,7 @@ import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import TelegramCallback from "./pages/TelegramCallback";
 import WhyZuzone from "./pages/WhyZuzone";
+import Newsletter from "./pages/Newsletter";
 import { UserProfilePopupProvider } from "@/components/profile/UserProfilePopup";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/why-zuzone" element={<WhyZuzone />} />
+                <Route path="/newsletter" element={<Newsletter />} />
                 <Route path="/why-zuzalu" element={<Navigate to="/why-zuzone" replace />} />
                 <Route path="/embed" element={<Embed />} />
                 <Route path="/widget" element={<Widget />} />

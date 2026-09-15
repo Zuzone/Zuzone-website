@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen, Activity } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen, Activity, Newspaper } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsContent } from "@/components/EventsDialog";
 import { ZupulseContent } from "@/components/ZupulseDialog";
@@ -472,14 +472,21 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           </div>
 
 
-          {/* Desktop: inline buttons */}
-          <div className="hidden sm:flex items-center gap-2">
+          {/* Desktop (1024px+): inline buttons. Below that they don't fit, so tablets use the menu */}
+          <div className="hidden lg:flex items-center gap-2">
             <Link
               to="/why-zuzone"
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
               <BookOpen className="h-4 w-4" />
               Why Zuzone
+            </Link>
+            <Link
+              to="/newsletter"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+            >
+              <Newspaper className="h-4 w-4" />
+              Newsletter
             </Link>
             <button
               onClick={() => togglePanel("manifesto")}
@@ -523,8 +530,8 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             </a>
           </div>
 
-          {/* Mobile: hamburger menu */}
-          <div className="sm:hidden">
+          {/* Phones and tablets: hamburger menu */}
+          <div className="lg:hidden">
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -538,6 +545,9 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 <div className="flex flex-col gap-1">
                   <Link to="/why-zuzone" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left">
                     <BookOpen className="h-4 w-4" /> Why Zuzone
+                  </Link>
+                  <Link to="/newsletter" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left">
+                    <Newspaper className="h-4 w-4" /> Newsletter
                   </Link>
                   <button
                     onClick={() => togglePanel("manifesto")}

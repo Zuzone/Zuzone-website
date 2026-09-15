@@ -3,11 +3,11 @@ import { ChevronDown, ExternalLink, Play, X } from "lucide-react";
 import { DOSSIER_CHAPTERS, DOSSIER_EMBLEM, DOSSIER_SOURCES, type DossierChapter, type DossierPhoto } from "@/data/zuzaluDossier";
 
 /**
- * Part II of the Why Zuzone page: the visual record in chronological order. Chapters I-III come
- * from the research dossier (Zuzalu events); IV onward summarise Zuzone newsletter issues.
+ * Part II of the Why Zuzone page: the visual record of Zuzalu, restyled from the research dossier.
+ * Chapter, Lightbox and useChapterExpansion are shared with the Newsletter page.
  */
 
-const Lightbox = ({ photo, onClose }: { photo: DossierPhoto; onClose: () => void }) => (
+export const Lightbox = ({ photo, onClose }: { photo: DossierPhoto; onClose: () => void }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" onClick={onClose} role="dialog" aria-modal="true">
     <button className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" onClick={onClose} aria-label="Close"><X className="h-5 w-5" /></button>
     <figure className="max-h-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
@@ -17,7 +17,7 @@ const Lightbox = ({ photo, onClose }: { photo: DossierPhoto; onClose: () => void
   </div>
 );
 
-const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expanded: boolean; onToggle: () => void; onOpen: (p: DossierPhoto) => void }) => {
+export const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expanded: boolean; onToggle: () => void; onOpen: (p: DossierPhoto) => void }) => {
   const n = (k: number, one: string) => `${k} ${one}${k === 1 ? "" : "s"}`;
   const parts = [ch.photos.length ? n(ch.photos.length, "photo") : null, ch.articles?.length ? n(ch.articles.length, "article") : null, ch.videos.length ? n(ch.videos.length, "video") : null].filter(Boolean) as string[];
   const counts = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0] || "more";
@@ -130,10 +130,9 @@ const Chapter = ({ ch, expanded, onToggle, onOpen }: { ch: DossierChapter; expan
   );
 };
 
-export const DossierSection = () => {
-  const [open, setOpen] = useState<DossierPhoto | null>(null);
-  // Chapters start folded, like Part I; a #montenegro-style deep link opens that one
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([window.location.hash.slice(1)]));
+/** Which chapter cards are open. Starts with whatever a #chapter-id deep link names, plus `initial`. */
+export const useChapterExpansion = (initial: string[] = []) => {
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([window.location.hash.slice(1), ...initial]));
   const toggle = useCallback((id: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -151,6 +150,12 @@ export const DossierSection = () => {
     setExpanded((prev) => new Set(prev).add(id));
     setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
   }, []);
+  return { expanded, toggle, openAndGo };
+};
+
+export const DossierSection = () => {
+  const [open, setOpen] = useState<DossierPhoto | null>(null);
+  const { expanded, toggle, openAndGo } = useChapterExpansion();
   return (
     <div id="dossier" className="scroll-mt-20">
       <section className="mx-auto max-w-3xl px-4 pt-14 sm:pt-20">
@@ -162,7 +167,7 @@ export const DossierSection = () => {
           </div>
         </div>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-          From the Montenegro prototype through ZuConnect Istanbul and the Chiang Mai Archipelago, to the ecosystem as the Zuzone newsletter covered it in 2026. In chronological order.
+          Three chapters of photographs and video, from the Montenegro prototype through ZuConnect Istanbul to the Chiang Mai Archipelago.
         </p>
         <nav className="mt-4 flex flex-wrap gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
           {DOSSIER_CHAPTERS.map((c) => <a key={c.id} href={`#${c.id}`} onClick={(e) => { e.preventDefault(); openAndGo(c.id); }} className="rounded-full border border-border px-3 py-1 text-muted-foreground hover:text-foreground">{c.num} · {c.title.replace(/^Zuzalu /, "")}</a>)}

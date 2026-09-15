@@ -12,7 +12,7 @@
 import { POD } from "@pcd/pod";
 import { buildFeed, EXTRA_SOURCE_IDS, fetchAccount, handlesFromVillages } from "./zuthread.mjs";
 
-const RESERVED = new Set(["why-zuzone", "why-zuzalu", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
+const RESERVED = new Set(["newsletter", "why-zuzone", "why-zuzalu", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
 const VILLAGE_FIELDS = "id,name,logo_url,thumbnail_url,center,dates,location,description,village_type,website_url,twitter_url,telegram_url,instagram_url,apply_url,updated_at,hidden";
 const CACHE_TTL = 300;
