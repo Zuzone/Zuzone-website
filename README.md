@@ -113,4 +113,4 @@ Secrets live in Cloudflare and Supabase, never in the repo:
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). Current state and open items: [HANDOFF.md](HANDOFF.md).
