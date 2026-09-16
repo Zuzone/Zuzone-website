@@ -14,6 +14,9 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   the header 2026-09-16; the calendar feed keeps its own panel, reached from that button). Bottom
   panel: newsletter signup strip, then Gantt/List, **collapsed by default**. The Gantt is a horizontal
   scroll strip (6 months back, 12 forward; 12 months visible on desktop, 4 on phones).
+  - The globe **spins slowly on its own** (2°/s, one turn per three minutes; `GlobalMap.tsx` idle-spin
+    effect). It pauses on grab/wheel/touch, resumes 3 s after release, stays still past zoom 3, in hidden
+    tabs and under reduced motion. Dev builds expose the map as `window.__zuzoneMap` for checks.
 - **Directory**: 25 public villages. Curation is `villages.hidden`: hide, never delete.
 - **Add a village**: needs a Zupass login. The Worker verifies the signed POD and inserts the village with `hidden = true`.
   - Review queue:

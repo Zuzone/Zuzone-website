@@ -148,6 +148,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       m.setPadding(MAP_PADDING);
 
       map.current = m;
+      if (import.meta.env.DEV) (window as unknown as { __zuzoneMap?: mapboxgl.Map }).__zuzoneMap = m;
 
       m.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
 
@@ -392,6 +393,43 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     m.on('zoom', onZoom);
     return () => { m.off('zoom', onZoom); };
   }, [mapReady, updateMarkerScales]);
+
+  // Idle spin: the globe turns slowly on its own until the visitor grabs it, and picks up
+  // again a few seconds after they let go. It stays still when zoomed in past a globe view,
+  // in hidden tabs (the animation frame never fires there) and for reduced-motion users.
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !mapReady) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const DEG_PER_SEC = 2; // one full turn every three minutes
+    const MAX_SPIN_ZOOM = 3;
+    let paused = false;
+    let resumeTimer: number | undefined;
+    const spin = () => {
+      if (paused || document.hidden || m.getZoom() > MAX_SPIN_ZOOM) return;
+      const c = m.getCenter();
+      m.easeTo({ center: [c.lng + DEG_PER_SEC, c.lat], duration: 1000, easing: (t) => t, essential: false });
+    };
+    const pause = () => { paused = true; window.clearTimeout(resumeTimer); };
+    const resumeSoon = () => {
+      window.clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => { paused = false; spin(); }, 3000);
+    };
+    const onVisible = () => { if (!document.hidden) spin(); };
+    m.on("mousedown", pause); m.on("touchstart", pause); m.on("wheel", pause); m.on("dragstart", pause);
+    m.on("mouseup", resumeSoon); m.on("touchend", resumeSoon); m.on("dragend", resumeSoon); m.on("zoomend", resumeSoon);
+    m.on("moveend", spin);
+    document.addEventListener("visibilitychange", onVisible);
+    spin();
+    return () => {
+      window.clearTimeout(resumeTimer);
+      m.off("mousedown", pause); m.off("touchstart", pause); m.off("wheel", pause); m.off("dragstart", pause);
+      m.off("mouseup", resumeSoon); m.off("touchend", resumeSoon); m.off("dragend", resumeSoon); m.off("zoomend", resumeSoon);
+      m.off("moveend", spin);
+      document.removeEventListener("visibilitychange", onVisible);
+      m.stop();
+    };
+  }, [mapReady]);
 
   // Resize the map when mobile/desktop changes (container size shifts)
   useEffect(() => {
