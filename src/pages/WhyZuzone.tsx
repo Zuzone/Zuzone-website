@@ -6,9 +6,9 @@ import { DossierSection } from "@/components/why/DossierSection";
 import { ManifestoSection } from "@/components/why/ManifestoSection";
 
 /**
- * Manifesto + Why Zuzone (one page since 2026-09-16; the manifesto opens it).
- * Zuzalu (2023) was the experiment; Zuzone is an independent coordination layer that
- * came later for the ecosystem that grew out of it. Keep that separation explicit in any copy here.
+ * Manifesto + Historic Brief (one page since 2026-09-16; the manifesto opens it).
+ * The owner's narrative: Zuzone emerged from Zuzalu's ideas, a few years after the 2023
+ * experiment, and was never physically part of it. Keep that framing in any copy here.
  * The argument is told through Vitalik Buterin's essay
  * "Why I Built Zuzalu" (Palladium Magazine, October 2023).
  * Part I: the argument, collapsed by default. Part II: the photo record (DossierSection).
@@ -282,7 +282,7 @@ const WhyZuzone = () => {
     setTimeout(() => document.getElementById("essay")?.scrollIntoView({ behavior: "smooth" }), 30);
   }, []);
   useEffect(() => {
-    document.title = "Manifesto & Why Zuzone";
+    document.title = "Manifesto & Historic Brief";
     const target = window.location.hash ? document.querySelector(window.location.hash) : null;
     if (target) setTimeout(() => target.scrollIntoView({ behavior: "auto" }), 50);
     else window.scrollTo(0, 0);
@@ -300,7 +300,7 @@ const WhyZuzone = () => {
           </Link>
           <nav className="flex items-center gap-3 text-xs text-muted-foreground">
             <a href="#manifesto" className="hover:text-foreground">Manifesto</a>
-            <a href="#why" className="hover:text-foreground">Why</a>
+            <a href="#history" className="hover:text-foreground">History</a>
             <a href="#essay" onClick={(e) => { e.preventDefault(); openEssay(); }} className="hover:text-foreground">Essay</a>
             <a href="#dossier" className="hover:text-foreground">Photos</a>
             <a href={ESSAY_URL} target="_blank" rel="noopener noreferrer" className="hidden items-center gap-1 hover:text-foreground sm:inline-flex">
@@ -312,9 +312,9 @@ const WhyZuzone = () => {
 
       <ManifestoSection />
 
-      <section id="why" className="mx-auto max-w-3xl border-t border-border/60 px-4 pb-6 pt-12 sm:pt-16">
-        <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"><Sparkles className="h-3.5 w-3.5" /> An interactive reading</p>
-        <h2 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Why Zuzone</h2>
+      <section id="history" className="mx-auto max-w-3xl border-t border-border/60 px-4 pb-6 pt-12 sm:pt-16">
+        <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"><Sparkles className="h-3.5 w-3.5" /> Where it comes from</p>
+        <h2 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Historic Brief</h2>
         <p className="mt-5 max-w-2xl font-display text-2xl leading-snug text-foreground sm:text-3xl">
           Zuzalu began as an experiment. What followed became an ecosystem.
         </p>
@@ -328,14 +328,15 @@ const WhyZuzone = () => {
             directions around the world.
           </p>
           <p>
-            Zuzone helps connect them, creating a coordination layer where communities can share knowledge, collaborate
-            and support one another while remaining independent. It gathers the values from those experiments and helps
-            permanent hubs and pop-up cities sustain their projects.
+            Zuzone emerged from those ideas a few years later. It is a coordination layer where the communities that
+            carry the Zuzalu spirit can share knowledge, collaborate and support one another while remaining
+            independent, and it helps permanent hubs and pop-up cities sustain their projects.
           </p>
         </div>
         <p className="mt-4 max-w-2xl rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          Zuzone was not part of Zuzalu 2023. It is an independent project that came later, built for the communities
-          that grew out of it.
+          Zuzone grew out of Zuzalu's ideas, not out of Zuzalu itself. It was never physically part of the 2023
+          gathering in Montenegro: it emerged a few years afterwards, as an independent project for the communities
+          that followed.
         </p>
 
         <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Zuzalu · Montenegro, 2023</p>

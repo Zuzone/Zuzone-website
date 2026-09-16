@@ -1,6 +1,6 @@
 import { ScrollText } from "lucide-react";
 
-/** The manifesto, opening the Why Zuzone page (it used to live in a header side panel). */
+/** The manifesto, opening the /why-zuzone page above the Historic Brief (it used to live in a header side panel). */
 export const ManifestoSection = () => (
   <section id="manifesto" className="mx-auto max-w-3xl px-4 pb-10 pt-14 sm:pt-20">
     <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">

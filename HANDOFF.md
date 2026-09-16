@@ -8,7 +8,7 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
 
 ## What is live
 
-- **Home `/`**: globe, header (Why Zuzone, Newsletter, Events, Zupulse, X; inline at
+- **Home `/`**: globe, header (Historic Brief, Newsletter, Events, Zupulse, X; inline at
   ≥1024px, hamburger below). Panels open in a right-hand `SidePanel` (30% width, full screen on
   phones). **"Add a village" and "Add to calendar" sit at the top of the Events panel** (moved out of
   the header 2026-09-16; the calendar feed keeps its own panel, reached from that button). Bottom
@@ -28,8 +28,8 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
     @James_of_Arc). Never a source, and their reposts/quotes are dropped both when a feed is built
     and when a cached feed is served.
 - **`/why-zuzone`**: the manifesto on top (`src/components/why/ManifestoSection.tsx`; merged from the
-  old header panel 2026-09-16, `/manifesto` redirects here), then "Why Zuzone" in two parts, each in a
-  collapsed card.
+  old header panel 2026-09-16, `/manifesto` redirects here), then the **Historic Brief** (renamed from
+  "Why Zuzone" the same day; `/historic-brief` redirects to it) in two parts, each in a collapsed card.
   - Part I: an interactive reading of Vitalik's essay.
   - Part II: photo chapters for Montenegro, Istanbul and Chiang Mai.
   - No timeline.
@@ -61,9 +61,10 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
 
 ## Content rules (from the project owner)
 
-1. **Zuzone was not part of Zuzalu 2023.**
-   - Zuzalu was the experiment and an ecosystem followed. Zuzone came later as an independent coordination layer.
-   - Never write that Zuzone grew out of Zuzalu.
+1. **Zuzone emerged from Zuzalu's ideas, a few years after 2023, and was never physically part of it.**
+   - Zuzalu was the experiment and an ecosystem followed. Zuzone came later as an independent coordination
+     layer that carries those ideas forward (the owner's narrative, confirmed 2026-09-16).
+   - Say "emerged from Zuzalu's ideas"; never imply Zuzone was present at, or run by, the 2023 gathering.
 2. **No funding information**: no backers, grants, subsidies, sponsors, prize or raise amounts.
    The Ethereum Foundation did not fund any community.
 3. Long sections go in **collapsible cards** (the pattern in `src/components/why/DossierSection.tsx`).

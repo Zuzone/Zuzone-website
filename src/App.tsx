@@ -66,6 +66,7 @@ const App = () => (
                 <Route path="/newsletter" element={<Newsletter />} />
                 <Route path="/why-zuzalu" element={<Navigate to="/why-zuzone" replace />} />
                 <Route path="/manifesto" element={<Navigate to="/why-zuzone#manifesto" replace />} />
+                <Route path="/historic-brief" element={<Navigate to="/why-zuzone#history" replace />} />
                 <Route path="/embed" element={<Embed />} />
                 <Route path="/widget" element={<Widget />} />
                 <Route path="/auth" element={<Auth />} />

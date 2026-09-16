@@ -14,7 +14,7 @@ Live: **https://zuzone.boogaav.workers.dev**
 | --- | --- |
 | **Globe** | Mapbox globe of every village, with a scrollable 18-month Gantt strip below it (6 months back, 12 forward). |
 | **Village pages** | `/:slug` — about, map, residents, scenius projects, events, treasury. |
-| **Why Zuzone** | `/why-zuzone` — why the directory exists: an interactive reading of Vitalik's 2023 essay (collapsed by default) and the photo dossier. |
+| **Manifesto & Historic Brief** | `/why-zuzone` — the manifesto, then where Zuzone comes from: an interactive reading of Vitalik's 2023 essay (collapsed by default) and the photo dossier. |
 | **Newsletter** | `/newsletter` — Zuzone newsletter issues, newest first, summarised with photos; data in `src/data/zuzoneNewsletter.ts`. |
 | **Zupulse** | Header panel: the weekly Zuletter, and **ZuThread** — every village's X posts in one chronological feed. |
 | **Add a village** | Open to anyone with a [Zupass](https://zupass.org); the edge worker verifies a signed POD, and the village stays hidden until the team approves it. |

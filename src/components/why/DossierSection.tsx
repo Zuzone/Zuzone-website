@@ -3,7 +3,7 @@ import { ChevronDown, ExternalLink, Play, X } from "lucide-react";
 import { DOSSIER_CHAPTERS, DOSSIER_EMBLEM, DOSSIER_SOURCES, type DossierChapter, type DossierPhoto } from "@/data/zuzaluDossier";
 
 /**
- * Part II of the Why Zuzone page: the visual record of Zuzalu, restyled from the research dossier.
+ * Part II of the Historic Brief (/why-zuzone): the visual record of Zuzalu, restyled from the research dossier.
  * Chapter, Lightbox and useChapterExpansion are shared with the Newsletter page.
  */
 
