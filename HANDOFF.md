@@ -22,7 +22,7 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   out of the shared ZuThread feed by the village id / its `twitter_url` handle. Desktop: a panel over
   the right third of the map; phones: the usual bottom sheet. A village without an X link shows an
   empty state asking for one.
-- **Directory**: 22 public villages (hidden 2026-09-16: Infinite Games 2026, Edge Esmeralda 2026, Edge City Bhutan 2026; the Goa row is now plain "Edge City"; Proof of Retreat moved to Chiang Mai, Nov 7 – Dec 7, 2026). Curation is `villages.hidden`: hide, never delete.
+- **Directory**: 22 public villages (hidden 2026-09-16: Infinite Games 2026, Edge Esmeralda 2026, Edge City Bhutan 2026; the Goa row is now plain "Edge City"). Curation is `villages.hidden`: hide, never delete.
 - **Add a village**: needs a Zupass login. The Worker verifies the signed POD and inserts the village with `hidden = true`.
   - Review queue:
     `SELECT id, name, website_url, created_at FROM villages WHERE hidden AND zupass_public_key IS NOT NULL ORDER BY created_at DESC;`
