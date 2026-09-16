@@ -17,6 +17,11 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   - The globe **spins slowly on its own** (2°/s, one turn per three minutes; `GlobalMap.tsx` idle-spin
     effect). It pauses on grab/wheel/touch, resumes 3 s after release, stays still past zoom 3, in hidden
     tabs and under reduced motion. Dev builds expose the map as `window.__zuzoneMap` for checks.
+- **Village pages** `/:slug` have tabs About, Map, Residents, Scenius, Events and **Pulse**
+  (`src/components/villages/VillagePulse.tsx`, added 2026-09-16): the village's own X posts, filtered
+  out of the shared ZuThread feed by the village id / its `twitter_url` handle. Desktop: a panel over
+  the right third of the map; phones: the usual bottom sheet. A village without an X link shows an
+  empty state asking for one.
 - **Directory**: 25 public villages. Curation is `villages.hidden`: hide, never delete.
 - **Add a village**: needs a Zupass login. The Worker verifies the signed POD and inserts the village with `hidden = true`.
   - Review queue:
@@ -56,7 +61,8 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   `src/lib/lockupName.ts`, which drops years and parentheticals and strips a leading "Zu" so the
   symbol supplies it. Pauses on hover, in hidden tabs and for reduced-motion users; clicking the
   symbol advances by hand. Phones (below 640px) fall under the brand's 64px ring minimum, so they
-  get plain "Zu" text plus the ticking name.
+  get plain "Zu" text plus the ticking name. **Rule (owner, 2026-09-16): every visit starts on
+  "Zu Zone"** — the index resets when the village list arrives and the first beat is held 1.75× longer.
 - Favicon: `public/favicon.svg` (plain "Zu" on cream, the brand's under-64px expression), with
   `favicon.ico`/`favicon.png` rendered from it. The share card (`scripts/og-card/build.mjs`) carries
   the ring beside the wordmark.

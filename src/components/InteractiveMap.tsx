@@ -15,9 +15,10 @@ import { createFloatingCommentHTML } from "./FloatingCommentBubble";
 import { AuthButton } from "./AuthButton";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { VillagePulse } from "./villages/VillagePulse";
 import { VillageSocialIcons } from "./VillageSocialIcons";
 import { VillageAbout } from "./villages/VillageAbout";
-import { MapPin, Loader2, Check, X, Edit3, Plus, Navigation, Users, Sparkles, ArrowLeft, CalendarDays, Calendar, Info } from "lucide-react";
+import { MapPin, Loader2, Check, X, Edit3, Plus, Navigation, Users, Sparkles, ArrowLeft, CalendarDays, Calendar, Info, Activity } from "lucide-react";
 import { ExpandablePanel } from "./ExpandablePanel";
 import { toast } from "sonner";
 import { useSpots, DbSpot, SpotInput } from "@/hooks/useSpots";
@@ -35,7 +36,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 // Default center (first village or fallback)
 const DEFAULT_CENTER: [number, number] = [108.1885, 10.9355];
 
-type CategoryType = "map" | "about" | "residents" | "scenius" | "events";
+type CategoryType = "map" | "about" | "residents" | "scenius" | "events" | "pulse";
 
 // Derive bot username from village's bot_token_secret_name
 const getBotUsernameFromVillage = (village: Village): string | undefined => {
@@ -91,7 +92,7 @@ export const InteractiveMap = ({ mapboxToken, initialVillageId, initialCategory 
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   // Active view - use URL path-based category, fallback to query param for backward compatibility
-  const validTabs: CategoryType[] = ["map", "about", "residents", "scenius", "events"];
+  const validTabs: CategoryType[] = ["map", "about", "residents", "scenius", "events", "pulse"];
   const queryTab = searchParams.get("tab") as CategoryType | null;
   const [activeView, setActiveView] = useState<CategoryType>(
     initialCategory || (queryTab && validTabs.includes(queryTab) ? queryTab : "about")
@@ -901,6 +902,7 @@ export const InteractiveMap = ({ mapboxToken, initialVillageId, initialCategory 
                   { id: "residents" as CategoryType, icon: CalendarDays, label: "Residents" },
                   { id: "scenius" as CategoryType, icon: Sparkles, label: "Scenius" },
                   { id: "events" as CategoryType, icon: Calendar, label: "Events" },
+                  { id: "pulse" as CategoryType, icon: Activity, label: "Pulse" },
                 ].map(({ id, icon: Icon, label }) => (
                   <Tooltip key={id}>
                     <TooltipTrigger asChild>
@@ -1053,6 +1055,23 @@ export const InteractiveMap = ({ mapboxToken, initialVillageId, initialCategory 
             }
           }}
         />
+      )}
+
+      {/* Pulse view: the village's own X posts. Phones get the usual bottom sheet; from `sm`
+          up it is a side panel over the right third of the map, so the map stays in view. */}
+      {activeView === "pulse" && isZoomedIn && activeVillage && (
+        <>
+          <div className="absolute bottom-[72px] left-2 right-2 z-20 sm:hidden">
+            <ExpandablePanel>
+              <VillagePulse village={activeVillage} />
+            </ExpandablePanel>
+          </div>
+          <div className="absolute bottom-4 right-4 top-[84px] z-20 hidden w-1/3 min-w-[320px] sm:block md:right-6 md:top-[100px] md:bottom-6">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-lg backdrop-blur-sm">
+              <VillagePulse village={activeVillage} />
+            </div>
+          </div>
+        </>
       )}
 
       {/* Mobile Bottom Navigation */}

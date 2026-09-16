@@ -84,6 +84,7 @@ const App = () => (
                 <Route path="/:villageSlug/bulletin" element={<Village />} />
                 <Route path="/:villageSlug/events" element={<Village />} />
                 <Route path="/:villageSlug/treasury" element={<Village />} />
+                <Route path="/:villageSlug/pulse" element={<Village />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </UserProfilePopupProvider>

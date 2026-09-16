@@ -4,8 +4,8 @@ import { ArrowUp, ExternalLink, Heart, MessageCircle, Play, RefreshCw, Repeat2 }
 import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 import { timeAgo } from "@/lib/timeAgo";
 
-interface Media { type: "photo" | "video"; url: string; width: number | null; height: number | null; video: string | null }
-interface Post {
+export interface Media { type: "photo" | "video"; url: string; width: number | null; height: number | null; video: string | null }
+export interface Post {
   id: string;
   url: string;
   created_at: string;
@@ -21,8 +21,8 @@ interface Post {
   quoted: { handle: string | null; name: string | null; text: string } | null;
   stats: { likes: number; reposts: number; replies: number; views: number };
 }
-interface Source { handle: string; villages: string[]; name: string | null; avatar: string | null; posts: number; error: string | null }
-interface Feed { generated_at: string | null; count: number; sources: Source[]; posts: Post[] }
+export interface Source { handle: string; villages: string[]; name: string | null; avatar: string | null; posts: number; error: string | null }
+export interface Feed { generated_at: string | null; count: number; sources: Source[]; posts: Post[] }
 
 const PAGE = 24;
 
@@ -51,7 +51,7 @@ const villageHref = (id: string) => (id === "zuzone" ? "/" : `/${id}`);
 
 const fmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
 
-const PostCard = ({ post }: { post: Post }) => {
+export const PostCard = ({ post }: { post: Post }) => {
   const avatar = post.author.avatar || post.village_logo || "/placeholder.svg";
   const name = post.author.name || post.village_name;
   const handle = post.author.handle || post.handle;

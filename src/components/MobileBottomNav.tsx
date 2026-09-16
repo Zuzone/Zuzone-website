@@ -1,10 +1,10 @@
-import { MapPin, CalendarDays, Sparkles, Calendar, User, Info } from "lucide-react";
+import { MapPin, CalendarDays, Sparkles, Calendar, User, Info, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-type ActiveView = "map" | "about" | "residents" | "scenius" | "events";
+type ActiveView = "map" | "about" | "residents" | "scenius" | "events" | "pulse";
 
 interface MobileBottomNavProps {
   activeView: ActiveView;
@@ -17,6 +17,7 @@ const navItems: { id: ActiveView; icon: typeof MapPin; label: string }[] = [
   { id: "residents", icon: CalendarDays, label: "Residents" },
   { id: "scenius", icon: Sparkles, label: "Scenius" },
   { id: "events", icon: Calendar, label: "Events" },
+  { id: "pulse", icon: Activity, label: "Pulse" },
 ];
 
 export const MobileBottomNav = ({ activeView, onViewChange }: MobileBottomNavProps) => {
@@ -44,7 +45,7 @@ export const MobileBottomNav = ({ activeView, onViewChange }: MobileBottomNavPro
               key={id}
               onClick={() => onViewChange(id)}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-lg transition-all min-w-[50px]",
+                "flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-lg transition-all min-w-[44px]",
                 activeView === id
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -67,7 +68,7 @@ export const MobileBottomNav = ({ activeView, onViewChange }: MobileBottomNavPro
         {/* Auth button */}
         <button
           onClick={() => navigate("/auth")}
-          className="flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-lg transition-all min-w-[50px] text-muted-foreground hover:text-foreground"
+          className="flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-lg transition-all min-w-[44px] text-muted-foreground hover:text-foreground"
         >
           {loading ? (
             <div className="h-5 w-5 rounded-full bg-muted animate-pulse" />

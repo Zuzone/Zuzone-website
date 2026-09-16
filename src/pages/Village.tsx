@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 
 const MAPBOX_TOKEN = "REDACTED_MAPBOX_TOKEN";
 
-type CategoryType = "map" | "about" | "residents" | "scenius" | "events";
+type CategoryType = "map" | "about" | "residents" | "scenius" | "events" | "pulse";
 
 interface VillageProps {
   overrideVillageSlug?: string;
@@ -25,7 +25,7 @@ const Village = ({ overrideVillageSlug }: VillageProps) => {
   // Extract category from the URL path (e.g., /proof-of-retreat/residents -> residents)
   const initialCategory = useMemo<CategoryType>(() => {
     const pathParts = location.pathname.split('/').filter(Boolean);
-    const validCategories: CategoryType[] = ["map", "about", "residents", "scenius", "events"];
+    const validCategories: CategoryType[] = ["map", "about", "residents", "scenius", "events", "pulse"];
     
     // Check the last path segment for a valid category
     if (pathParts.length >= 1) {

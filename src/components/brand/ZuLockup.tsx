@@ -28,10 +28,13 @@ interface ZuLockupProps {
 }
 
 export function ZuLockup({ names, interval = 2400, size = 64, fontSize = 30, plain = false, className = "" }: ZuLockupProps) {
+  // Keyed on the names' content: callers pass a fresh array each render, and the list must only
+  // change (and restart at "Zone") when the villages actually change.
+  const namesKey = names.join("\u0000");
   const words = useMemo(() => {
     const seen = new Set<string>(["zone"]);
     const out = ["Zone"];
-    for (const n of names) {
+    for (const n of namesKey ? namesKey.split("\u0000") : []) {
       const w = lockupName(n);
       if (!seen.has(w.toLowerCase())) {
         seen.add(w.toLowerCase());
@@ -39,7 +42,7 @@ export function ZuLockup({ names, interval = 2400, size = 64, fontSize = 30, pla
       }
     }
     return out;
-  }, [names]);
+  }, [namesKey]);
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -53,14 +56,21 @@ export function ZuLockup({ names, interval = 2400, size = 64, fontSize = 30, pla
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  // Rule: every visit starts on "Zu Zone". The list is rebuilt when the villages arrive, so the
+  // index goes back to 0 then, and the first beat is held longer before the names begin.
+  useEffect(() => { setIndex(0); }, [words]);
   useEffect(() => {
     if (paused || words.length < 2) return;
-    const id = window.setInterval(() => {
-      if (document.hidden || reduced.current) return;
-      setIndex((i) => i + 1);
-    }, interval);
-    return () => window.clearInterval(id);
-  }, [paused, interval, words.length]);
+    let id = 0;
+    const tick = () => {
+      id = window.setTimeout(() => {
+        if (!document.hidden && !reduced.current) setIndex((i) => i + 1);
+        tick();
+      }, index === 0 ? interval * 1.75 : interval);
+    };
+    tick();
+    return () => window.clearTimeout(id);
+  }, [paused, interval, words.length, index]);
 
   const position = index % 12;
   const word = words[index % words.length];
