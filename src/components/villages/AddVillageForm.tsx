@@ -35,9 +35,11 @@ interface WebsiteMetadata {
 
 interface AddVillageFormProps {
   onVillageAdded?: () => void;
+  /** With a label the trigger is a pill button ("+ Add a village") instead of a bare icon */
+  label?: string;
 }
 
-export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
+export const AddVillageForm = ({ onVillageAdded, label }: AddVillageFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -295,9 +297,15 @@ export const AddVillageForm = ({ onVillageAdded }: AddVillageFormProps) => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Plus className="h-4 w-4" />
-        </Button>
+        {label ? (
+          <Button variant="default" size="sm" className="h-9 gap-1.5 rounded-full px-4 font-semibold">
+            <Plus className="h-4 w-4" /> {label}
+          </Button>
+        ) : (
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Plus className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>

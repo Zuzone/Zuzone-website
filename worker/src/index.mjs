@@ -11,7 +11,7 @@
  *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
  */
 import { POD } from "@pcd/pod";
-import { buildFeed, EXTRA_SOURCE_IDS, fetchAccount, handlesFromVillages } from "./zuthread.mjs";
+import { buildFeed, EXTRA_SOURCE_IDS, fetchAccount, handlesFromVillages, isExcludedPost, EXCLUDED_HANDLES } from "./zuthread.mjs";
 
 const RESERVED = new Set(["newsletter", "why-zuzone", "why-zuzalu", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
 const SECTIONS = new Set(["about", "map", "residents", "scenius", "bulletin", "events", "treasury"]);
@@ -402,6 +402,7 @@ async function visibleFeed(body, env, ctx) {
   try { visible = new Map((await fetchVillages(env, ctx)).map((v) => [v.id, v])); } catch { return body; }
   const posts = [];
   for (const p of feed.posts || []) {
+    if (isExcludedPost(p)) continue; // also scrubs feeds cached before an account was excluded
     const ids = (p.villages || [p.village_id]).filter((id) => visible.has(id) || EXTRA_SOURCE_IDS.has(id));
     if (!ids.length) continue;
     if (!visible.has(p.village_id) && !EXTRA_SOURCE_IDS.has(p.village_id)) {
@@ -412,6 +413,7 @@ async function visibleFeed(body, env, ctx) {
     posts.push(p);
   }
   const sources = (feed.sources || [])
+    .filter((src) => !EXCLUDED_HANDLES.has(String(src.handle || "").toLowerCase()))
     .map((src) => ({ ...src, villages: (src.villages || []).filter((id) => visible.has(id) || EXTRA_SOURCE_IDS.has(id)) }))
     .filter((src) => src.villages.length)
     .map((src) => ({ ...src, posts: posts.filter((p) => p.handle === src.handle).length }));

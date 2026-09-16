@@ -13,6 +13,17 @@ export const ZUTHREAD_MAX_AGE_DAYS = 120;
 export const HANDLE_OVERRIDES = {};
 
 /**
+ * Personal accounts that must never appear in the thread — not as a source, not as the author
+ * of a repost, not as a quoted post. Lowercase handles. (Owner request 2026-09-16.)
+ */
+export const EXCLUDED_HANDLES = new Set(["james_of_arc"]);
+const excluded = (h) => !!h && EXCLUDED_HANDLES.has(String(h).toLowerCase());
+/** True when a normalized feed post involves an excluded account. */
+export function isExcludedPost(p) {
+  return excluded(p?.handle) || excluded(p?.author?.handle) || excluded(p?.quoted?.handle);
+}
+
+/**
  * Accounts that belong in the thread without being a village. Their pseudo-village ids are
  * always treated as visible, and the client links them to the home page.
  */
@@ -39,7 +50,7 @@ export function handlesFromVillages(villages) {
     let handle;
     if (Object.prototype.hasOwnProperty.call(HANDLE_OVERRIDES, v.id)) handle = HANDLE_OVERRIDES[v.id];
     else handle = handleFromUrl(v.twitter_url);
-    if (!handle) continue;
+    if (!handle || excluded(handle)) continue;
     const key = handle.toLowerCase();
     if (!byHandle.has(key)) byHandle.set(key, { handle, villages: [] });
     byHandle.get(key).villages.push({ id: v.id, name: v.name, logo: v.logo_url || null });
@@ -165,6 +176,7 @@ export function normalizeTweet(t, { handle, villages }) {
   const quoted = src.quoted && src.quoted.text
     ? { handle: src.quoted.author?.screen_name || null, name: src.quoted.author?.name || null, text: expandUrls(src.quoted.text, src.quoted.entities).slice(0, 400) }
     : null;
+  if (excluded(authorHandle) || excluded(quoted?.handle)) return null;
   return {
     id: String(t.tweet_id),
     url: `https://x.com/${authorHandle || handle}/status/${src.tweet_id || t.tweet_id}`,

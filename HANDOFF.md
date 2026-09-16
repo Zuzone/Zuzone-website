@@ -8,10 +8,12 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
 
 ## What is live
 
-- **Home `/`**: globe, header (Why Zuzone, Newsletter, Manifesto, Events, Add to calendar, Zupulse, X;
-  inline at ≥1024px, hamburger below). Panels open in a right-hand `SidePanel` (30% width, full screen on
-  phones). Bottom panel: newsletter signup strip, then Gantt/List, **collapsed by default**. The Gantt is
-  a horizontal scroll strip (6 months back, 12 forward; 12 months visible on desktop, 4 on phones).
+- **Home `/`**: globe, header (Why Zuzone, Newsletter, Manifesto, Events, Zupulse, X; inline at
+  ≥1024px, hamburger below). Panels open in a right-hand `SidePanel` (30% width, full screen on
+  phones). **"Add a village" and "Add to calendar" sit at the top of the Events panel** (moved out of
+  the header 2026-09-16; the calendar feed keeps its own panel, reached from that button). Bottom
+  panel: newsletter signup strip, then Gantt/List, **collapsed by default**. The Gantt is a horizontal
+  scroll strip (6 months back, 12 forward; 12 months visible on desktop, 4 on phones).
 - **Directory**: 25 public villages. Curation is `villages.hidden`: hide, never delete.
 - **Add a village**: needs a Zupass login. The Worker verifies the signed POD and inserts the village with `hidden = true`.
   - Review queue:
@@ -22,11 +24,15 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   `worker/src/zuthread.mjs`).
   - The refresh button chains Worker invocations, 4 accounts each, through the `SELF` binding.
   - Limits: 10-minute cooldown, 20 refreshes per day.
+  - Blocked personal accounts: `EXCLUDED_HANDLES` in `worker/src/zuthread.mjs` (currently
+    @James_of_Arc). Never a source, and their reposts/quotes are dropped both when a feed is built
+    and when a cached feed is served.
 - **`/why-zuzone`**: two parts, each in a collapsed card.
   - Part I: an interactive reading of Vitalik's essay.
   - Part II: photo chapters for Montenegro, Istanbul and Chiang Mai.
   - No timeline.
-- **`/newsletter`**: the issues, newest first (`src/data/zuzoneNewsletter.ts`; add new issues at the top).
+- **`/newsletter`**: the issues, newest first (`src/data/zuzoneNewsletter.ts`; add new issues at the top),
+  with a signup strip above and below them (not dismissible there).
 - **Newsletter signups**: `POST /api/newsletter/subscribe` writes to the `newsletter_subscribers` table.
   - Luma forwarding is built but stays off until `LUMA_API_KEY` is set.
 - **Analytics**: GA4 `G-KBFF3YEEBM`, Microsoft Clarity `yimkgkl8vb` (`index.html`).
@@ -89,7 +95,8 @@ Worker secrets currently set: `SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`. Not 
    - Location mismatches:
      - ShanHaiWoo: the row says Singapore, the owner says Hong Kong.
      - Invisible Garden: the row says India, the owner says Chiang Mai.
-     - "Futura House": the row is still named "Futura Camp 2026 x ZuBerlin".
+     - "Futura House": the row is now "Futura Camp 2026" (the "x ZuBerlin" was dropped 2026-09-16);
+       the owner has not asked for "Futura House" yet. Invisible Garden lost "Reunion" the same day.
 
 ## Gotchas
 

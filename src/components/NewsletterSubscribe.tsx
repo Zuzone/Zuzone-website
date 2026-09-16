@@ -17,8 +17,18 @@ declare global {
  * Newsletter signup strip for the home page, shown under the globe. Signups go to the edge
  * worker (POST /api/newsletter/subscribe), which stores them in Supabase.
  */
-export const NewsletterSubscribe = ({ source = "home", compact = false }: { source?: string; compact?: boolean }) => {
-  const [dismissed, setDismissed] = useState(readDismissed);
+interface NewsletterSubscribeProps {
+  source?: string;
+  compact?: boolean;
+  /** The home strip can be hidden per browser; on the newsletter page it always shows */
+  dismissible?: boolean;
+  /** Hide the "Past issues" link where the issues are already on the page */
+  pastIssuesLink?: boolean;
+  className?: string;
+}
+
+export const NewsletterSubscribe = ({ source = "home", compact = false, dismissible = true, pastIssuesLink = true, className = "" }: NewsletterSubscribeProps) => {
+  const [dismissed, setDismissed] = useState(() => dismissible && readDismissed());
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState(""); // honeypot: real people never see or fill this
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -56,15 +66,15 @@ export const NewsletterSubscribe = ({ source = "home", compact = false }: { sour
   };
 
   return (
-    <div className={`relative border-b border-border/50 ${compact ? "px-3 py-2" : "px-4 py-2.5"}`}>
+    <div className={`relative border-b border-border/50 ${compact ? "px-3 py-2" : "px-4 py-2.5"} ${className}`}>
       <div className={`mx-auto flex max-w-3xl gap-x-4 gap-y-1.5 ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-center"}`}>
         <div className={`min-w-0 ${compact ? "pr-7" : "sm:flex-1"}`}>
           <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
             <Mail className="h-4 w-4 shrink-0 text-primary" /> Zuzone newsletter
           </p>
           <p className="text-xs text-muted-foreground">
-            Monthly notes from permanent hubs and pop-up cities.{" "}
-            <Link to="/newsletter" className="underline hover:text-foreground">Past issues</Link>
+            Monthly notes from permanent hubs and pop-up cities.
+            {pastIssuesLink && <> <Link to="/newsletter" className="underline hover:text-foreground">Past issues</Link></>}
           </p>
         </div>
 
@@ -107,14 +117,14 @@ export const NewsletterSubscribe = ({ source = "home", compact = false }: { sour
         )}
       </div>
       {message && <p className="mx-auto mt-1 max-w-3xl text-xs text-destructive">{message}</p>}
-      <button
+      {dismissible && <button
         type="button"
         onClick={dismiss}
         aria-label="Hide newsletter signup"
         className={`absolute right-2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground ${compact ? "top-2" : "top-1/2 -translate-y-1/2"}`}
       >
         <X className="h-3.5 w-3.5" />
-      </button>
+      </button>}
     </div>
   );
 };

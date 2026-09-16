@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, Newspaper } from "lucide-react";
 import { Chapter, Lightbox, useChapterExpansion } from "@/components/why/DossierSection";
 import type { DossierPhoto } from "@/data/zuzaluDossier";
 import { NEWSLETTER_ARCHIVE_URL, NEWSLETTER_ISSUES } from "@/data/zuzoneNewsletter";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 
 /** The Zuzone newsletter, issue by issue, newest first. The latest issue starts open. */
 const Newsletter = () => {
@@ -49,6 +50,10 @@ const Newsletter = () => {
         </nav>
       </section>
 
+      <div className="mx-auto max-w-3xl px-4 pb-6">
+        <NewsletterSubscribe source="newsletter-top" dismissible={false} pastIssuesLink={false} className="rounded-2xl border border-border bg-card shadow-soft" />
+      </div>
+
       <div className="mx-auto max-w-3xl px-4 pb-16">
         {NEWSLETTER_ISSUES.map((issue) => (
           <Chapter key={issue.id} ch={issue} expanded={expanded.has(issue.id)} onToggle={() => toggle(issue.id)} onOpen={setPhoto} />
@@ -58,6 +63,7 @@ const Newsletter = () => {
           <a href={NEWSLETTER_ARCHIVE_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">zuzone.org</a>.
           Photos belong to the credited authors.
         </p>
+        <NewsletterSubscribe source="newsletter-bottom" dismissible={false} pastIssuesLink={false} className="mt-8 rounded-2xl border border-border bg-card shadow-soft" />
       </div>
       {photo && <Lightbox photo={photo} onClose={() => setPhoto(null)} />}
     </div>

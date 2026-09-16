@@ -462,7 +462,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                   <ZuLockup names={villages.map((v) => v.name)} size={64} fontSize={32} />
                 )}
               </h1>
-              <AddVillageForm />
               {isAdmin && (
                 <Button
                   variant="ghost"
@@ -510,14 +509,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
             >
               <Calendar className="h-4 w-4" />
               Events
-            </button>
-            <button
-              onClick={() => togglePanel("calendar")}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
-              title="Subscribe to every pop-up city as a calendar feed"
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Add to calendar
             </button>
             <button
               onClick={() => togglePanel("zupulse")}
@@ -569,12 +560,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
                   >
                     <Calendar className="h-4 w-4" /> Events
-                  </button>
-                  <button
-                    onClick={() => togglePanel("calendar")}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
-                  >
-                    <CalendarPlus className="h-4 w-4" /> Add to calendar
                   </button>
                   <button
                     onClick={() => togglePanel("zupulse")}
@@ -767,7 +752,23 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
 
     <SidePanel open={panel !== null} title={panel ? PANEL_TITLES[panel] : ""} onClose={() => setPanel(null)}>
       {panel === "manifesto" && <ManifestoContent />}
-      {panel === "events" && <EventsContent />}
+      {panel === "events" && (
+        <>
+          {/* Adding a village and the calendar feed live under Events (moved out of the header) */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-border/50 px-4 py-3">
+            <AddVillageForm label="Add a village" />
+            <button
+              onClick={() => setPanel("calendar")}
+              className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-4 text-sm font-semibold text-foreground hover:bg-muted"
+              title="Subscribe to every pop-up city as a calendar feed"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Add to calendar
+            </button>
+          </div>
+          <EventsContent />
+        </>
+      )}
       {panel === "calendar" && <CalendarFeedContent villageCount={villages.length} />}
       {panel === "zupulse" && <ZupulseContent />}
     </SidePanel>
