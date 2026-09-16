@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Loader2, Settings, Calendar, Building2, ScrollText, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen, Activity, Newspaper } from "lucide-react";
+import { Loader2, Settings, Calendar, Building2, ChevronUp, ChevronDown, Menu, X as XIcon, ChevronsDown, ChevronsUp, BarChart3, LayoutList, CalendarPlus, BookOpen, Activity, Newspaper } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventsContent } from "@/components/EventsDialog";
 import { ZupulseContent } from "@/components/ZupulseDialog";
@@ -19,7 +19,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserCurrentVillage } from "@/hooks/useUserCurrentVillage";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { ManifestoContent } from "@/components/ManifestoDialog";
 import { SidePanel, type PanelKey } from "@/components/SidePanel";
 import { useIsMobile, useIsPhone } from "@/hooks/use-mobile";
 
@@ -416,7 +415,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     return () => clearTimeout(t);
   }, [panel]);
 
-  const PANEL_TITLES: Record<PanelKey, string> = { manifesto: "Manifesto", events: "Events", calendar: "Add to calendar", zupulse: "Zupulse" };
+  const PANEL_TITLES: Record<PanelKey, string> = { events: "Events", calendar: "Add to calendar", zupulse: "Zupulse" };
 
   return (
     <div className="flex h-full w-full overflow-hidden">
@@ -497,13 +496,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
               Newsletter
             </Link>
             <button
-              onClick={() => togglePanel("manifesto")}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
-            >
-              <ScrollText className="h-4 w-4" />
-              Manifesto
-            </button>
-            <button
               onClick={() => togglePanel("events")}
               className="inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 bg-muted/50 backdrop-blur-sm text-foreground font-semibold text-sm rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
             >
@@ -549,12 +541,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                   <Link to="/newsletter" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left">
                     <Newspaper className="h-4 w-4" /> Newsletter
                   </Link>
-                  <button
-                    onClick={() => togglePanel("manifesto")}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
-                  >
-                    <ScrollText className="h-4 w-4" /> Manifesto
-                  </button>
                   <button
                     onClick={() => togglePanel("events")}
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted text-left"
@@ -751,7 +737,6 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
     </div>
 
     <SidePanel open={panel !== null} title={panel ? PANEL_TITLES[panel] : ""} onClose={() => setPanel(null)}>
-      {panel === "manifesto" && <ManifestoContent />}
       {panel === "events" && (
         <>
           {/* Adding a village and the calendar feed live under Events (moved out of the header) */}

@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { X } from "lucide-react";
 
-export type PanelKey = "manifesto" | "events" | "calendar" | "zupulse";
+export type PanelKey = "events" | "calendar" | "zupulse";
 
 interface SidePanelProps {
   open: boolean;

@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ChevronDown, ExternalLink, Sparkles } from "lucide-react";
 import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 import { DossierSection } from "@/components/why/DossierSection";
+import { ManifestoSection } from "@/components/why/ManifestoSection";
 
 /**
- * Why Zuzone — Zuzalu (2023) was the experiment; Zuzone is an independent coordination layer that
+ * Manifesto + Why Zuzone (one page since 2026-09-16; the manifesto opens it).
+ * Zuzalu (2023) was the experiment; Zuzone is an independent coordination layer that
  * came later for the ecosystem that grew out of it. Keep that separation explicit in any copy here.
  * The argument is told through Vitalik Buterin's essay
  * "Why I Built Zuzalu" (Palladium Magazine, October 2023).
@@ -280,7 +282,7 @@ const WhyZuzone = () => {
     setTimeout(() => document.getElementById("essay")?.scrollIntoView({ behavior: "smooth" }), 30);
   }, []);
   useEffect(() => {
-    document.title = "Why Zuzone";
+    document.title = "Manifesto & Why Zuzone";
     const target = window.location.hash ? document.querySelector(window.location.hash) : null;
     if (target) setTimeout(() => target.scrollIntoView({ behavior: "auto" }), 50);
     else window.scrollTo(0, 0);
@@ -297,6 +299,8 @@ const WhyZuzone = () => {
             <ArrowLeft className="h-4 w-4" /> Zuzone
           </Link>
           <nav className="flex items-center gap-3 text-xs text-muted-foreground">
+            <a href="#manifesto" className="hover:text-foreground">Manifesto</a>
+            <a href="#why" className="hover:text-foreground">Why</a>
             <a href="#essay" onClick={(e) => { e.preventDefault(); openEssay(); }} className="hover:text-foreground">Essay</a>
             <a href="#dossier" className="hover:text-foreground">Photos</a>
             <a href={ESSAY_URL} target="_blank" rel="noopener noreferrer" className="hidden items-center gap-1 hover:text-foreground sm:inline-flex">
@@ -306,9 +310,11 @@ const WhyZuzone = () => {
         </div>
       </header>
 
-      <section className="mx-auto max-w-3xl px-4 pb-6 pt-14 sm:pt-20">
+      <ManifestoSection />
+
+      <section id="why" className="mx-auto max-w-3xl border-t border-border/60 px-4 pb-6 pt-12 sm:pt-16">
         <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"><Sparkles className="h-3.5 w-3.5" /> An interactive reading</p>
-        <h1 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Why Zuzone</h1>
+        <h2 className="mt-4 font-display text-5xl font-semibold leading-none sm:text-6xl">Why Zuzone</h2>
         <p className="mt-5 max-w-2xl font-display text-2xl leading-snug text-foreground sm:text-3xl">
           Zuzalu began as an experiment. What followed became an ecosystem.
         </p>

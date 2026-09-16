@@ -8,7 +8,7 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
 
 ## What is live
 
-- **Home `/`**: globe, header (Why Zuzone, Newsletter, Manifesto, Events, Zupulse, X; inline at
+- **Home `/`**: globe, header (Why Zuzone, Newsletter, Events, Zupulse, X; inline at
   ≥1024px, hamburger below). Panels open in a right-hand `SidePanel` (30% width, full screen on
   phones). **"Add a village" and "Add to calendar" sit at the top of the Events panel** (moved out of
   the header 2026-09-16; the calendar feed keeps its own panel, reached from that button). Bottom
@@ -27,7 +27,9 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   - Blocked personal accounts: `EXCLUDED_HANDLES` in `worker/src/zuthread.mjs` (currently
     @James_of_Arc). Never a source, and their reposts/quotes are dropped both when a feed is built
     and when a cached feed is served.
-- **`/why-zuzone`**: two parts, each in a collapsed card.
+- **`/why-zuzone`**: the manifesto on top (`src/components/why/ManifestoSection.tsx`; merged from the
+  old header panel 2026-09-16, `/manifesto` redirects here), then "Why Zuzone" in two parts, each in a
+  collapsed card.
   - Part I: an interactive reading of Vitalik's essay.
   - Part II: photo chapters for Montenegro, Istanbul and Chiang Mai.
   - No timeline.
