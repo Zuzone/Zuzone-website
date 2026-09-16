@@ -16,6 +16,8 @@ const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/M
 const TOKEN = readFileSync("src/pages/Index.tsx", "utf8").match(/pk\.[A-Za-z0-9._-]+/)[0];
 
 const [CLON, CLAT, Z, W, H] = [30, 28, 1.05, 1200, 630];
+// The Zu symbol (brand/zu-mark-forest.svg), read at build time so the card follows the identity
+const ZU_MARK = readFileSync("brand/zu-mark-forest.svg", "utf8");
 const scale = 512 * 2 ** Z;
 const project = (lon, lat) => {
   const s = Math.sin((lat * Math.PI) / 180);
@@ -40,7 +42,8 @@ html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden;background:hsl(45 
 .bg{position:absolute;inset:0;background:url('https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${CLON},${CLAT},${Z},0/${W}x${H}@2x?access_token=${TOKEN}') center/cover no-repeat;opacity:.9}
 .veil{position:absolute;inset:0;background:linear-gradient(90deg,hsl(45 60% 95%) 0%,hsl(45 60% 95% / .92) 42%,hsl(45 60% 95% / .35) 70%,hsl(45 60% 95% / 0) 100%)}
 .wrap{position:absolute;left:72px;top:0;height:${H}px;display:flex;flex-direction:column;justify-content:center;width:640px}
-h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:104px;line-height:1;margin:0 0 18px;letter-spacing:-1px}
+.brand{display:flex;align-items:center;gap:22px;margin:0 0 18px}.brand svg{width:132px;height:132px;flex-shrink:0}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:104px;line-height:1;margin:0;letter-spacing:-1px}
 .tag{font-size:30px;line-height:1.3;margin:0 0 34px;max-width:560px}
 .tag span{font-size:24px;opacity:.8}
 .chips{display:flex;gap:10px;flex-wrap:wrap}
@@ -53,7 +56,7 @@ h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:104px;line-h
 ${pins.map(([x, y]) => `<div class="pin" style="left:${Math.round(x - 7)}px;top:${Math.round(y - 7)}px"></div>`).join("")}
 <div class="veil"></div>
 <div class="wrap">
- <h1>Zuzone</h1>
+ <div class="brand">${ZU_MARK}<h1>Zuzone</h1></div>
  <p class="tag">The home for permanent hubs and pop-up cities.<br><span>${villages.length} villages on one globe.</span></p>
  <div class="chips"><span class="chip">Globe</span><span class="chip">Timeline</span><span class="chip">Residents</span><span class="chip alt">Calendar feed</span></div>
 </div>

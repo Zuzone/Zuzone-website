@@ -146,6 +146,18 @@
     font-family: var(--font-display);
   }
 
+  /* Brand lockup: the next name enters from just below the baseline (see ZuLockup) */
+  .zu-lockup-enter {
+    animation: zu-lockup-enter 220ms ease-out;
+  }
+  @keyframes zu-lockup-enter {
+    from { opacity: 0.2; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .zu-lockup-enter { animation: none; }
+  }
+
   .font-body {
     font-family: var(--font-body);
   }

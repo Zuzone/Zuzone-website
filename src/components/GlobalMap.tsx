@@ -10,6 +10,7 @@ import { useVillages, Village, VillageType } from "@/hooks/useVillages";
 import { Link, useNavigate } from "react-router-dom";
 import { AddVillageForm } from "@/components/villages/AddVillageForm";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
+import { ZuLockup } from "@/components/brand/ZuLockup";
 
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { PopupTimeline } from "@/components/PopupTimeline";
@@ -451,8 +452,15 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
         <div className="flex items-start justify-between pointer-events-auto">
           <div className="flex flex-col gap-1 w-fit">
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
-                Zuzone
+              {/* The living lockup: Zu symbol + every listed village, one per tick.
+                  Phones fall below the brand's 64px ring minimum, so they get plain "Zu". */}
+              <h1 className="text-foreground">
+                <span className="sr-only">Zuzone</span>
+                {isPhone ? (
+                  <ZuLockup names={villages.map((v) => v.name)} plain fontSize={26} />
+                ) : (
+                  <ZuLockup names={villages.map((v) => v.name)} size={64} fontSize={32} />
+                )}
               </h1>
               <AddVillageForm />
               {isAdmin && (

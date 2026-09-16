@@ -31,6 +31,26 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   - Luma forwarding is built but stays off until `LUMA_API_KEY` is set.
 - **Analytics**: GA4 `G-KBFF3YEEBM`, Microsoft Clarity `yimkgkl8vb` (`index.html`).
 
+## Brand (identity v2, September 2026)
+
+- The designer's brand book is `brand/Zuzone-Motion-Preview.html` (self-contained, fonts embedded).
+  Palette: forest `#1F4D3A`, cream `#FAF6EC`, lime `#C4D63E`, blush `#FBE6E6`; Cormorant Garamond
+  Medium for display, DM Sans for body — the same tokens `src/index.css` already uses.
+- The **Zu symbol** (12-dot ring, one lime marker, "Zu" inside) is `src/components/brand/ZuMark.tsx`;
+  static copies in `brand/zu-mark-forest.svg` and `brand/zu-mark-cream.svg`. The earlier
+  exploration files in `brand/` (`zone.svg`, `constellation.svg`, …) are superseded.
+- The **living lockup** in the home header is `src/components/brand/ZuLockup.tsx`: the symbol stays
+  fixed, every 2.4 s the lime marker steps clockwise and the next village name slides in
+  ("Zu Zone", "Zu Zanzalu", "Zu Afrique", …). Names come from the live directory through
+  `src/lib/lockupName.ts`, which drops years and parentheticals and strips a leading "Zu" so the
+  symbol supplies it. Pauses on hover, in hidden tabs and for reduced-motion users; clicking the
+  symbol advances by hand. Phones (below 640px) fall under the brand's 64px ring minimum, so they
+  get plain "Zu" text plus the ticking name.
+- Favicon: `public/favicon.svg` (plain "Zu" on cream, the brand's under-64px expression), with
+  `favicon.ico`/`favicon.png` rendered from it. The share card (`scripts/og-card/build.mjs`) carries
+  the ring beside the wordmark.
+- Casing to confirm with the owner: the directory row is `mushanghai`; the brand book writes `muShanghai`.
+
 ## Content rules (from the project owner)
 
 1. **Zuzone was not part of Zuzalu 2023.**
