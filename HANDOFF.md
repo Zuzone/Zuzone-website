@@ -22,7 +22,7 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   out of the shared ZuThread feed by the village id / its `twitter_url` handle. Desktop: a panel over
   the right third of the map; phones: the usual bottom sheet. A village without an X link shows an
   empty state asking for one.
-- **Directory**: 22 public villages (hidden 2026-09-16: Infinite Games 2026, Edge Esmeralda 2026, Edge City Bhutan 2026; the Goa row is now plain "Edge City"). Curation is `villages.hidden`: hide, never delete.
+- **Directory**: 23 public villages (ZuCity Japan added as a permanent hub 2026-09-25; hidden 2026-09-16: Infinite Games 2026, Edge Esmeralda 2026, Edge City Bhutan 2026; the Goa row is now plain "Edge City"). Curation is `villages.hidden`: hide, never delete.
 - **Add a village**: needs a Zupass login. The Worker verifies the signed POD and inserts the village with `hidden = true`.
   - Review queue:
     `SELECT id, name, website_url, created_at FROM villages WHERE hidden AND zupass_public_key IS NOT NULL ORDER BY created_at DESC;`
@@ -111,6 +111,11 @@ Worker secrets currently set: `SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`. Not 
        the owner has not asked for "Futura House" yet. Invisible Garden lost "Reunion" the same day.
 
 ## Gotchas
+
+- **Supabase Free auto-pauses the project after 7 quiet days** (happened 2026-09-25; the hostname
+  stops resolving, the site's village API returns `supabase 530`, the CLI fails with a login-role
+  timeout). Resume from the dashboard project page ("Resume project", ~10 min). Usage was under 1%,
+  so it is never a quota issue. Cloudflare cron quota is used up, so no keep-alive ping there yet.
 
 - Mapbox paints nothing in a hidden browser tab, so use headless Chrome with `--window-size` for screenshots.
 - Workers free plan limits: 50 subrequests per invocation (hence the batched refresh), and the account's cron quota is used up.
