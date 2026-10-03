@@ -66,6 +66,16 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
   // The Gantt/List panel starts folded so the globe gets the screen; picking a view opens it
   const [panelCollapsed, setPanelCollapsed] = useState(true);
 
+  // Phones: the tagline shows for a few seconds after the logo is tapped (see the header)
+  const [taglineOpen, setTaglineOpen] = useState(false);
+  const taglineTimer = useRef<number>();
+  const showTagline = useCallback(() => {
+    setTaglineOpen(true);
+    window.clearTimeout(taglineTimer.current);
+    taglineTimer.current = window.setTimeout(() => setTaglineOpen(false), 4000);
+  }, []);
+  useEffect(() => () => window.clearTimeout(taglineTimer.current), []);
+
   const isAdmin = user?.id ? ADMIN_USER_IDS.includes(user.id) : false;
   const isMobile = useIsMobile();
   const isPhone = useIsPhone();
@@ -487,15 +497,20 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
       {/* Header overlay */}
       <div className="absolute left-0 right-0 top-0 z-10 pointer-events-none bg-gradient-to-b from-background/90 via-background/60 to-transparent p-3 pb-12 sm:p-4 sm:pb-16 md:p-6 md:pb-20">
         <div className="flex items-start justify-between pointer-events-auto">
-          <div className="flex flex-col gap-1 w-fit">
+          <div
+            className="relative flex flex-col gap-1 w-fit"
+            onPointerEnter={(e) => { if (e.pointerType === "mouse") { window.clearTimeout(taglineTimer.current); setTaglineOpen(true); } }}
+            onPointerLeave={(e) => { if (e.pointerType === "mouse") setTaglineOpen(false); }}
+            onClick={isPhone ? showTagline : undefined}
+          >
             <div className="flex items-center gap-2">
               {/* The living lockup: Zu symbol + every listed village, one per tick.
-                  Phones get the same ring and moving marker at a smaller size (owner request
-                  2026-10-03, overriding the brand book's 64px minimum for the ring). */}
+                  Phones get the same ring and moving marker, 72px (owner requests 2026-10-03);
+                  the names stay at 23px so the longest one still clears the menu button. */}
               <h1 className="text-foreground">
                 <span className="sr-only">Zuzone</span>
                 {isPhone ? (
-                  <ZuLockup names={villages.map((v) => v.name)} size={48} fontSize={22} />
+                  <ZuLockup names={villages.map((v) => v.name)} size={72} fontSize={23} />
                 ) : (
                   <ZuLockup names={villages.map((v) => v.name)} size={64} fontSize={32} />
                 )}
@@ -512,7 +527,11 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
                 </Button>
               )}
             </div>
-            <p className="font-body text-xs text-muted-foreground sm:text-sm md:text-base">
+            {/* Tagline: always visible from `sm` up. On phones it is tucked away and appears under
+                the logo on mouse hover, or for four seconds after a tap (touch has no real hover). */}
+            <p
+              className={`font-body text-xs text-muted-foreground sm:text-sm md:text-base max-sm:pointer-events-none max-sm:absolute max-sm:left-0 max-sm:top-full max-sm:mt-1 max-sm:whitespace-nowrap max-sm:rounded-full max-sm:border max-sm:border-border/60 max-sm:bg-card/95 max-sm:px-3 max-sm:py-1.5 max-sm:shadow-md max-sm:transition-opacity max-sm:duration-200 ${taglineOpen ? "max-sm:opacity-100" : "max-sm:opacity-0"}`}
+            >
               The home for permanent hubs and pop-up cities.
             </p>
           </div>

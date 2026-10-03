@@ -83,8 +83,10 @@ export function ZuLockup({ names, interval = 2400, size = 64, fontSize = 30, pla
   return (
     <span
       className={`inline-flex whitespace-nowrap leading-none ${plain ? "items-baseline" : "items-start"} ${className}`}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      // Pause on hover for a real mouse only: after a tap, touch screens keep a sticky hover
+      // state that would freeze the ticker until the next tap elsewhere.
+      onPointerEnter={(e) => { if (e.pointerType === "mouse") setPaused(true); }}
+      onPointerLeave={() => setPaused(false)}
       aria-label={`Zu ${word}`}
     >
       {plain ? (
