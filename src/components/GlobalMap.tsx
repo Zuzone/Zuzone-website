@@ -490,11 +490,12 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
           <div className="flex flex-col gap-1 w-fit">
             <div className="flex items-center gap-2">
               {/* The living lockup: Zu symbol + every listed village, one per tick.
-                  Phones fall below the brand's 64px ring minimum, so they get plain "Zu". */}
+                  Phones get the same ring and moving marker at a smaller size (owner request
+                  2026-10-03, overriding the brand book's 64px minimum for the ring). */}
               <h1 className="text-foreground">
                 <span className="sr-only">Zuzone</span>
                 {isPhone ? (
-                  <ZuLockup names={villages.map((v) => v.name)} plain fontSize={26} />
+                  <ZuLockup names={villages.map((v) => v.name)} size={48} fontSize={22} />
                 ) : (
                   <ZuLockup names={villages.map((v) => v.name)} size={64} fontSize={32} />
                 )}

@@ -60,8 +60,8 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   ("Zu Zone", "Zu Zanzalu", "Zu Afrique", …). Names come from the live directory through
   `src/lib/lockupName.ts`, which drops years and parentheticals and strips a leading "Zu" so the
   symbol supplies it. Pauses on hover, in hidden tabs and for reduced-motion users; clicking the
-  symbol advances by hand. Phones (below 640px) fall under the brand's 64px ring minimum, so they
-  get plain "Zu" text plus the ticking name. **Rule (owner, 2026-09-16): every visit starts on
+  symbol advances by hand. Phones (below 640px) show the same ring and moving marker at 48px
+  with 22px names (owner request 2026-10-03; this knowingly goes under the brand book's 64px ring minimum). **Rule (owner, 2026-09-16): every visit starts on
   "Zu Zone"** — the index resets when the village list arrives and the first beat is held 1.75× longer.
 - Favicon: `public/favicon.svg` (plain "Zu" on cream, the brand's under-64px expression), with
   `favicon.ico`/`favicon.png` rendered from it. The share card (`scripts/og-card/build.mjs`) carries
