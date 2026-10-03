@@ -14,6 +14,9 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   the header 2026-09-16; the calendar feed keeps its own panel, reached from that button). Bottom
   panel: newsletter signup strip, then Gantt/List, **collapsed by default**. The Gantt is a horizontal
   scroll strip (6 months back, 12 forward; 12 months visible on desktop, 4 on phones).
+  - On phones the **starting zoom is derived from the screen width** (`initialZoomFor` in
+    `GlobalMap.tsx`) so the whole planet fits with about 30px free on each side; from 640px up it is
+    the fixed `DEFAULT_ZOOM`.
   - The globe **spins slowly on its own** (2°/s, one turn per three minutes; `GlobalMap.tsx` idle-spin
     effect). It pauses on grab/wheel/touch, resumes 3 s after release, stays still past zoom 3, in hidden
     tabs and under reduced motion. Dev builds expose the map as `window.__zuzoneMap` for checks.

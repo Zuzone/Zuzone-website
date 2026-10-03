@@ -34,6 +34,18 @@ const DEFAULT_ZOOM = 1.4;
 const FEATURED_VILLAGE_ID = "renaissance-village";
 const FEATURED_VILLAGE_ZOOM = 8;
 
+/**
+ * Starting zoom. On phones the whole planet has to fit across the screen with a margin on each
+ * side, so the zoom is derived from the container width: Mapbox's globe has a radius of
+ * worldSize / (2π · cos(lat)) pixels, with worldSize = 512 · 2^zoom.
+ */
+const PHONE_GLOBE_WIDTH_SHARE = 0.92; // nominal share; the rendered globe measures ~7% smaller, leaving ~7% margin a side
+const initialZoomFor = (width: number, lat: number) => {
+  if (width >= 640) return DEFAULT_ZOOM;
+  const radius = (width * PHONE_GLOBE_WIDTH_SHARE) / 2;
+  return Math.log2((radius * 2 * Math.PI * Math.cos((lat * Math.PI) / 180)) / 512);
+};
+
 // Symmetric padding so the globe stays centered in the viewport
 const MAP_PADDING = { top: 0, bottom: 0, left: 0, right: 0 };
 
@@ -150,7 +162,7 @@ export const GlobalMap = ({ mapboxToken }: GlobalMapProps) => {
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/light-v11",
         center: DEFAULT_CENTER,
-        zoom: DEFAULT_ZOOM,
+        zoom: initialZoomFor(mapContainer.current.clientWidth, DEFAULT_CENTER[1]),
         projection: { name: 'globe' } as any,
       });
 
