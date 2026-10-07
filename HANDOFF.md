@@ -25,7 +25,7 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   out of the shared ZuThread feed by the village id / its `twitter_url` handle. Desktop: a panel over
   the right third of the map; phones: the usual bottom sheet. A village without an X link shows an
   empty state asking for one.
-- **Directory**: 23 public villages (ZuCity Japan added as a permanent hub 2026-09-25; hidden 2026-09-16: Infinite Games 2026, Edge Esmeralda 2026, Edge City Bhutan 2026; the Goa row is now plain "Edge City"). Curation is `villages.hidden`: hide, never delete.
+- **Directory**: 24 public villages (Frontier Tower unhidden and refreshed as a permanent hub 2026-10-07; ZuCity Japan added 2026-09-25; hidden 2026-09-16: Infinite Games 2026, Edge Esmeralda 2026, Edge City Bhutan 2026; the Goa row is now plain "Edge City"). Curation is `villages.hidden`: hide, never delete.
 - **Add a village**: needs a Zupass login. The Worker verifies the signed POD and inserts the village with `hidden = true`.
   - Review queue:
     `SELECT id, name, website_url, created_at FROM villages WHERE hidden AND zupass_public_key IS NOT NULL ORDER BY created_at DESC;`
@@ -129,3 +129,5 @@ Worker secrets currently set: `SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`. Not 
 - Clear test rate limits with `npx wrangler kv key delete --remote --binding ZUTHREAD <key>`
   (`refresh-stamp`, `sub-rate:<ipHash>:<hour>`).
 - zsh: never name a shell variable `path`.
+- `npx supabase` auto-upgraded to 2.120.0 on 2026-10-07 and that build no longer saw the stored login
+  ("Access token not provided"). Pin it: `npx -y supabase@2.117.0 db push` works, or run `supabase login` again.
