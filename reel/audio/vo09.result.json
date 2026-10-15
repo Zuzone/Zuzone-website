@@ -1,0 +1,13 @@
+{
+  "content_type": "audio/mpeg",
+  "model_id": "eleven_multilingual_v2",
+  "voice_id": "SAz9YHcvj6GT2YYXdXww",
+  "character_count": 33,
+  "output_format": "mp3_44100_128",
+  "audio": {
+    "download_link": "https://sfs.monid.ai/C6aQxH84SUWzuRZN0O-4EhER_o5payyrQrx7QlpD-JIxWq7H3J19jbV4Kp5_k--XJ4j40_zqbixDGHbjA7xpncint--iCsy4j9DR9DqPlY2Ke3UaLKJbOU9AyOIxCJfZBDsrhn_wgOfb6gO_ryAXJT80q1blpOHSRw2EdPNuBfNFPtLDYYhq2LFc3SM2RKN3yXnS6o_55kcndDvCsz-dKzf_Jq7nxgCWyZRsY9NuhkBm?e=1791906129",
+    "content_type": "audio/mpeg",
+    "link_expires_at": "2026-10-13T15:42:09.000Z",
+    "file_expires_at": "2026-10-20T14:42:08.118Z"
+  }
+}

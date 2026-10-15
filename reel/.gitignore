@@ -1,0 +1,11 @@
+out/
+tools/node_modules/
+# Generated media: reference captures and the review-sheet clips/frames (rebuilt by tools/)
+ref/
+treatment/*.mp4
+treatment/*.jpg
+treatment/*.png
+promo_treatment/*.mp4
+promo_treatment/*.jpg
+promo_review/*.mp4
+promo_review/*.jpg

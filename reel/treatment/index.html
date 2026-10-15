@@ -1,0 +1,200 @@
+<title>Zuzone Rebrand Reel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column for the treatment, a wide shot grid for the clips; brand palette (forest on cream, lime marker) from the Zuzone identity. */
+:root{--bg:#FAF6EC;--fg:#1F4D3A;--muted:#5E6E66;--line:#E3DCC8;--card:#FFFFFF;--accent:#C4D63E;--accent-ink:#1F4D3A;--blush:#FBE6E6;--old:#8E9A94;--plate:#1F4D3A;--capture:#3F7D5C;--ai:#A86B2F;
+ --display:'Cormorant Garamond',Georgia,'Times New Roman',serif;--body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15352A;--fg:#FAF6EC;--muted:#B5C2BA;--line:#2C5543;--card:#1F4D3A;--accent:#C4D63E;--accent-ink:#15352A;--blush:#3E2F2F;--old:#9AA69F;--plate:#FAF6EC;--capture:#8FD1A8;--ai:#E0A86B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15352A;--fg:#FAF6EC;--muted:#B5C2BA;--line:#2C5543;--card:#1F4D3A;--accent:#C4D63E;--accent-ink:#15352A;--blush:#3E2F2F;--old:#9AA69F;--plate:#FAF6EC;--capture:#8FD1A8;--ai:#E0A86B;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:clamp(16px,4vw,48px);padding-block:0 64px}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto}
+.col{max-width:720px}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(44px,7vw,84px)}
+h2{font-size:clamp(30px,4vw,44px);margin-block:0 16px}
+h3{font-size:24px}
+p{margin:0 0 12px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.hero{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;padding-block:56px 40px;border-bottom:1px solid var(--line)}
+.hero .lead{font-size:20px;max-width:620px;color:var(--fg)}
+.pair{display:flex;gap:10px;align-items:flex-end}
+.pair figure{margin:0;width:118px}
+.pair img{display:block;width:100%;border-radius:14px;border:1px solid var(--line);background:#fff}
+.pair figcaption{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;text-align:center}
+.pair .arrow{font-family:var(--display);font-size:34px;color:var(--muted);padding-bottom:26px}
+section{padding-block:40px;border-bottom:1px solid var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--mono);font-size:13px;color:var(--muted);margin-block:10px 0}
+.meta b{color:var(--fg);font-weight:500}
+.player{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:32px;align-items:start}
+.player video{width:100%;max-width:360px;aspect-ratio:9/16;border-radius:22px;background:#000;display:block}
+.timeline{display:flex;width:100%;height:28px;border-radius:8px;overflow:hidden;margin-block:14px 8px}
+.timeline span{display:block;height:100%;border-right:1px solid var(--bg)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.c-old{background:var(--old)}.c-plate{background:var(--plate)}.c-capture{background:var(--capture)}.c-ai{background:var(--ai)}
+.moves{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:22px}
+.move{border-top:2px solid var(--fg);padding-top:10px}
+.move .eyebrow{color:var(--fg)}
+.move p{color:var(--muted);font-size:15px;margin:6px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.shot{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.shot .media{position:relative;background:#111;aspect-ratio:9/16;max-height:420px}
+.shot video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.shot .tc{position:absolute;left:12px;top:12px;font-family:var(--mono);font-size:12px;background:rgba(31,77,58,.85);color:#FAF6EC;padding:4px 8px;border-radius:999px}
+.shot .src{position:absolute;right:12px;top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:999px;color:#fff}
+.shot .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.shot h3{display:flex;gap:10px;align-items:baseline}
+.shot h3 .n{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:400}
+.shot .on{font-size:15px;color:var(--fg)}
+.cap{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:600;font-size:15px;align-self:flex-start}
+.cap u{text-decoration:none;background:linear-gradient(transparent 66%,var(--accent) 66%)}
+.vo{font-family:var(--display);font-style:italic;font-size:19px;color:var(--fg)}
+.vo::before{content:"VO  ";font-family:var(--mono);font-style:normal;font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.how{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+ol.steps{padding-left:20px;margin:0}
+ol.steps li{margin-bottom:8px}
+.decide{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.decide div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.decide .eyebrow{color:var(--fg);margin-bottom:6px}
+.tag{display:inline-block;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted)}
+footer{padding-top:28px;font-size:13px;color:var(--muted);font-family:var(--mono)}
+button.play{font:inherit;font-weight:600;background:var(--fg);color:var(--bg);border:0;border-radius:999px;padding:10px 18px;cursor:pointer}
+button.play:focus-visible,video:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:860px){.hero{grid-template-columns:1fr}.player{grid-template-columns:1fr}.moves,.decide,.two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){video{animation:none}}
+</style>
+<div class="wrap">
+<header class="hero">
+  <div>
+    <div class="eyebrow">Treatment v1 · 60 s · 9:16 · cut to the tick</div>
+    <h1>From a page to a planet.</h1>
+    <p class="lead">Zuzone used to be a newsletter page with a house icon. Now it is a living mark and a live globe of 24 hubs and pop-up cities. The reel tells it in three movements: the page, the mark, the world.</p>
+    <div class="meta"><span>Format <b>1080×1920 · 30 fps</b></span><span>Length <b>60.0 s</b></span><span>Metronome <b>one tock every 0.8 s</b></span><span>Status <b>v2: end card reads zuzone.org · voice-free bed ready for your recording</b></span></div>
+  </div>
+  <div class="pair">
+    <figure><img src="ref/old_phone.png" alt="The old zuzone.org newsletter page on a phone"><figcaption>was · zuzone.org</figcaption></figure>
+    <div class="arrow">→</div>
+    <figure><img src="ref/new_phone.png" alt="The new Zuzone globe on a phone"><figcaption>is · the platform</figcaption></figure>
+  </div>
+</header>
+
+<section>
+  <h2>The cut</h2>
+  <div class="player">
+    <video id="reel" src="reel_720.mp4" poster="shots/s10.jpg" controls playsinline preload="metadata"></video>
+    <div>
+      <p>Every cut lands on a tock. Old-site shots are desaturated and flat. The mark and the platform are full cream, forest and lime. Captions carry the story so the reel works muted. The player carries a guide voice (an AI read, for timing only); the bed below it has no voice, for your own recording.</p>
+      <p><a href="reel_bed_720.mp4" target="_blank" rel="noopener">Open the voice-free bed (music, tocks, SFX)</a> · <a href="reel_720.mp4" target="_blank" rel="noopener">Open the guide-voice cut</a></p>
+      <div class="timeline" id="timeline" aria-label="Shot timeline"></div>
+      <div class="legend"><span><i class="c-old"></i>Old site capture</span><span><i class="c-plate"></i>Brand plate</span><span><i class="c-capture"></i>Platform capture</span><span><i class="c-ai"></i>Seedance 2.0</span></div>
+      <div class="moves">
+        <div class="move"><div class="eyebrow">I · The page · 0:00–0:12</div><p>The house icon, the monthly issue, the crossword. A home for hubs with no map.</p></div>
+        <div class="move"><div class="eyebrow">II · The mark · 0:12–0:30</div><p>Twelve dots draw in. One turns lime. The lockup ticks through village names. Forest flips to cream.</p></div>
+        <div class="move"><div class="eyebrow">III · The world · 0:30–1:00</div><p>The globe, a village, the timeline, the pulse, the history. The page folds into a planet.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Shot list</h2>
+  <p class="col" style="color:var(--muted)">Sixteen shots, each rendered exactly as it sits in the cut. Hover or tap a clip to play it. Time codes are the reel's own.</p>
+  <div class="grid" id="shots"></div>
+</section>
+
+<section>
+  <h2>Sound</h2>
+  <div class="two">
+    <div>
+      <h3>Bed and metronome</h3>
+      <p>The metronome is one soft wooden tock every 0.8 s from the first frame to the last, so every edit point sits on a beat. Under it, a 60 s instrumental bed at 75 BPM: felt piano and muted keys, no drums. The bed drops out for one bar at 0:12 and returns with the first dot at 0:14. A low air whoosh under the globe reveal at 0:30, one bright ding on the last tick at 0:58.</p>
+      <h3 style="margin-top:18px">Voice-over, to record</h3>
+      <p>Nine lines, 68 words. Calm, unhurried, one idea per line, a slight smile on the last. Start each line at its time; the budget is the room it has before the next cue. “Zuzone” is ZOO-zone. Record one line per file or one take with a second of silence between lines, 48 kHz mono, and the lines drop onto the bed.</p>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th class="num">At</th><th>Line</th><th class="num">Budget</th></tr></thead>
+      <tbody id="volines"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section>
+  <h2>How each shot was made</h2>
+  <div class="two">
+    <div>
+      <ol class="steps">
+        <li><b>Old site.</b> zuzone.org recorded in headless Chrome at 810×1440, scrolled frame by frame at 30 fps, graded flat (saturation down, light vignette). The logo is a 4× crop of the live header.</li>
+        <li><b>Brand plates.</b> A 1080×1920 motion page built from the identity's own geometry: twelve dots on a 137-unit ring, the Cormorant "Zu" glyphs, lime marker, 0.8 s tick. Rendered deterministically frame by frame, so every tick is exact.</li>
+        <li><b>Platform.</b> The live site in a 540×960 phone viewport on a Retina window (1080×1920 device pixels, screencast at the browser’s own frame rate), driven by script: two globe drags, a pin tap, the Gantt strip, the Zupulse thread, the Events panel, typing in the newsletter strip, the Historic Brief scroll. The globe spin is motion-interpolated to 30 fps.</li>
+        <li><b>Transition.</b> Seedance 2.0 through monid, first frame pinned to the old page, last frame pinned to the globe screen, 720p 9:16, 5 s, audio off.</li>
+        <li><b>Captions</b> rendered from the same page as the plates (DM Sans on a cream card, lime underline), faded in and out over 0.2 s. <b>Assembly</b> in ffmpeg: identical encode per segment, concat, caption overlays, then the audio mix.</li>
+      </ol>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Generated through monid</th><th>Runs</th><th class="num">Cost</th></tr></thead>
+        <tbody id="ledger"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Decide before v2</h2>
+  <div class="decide">
+    <div><div class="eyebrow">End card · done</div>The end card now reads zuzone.org. The domain itself still serves the old build until DNS moves, so post the reel once it does.</div>
+    <div><div class="eyebrow">Your voice</div>The bed version has music, tocks and SFX only. Record the nine lines above and they drop in at their time codes; the guide-voice cut stays as a timing reference.</div>
+    <div><div class="eyebrow">Events panel shows demo events</div>Until the Luma key is set, the Events panel lists “Zuzalu Demo Event” placeholders. In shot 14 they pass in 1.7 s; cut the beat or set the key before v2.</div>
+    <div><div class="eyebrow">The crossword line</div>Shot 3 says “…with a crossword.” If that reads as a dig at the previous build, the neutral alternative is “Static. Monthly.”</div>
+  </div>
+</section>
+
+<footer>Masters: ~/Growth/zuzone/reel/out/zuzone_reel_v2.mp4 (guide voice) · zuzone_reel_v2_bed.mp4 (no voice) · 720p copies · per-shot clips in out/shots · script in reel/VO_SCRIPT.md · treatment in reel/TREATMENT.md</footer>
+</div>
+<script>
+const SHOTS=[
+ {id:'s01',t:'0:00–0:03',title:'The hook',src:'plate',on:'Old logo full-frame on white: the green circle, the white house icon, “ZUZONE” in serif caps. Hard cut on a tock to the Zu ring on cream; the lime dot advances one step.',cap:'We rebranded <u>Zuzone</u>.',vo:'Zuzone was a newsletter page.',how:'Live header cropped at 4×, then plate A.'},
+ {id:'s02',t:'0:03–0:07',title:'The newsletter page',src:'old',on:'zuzone.org pushed into 9:16. Slow scroll: ECOSYSTEM eyebrow, big ZUZONE, the tagline, the mission box, the “ZULETTER · March 2026 Edition” card.',cap:'It was a <u>newsletter page</u>.',vo:'A house icon, a monthly issue, a crossword.',how:'120 scripted scroll frames, eased, graded flat.'},
+ {id:'s03',t:'0:07–0:09',title:'The crossword',src:'old',on:'Jump cut to zuzone.org/crossword: the black-and-white grid under “March 2026 Crossword”. Slight push in.',cap:'…with a <u>crossword</u>.',vo:'',how:'Still, 1.0→1.12 zoom.'},
+ {id:'s04',t:'0:09–0:12',title:'No map',src:'old',on:'Push into the old nav, “March 2026 · February 2026 · Crossword · Announcements · Archive”, and the tagline “The home for all permanent hubs and pop-up cities.”',cap:'A home for hubs… <u>with no map</u>.',vo:'The home for hubs and pop-up cities. With no map.',how:'Still, 1.0→1.7 zoom toward the header.'},
+ {id:'s05',t:'0:12–0:14',title:'Empty cream',src:'plate',on:'Empty cream. One tock. The music drops out for the bar.',cap:'So we started with <u>the mark</u>.',vo:'So we started with the mark.',how:'Plate, silence in the bed.'},
+ {id:'s06',t:'0:14–0:18',title:'Twelve dots',src:'plate',on:'Twelve forest dots appear clockwise from 12 o’clock, one every 0.3 s. “Zu” in Cormorant fades in on the twelfth.',cap:'Twelve dots. <u>Twelve months</u>.',vo:'Twelve dots, for twelve months.',how:'Plate B from the brand geometry.'},
+ {id:'s07',t:'0:18–0:21',title:'The lime dot',src:'plate',on:'The 2 o’clock dot turns lime (8→17 units over 0.22 s) and advances three steps, one per tock.',cap:'One lime dot: <u>where the year is now</u>.',vo:'One lime dot, for where the year is now.',how:'Plate C, tick at 0.8 s.'},
+ {id:'s08',t:'0:21–0:27',title:'The lockup',src:'plate',on:'Ring fixed above, name below, baseline locked: Zone → Zuitzerland → muShanghai → Zanzalu → 4Seas → ZuCity Japan → Valley of the Commons. Lime advances with each name.',cap:'One tick. <u>A new place</u>.',vo:'One tick. A new place.',how:'Plate D, stacked for 9:16 (the site sets the name beside the ring).'},
+ {id:'s09',t:'0:27–0:30',title:'Forest, cream, lime',src:'plate',on:'Forest-on-cream flips to cream-on-forest at 1.0 s, then three 0.47 s inserts: the Zu favicon in a browser tab, the real OG share card, the phone header with a ticking name.',cap:'Forest. Cream. <u>Lime</u>.',vo:'',how:'Plate E; OG card is public/og.png.'},
+ {id:'s10',t:'0:30–0:35',title:'The world',src:'capture',on:'The live home on a phone. Globe over Europe and Africa, village pins with avatars (Futura Camp, Zuitzerland, ZuKaş, ZuAfrique, AyaHQ, Crecimiento…). Two slow drags turn it toward the Americas. The lockup ticks top-left.',cap:'Now it’s a world. <u>24 hubs and pop-up cities</u>, live.',vo:'Then we gave it a world. Twenty-four hubs and pop-up cities, live. One globe. One timeline. One thread.',how:'Scripted drags, motion-interpolated to 30 fps. Whoosh under.'},
+ {id:'s11',t:'0:35–0:39',title:'A village',src:'capture',on:'Tap a visible pin. The village page opens: name, dates or “Permanent”, its own map, the links row.',cap:'Every village: <u>when, where, how to join</u>.',vo:'',how:'The pin is chosen live (first visible of 4Seas, Zanzalu, ZuCity Japan, Zuitzerland…).'},
+ {id:'s12',t:'0:39–0:43',title:'The timeline',src:'capture',on:'Back home. The bottom chevron lifts the Gantt strip; the 18-month band scrolls past “Today” with the village bars sliding by.',cap:'A year of pop-ups on <u>one timeline</u>.',vo:'',how:'Expand panel, then an eased scrollLeft over 2.6 s.'},
+ {id:'s13',t:'0:43–0:47',title:'The pulse',src:'capture',on:'Menu → Zupulse. The panel: “The pulse of the network”, Read the Zuletter, then ZuThread with the village chips and the feed scrolling.',cap:'The network’s pulse: every village’s posts, <u>one thread</u>.',vo:'',how:'Menu item activated by click event; 14 wheel steps.'},
+ {id:'s14',t:'0:47–0:52',title:'Events, newsletter, history',src:'capture',on:'Three 1.7 s beats: the Events panel; an email typed into the newsletter strip (never submitted); the Historic Brief scrolling to the Montenegro stat tiles.',cap:'Events. Newsletter. <u>The history</u>.',vo:'',how:'Three captures concatenated.'},
+ {id:'s15',t:'0:52–0:56',title:'Page to planet',src:'ai',on:'The flat newsletter page lifts, curls like paper and folds into a turning globe that settles on the app’s globe screen.',cap:'From a page… <u>to a planet</u>.',vo:'From a page, to a planet. Zuzone.',how:'Seedance 2.0 via monid: first frame = old page, last frame = globe screen, 5 s at 0.8× to fit 4 s.'},
+ {id:'s16',t:'0:56–1:00',title:'End card',src:'plate',on:'Forest. The cream ring ticks, “Zone” below it, zuzone.org in lime. Hold. Ding on the last tick.',cap:'',vo:'',how:'Plate F; reads zuzone.org.'}
+];
+const DUR={s01:3,s02:4,s03:2,s04:3,s05:2,s06:4,s07:3,s08:6,s09:3,s10:5,s11:4,s12:4,s13:4,s14:5,s15:4,s16:4};
+const SRC={old:['Old site','c-old'],plate:['Brand plate','c-plate'],capture:['Platform','c-capture'],ai:['Seedance','c-ai']};
+const tl=document.getElementById('timeline'); let acc=0;
+for(const s of SHOTS){ const el=document.createElement('span'); el.className=SRC[s.src][1]; el.style.width=(DUR[s.id]/60*100)+'%'; el.title=`${s.id.slice(1)} · ${s.t} · ${s.title}`; tl.appendChild(el); acc+=DUR[s.id]; }
+const grid=document.getElementById('shots');
+for(const s of SHOTS){
+  const card=document.createElement('article'); card.className='shot';
+  card.innerHTML=`<div class="media"><video src="shots/${s.id}.mp4" poster="shots/${s.id}.jpg" muted loop playsinline preload="none" aria-label="Shot ${+s.id.slice(1)}: ${s.title}"></video><span class="tc">${s.t}</span><span class="src ${SRC[s.src][1]}">${SRC[s.src][0]}</span></div>
+  <div class="body"><h3><span class="n">${s.id.slice(1)}</span>${s.title}</h3><div class="on">${s.on}</div>${s.cap?`<div class="cap">${s.cap}</div>`:''}${s.vo?`<div class="vo">“${s.vo}”</div>`:''}<div class="how">${s.how}</div></div>`;
+  const v=card.querySelector('video');
+  const play=()=>{v.play().catch(()=>{})}; const stop=()=>{v.pause();};
+  card.addEventListener('mouseenter',play); card.addEventListener('mouseleave',stop);
+  v.addEventListener('click',()=>{ v.paused?play():stop(); });
+  grid.appendChild(card);
+}
+const VO=[['0:00.4','Zuzone was a newsletter page.','2.0 s'],['0:04.0','A house icon, a monthly issue, a crossword.','3.0 s'],['0:09.2','The home for hubs and pop-up cities. With no map.','3.0 s'],['0:12.4','So we started with the mark.','1.8 s'],['0:14.4','Twelve dots, for twelve months.','2.5 s'],['0:18.3','One lime dot, for where the year is now.','2.5 s'],['0:21.3','One tick. A new place. <span class="tag">then 5 s of silence while the names tick</span>','2.0 s'],['0:30.6','Then we gave it a world. Twenty-four hubs and pop-up cities, live. One globe. One timeline. One thread. <span class="tag">or split: “One timeline.” at 0:39.3, “One thread.” at 0:43.3</span>','7.5 s'],['0:52.6','From a page, to a planet. Zuzone. <span class="tag">a touch slower, let the name sit</span>','2.8 s']];
+document.getElementById('volines').innerHTML=VO.map(([a,l,b])=>`<tr><td class="num">${a}</td><td>${l}</td><td class="num">${b}</td></tr>`).join('');
+const LEDGER=[['Voice-over, 9 lines (ElevenLabs multilingual v2, voice “River”)','9','$0.03'],['Music bed, 60 s (Eleven Music v2, instrumental)','1','$0.15'],['Sound effects: tock, whoosh, ding (ElevenLabs)','3','$0.01'],['Page-to-planet transition (Seedance 2.0, 720p, 5 s)','1','$0.76'],['Everything else: plates, captures, captions, assembly','local','$0.00']];
+document.getElementById('ledger').innerHTML=LEDGER.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="num">${r[2]}</td></tr>`).join('')+`<tr><td><b>Total</b></td><td></td><td class="num"><b>$0.95</b></td></tr>`;
+</script>

@@ -1,0 +1,10 @@
+import { chromium } from 'playwright-core';
+import fs from 'node:fs';
+const b=await chromium.launch({channel:'chrome',args:['--use-angle=metal']});
+const ctx=await b.newContext({viewport:{width:432,height:768},deviceScaleFactor:2.5,isMobile:true,hasTouch:true});
+const p=await ctx.newPage(); const cdp=await ctx.newCDPSession(p);
+await p.goto('https://zuzone.boogaav.workers.dev/',{waitUntil:'networkidle',timeout:60000}); await p.waitForTimeout(5000);
+let t=Date.now(); let r=await cdp.send('Page.captureScreenshot',{format:'jpeg',quality:90,captureBeyondViewport:true,clip:{x:0,y:0,width:432,height:768,scale:1}}); fs.writeFileSync('/Users/booga/Growth/zuzone/reel/ref/probe_clip.jpg',Buffer.from(r.data,'base64')); console.log('cdp clip ms',Date.now()-t);
+t=Date.now(); for(let i=0;i<5;i++){ r=await cdp.send('Page.captureScreenshot',{format:'jpeg',quality:90,captureBeyondViewport:true,clip:{x:0,y:0,width:432,height:768,scale:1}}); } console.log('cdp clip avg ms',(Date.now()-t)/5);
+t=Date.now(); for(let i=0;i<5;i++){ await p.screenshot({type:'jpeg',quality:90,path:'/Users/booga/Growth/zuzone/reel/ref/probe_pw.jpg'}); } console.log('pw avg ms',(Date.now()-t)/5);
+await b.close();

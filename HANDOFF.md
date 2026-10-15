@@ -74,6 +74,13 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   the ring beside the wordmark.
 - Casing to confirm with the owner: the directory row is `mushanghai`; the brand book writes `muShanghai`.
 
+## Videos (`reel/`)
+
+The rebrand reel and the platform promo are produced from `reel/`: `TREATMENT.md`, the two
+`VO_SCRIPT*.md` files, capture/assembly scripts in `reel/tools/`, and the voice beds in `reel/audio*/`.
+Rendered outputs (`reel/out/`), reference captures and review-sheet clips are not in git; the scripts
+rebuild them. Finished masters are delivered via the Desktop, not the repo.
+
 ## Content rules (from the project owner)
 
 1. **Zuzone emerged from Zuzalu's ideas, a few years after 2023, and was never physically part of it.**

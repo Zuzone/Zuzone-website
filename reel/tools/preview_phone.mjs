@@ -1,0 +1,12 @@
+import { chromium } from 'playwright-core';
+const b=await chromium.launch({channel:'chrome'});
+const ctx=await b.newContext({viewport:{width:400,height:900},deviceScaleFactor:1});
+const p=await ctx.newPage();
+await p.goto('file:///private/tmp/claude-501/-Users-booga-Growth/1304c558-7d6c-402c-bfa5-03db138ee568/scratchpad/preview.html',{waitUntil:'networkidle'});
+await p.waitForTimeout(1200);
+const w=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,wide:[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>document.documentElement.clientWidth+1).slice(0,6).map(e=>e.tagName+'.'+(e.className||'').toString().slice(0,30)+' r='+Math.round(e.getBoundingClientRect().right))}));
+console.log(JSON.stringify(w));
+await p.screenshot({path:'/Users/booga/Growth/zuzone/reel/ref/treat_phone2.png',fullPage:false});
+await p.evaluate(()=>window.scrollTo(0,2600)); await p.waitForTimeout(300);
+await p.screenshot({path:'/Users/booga/Growth/zuzone/reel/ref/treat_phone3.png',fullPage:false});
+await b.close();

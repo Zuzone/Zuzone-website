@@ -1,0 +1,357 @@
+<title>Zuzone Promo Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a review sheet. One row per scene: the 9:16 clip, the 16:9 clip with the scene's facts under it, and the comment column. Rules between rows; the only boxed things are the fields you type in. */
+:root{--bg:#FAF6EC;--fg:#1F4D3A;--muted:#5E6E66;--line:#E3DCC8;--field:#FFFFFF;--accent:#C4D63E;--accent-ink:#1F4D3A;--plate:#1F4D3A;--capture:#3F7D5C;--keep:#2F7D4F;--change:#9A5E22;--cut:#A8413A;--on-solid:#FAF6EC;--screen:#0D1F18;
+ --display:'Cormorant Garamond',Georgia,'Times New Roman',serif;--body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15352A;--fg:#FAF6EC;--muted:#B5C2BA;--line:#2C5543;--field:#1B4233;--accent:#C4D63E;--accent-ink:#15352A;--plate:#FAF6EC;--capture:#8FD1A8;--keep:#7FCB98;--change:#E0A86B;--cut:#F09A90;--on-solid:#15352A;--screen:#0A1A14;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15352A;--fg:#FAF6EC;--muted:#B5C2BA;--line:#2C5543;--field:#1B4233;--accent:#C4D63E;--accent-ink:#15352A;--plate:#FAF6EC;--capture:#8FD1A8;--keep:#7FCB98;--change:#E0A86B;--cut:#F09A90;--on-solid:#15352A;--screen:#0A1A14;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:clamp(16px,4vw,48px);padding-block:0 72px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(40px,6vw,68px)}
+h2{font-size:clamp(28px,3.6vw,40px)}
+h3{font-size:26px}
+p{margin:0}
+a{color:inherit}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.top{padding-block:48px 28px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--line)}
+.lead{font-size:19px;max-width:66ch}
+.bar{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center}
+.sync,.progress{font-family:var(--mono);font-size:13px}
+.sync{color:var(--muted)}
+.sync::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:8px}
+.sync[data-s="on"]::before{background:var(--keep)}
+.sync[data-s="off"]::before,.sync[data-s="ro"]::before{background:var(--change)}
+.block{padding-block:36px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:18px}
+.block>p{max-width:70ch;color:var(--muted)}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+figcaption{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+video{display:block;width:100%;max-width:100%;background:var(--screen);cursor:pointer}
+.vw{position:relative;border-radius:10px;overflow:hidden;background:var(--screen)}
+.vw:not(.on)::after{content:"";position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:var(--fg);opacity:.92;pointer-events:none}
+.vw:not(.on)::before{content:"";position:absolute;left:50%;top:50%;z-index:1;margin:-9px 0 0 -5px;border-style:solid;border-width:9px 0 9px 15px;border-color:transparent transparent transparent var(--bg);pointer-events:none}
+.p video{aspect-ratio:9/16}
+.w video{aspect-ratio:16/9}
+.full{display:grid;grid-template-columns:minmax(0,230px) minmax(0,727px);gap:20px;align-items:end}
+.timeline{display:flex;gap:2px;height:34px}
+.timeline button{min-width:0;border:0;border-radius:4px;padding:0;font:500 11px var(--mono);color:var(--bg);cursor:pointer;overflow:hidden}
+.timeline .plate{background:var(--plate)}
+.timeline .capture{background:var(--capture)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend .plate{background:var(--plate)}
+.legend .capture{background:var(--capture)}
+.scene{padding-block:30px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:16px;scroll-margin-top:12px}
+.shead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.num{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.tc{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted)}
+.tag.new{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.status{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.row{display:grid;grid-template-columns:180px minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.mid{display:flex;flex-direction:column;gap:14px;min-width:0}
+.facts{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;font-size:14.5px}
+dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:3px;white-space:nowrap}
+dd{margin:0;min-width:0}
+dd.cap{font-weight:600}
+dd.vo{font-family:var(--display);font-style:italic;font-size:19px;line-height:1.3}
+dd.none{color:var(--muted)}
+dd.todo{color:var(--change)}
+.note{display:flex;flex-direction:column;gap:10px;min-width:0;align-self:stretch}
+.verdict{display:flex;gap:8px;flex-wrap:wrap}
+.verdict button{font:600 14px var(--body);padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
+.verdict button[aria-pressed="true"][data-v="keep"]{background:var(--keep);border-color:var(--keep);color:var(--on-solid)}
+.verdict button[aria-pressed="true"][data-v="change"]{background:var(--change);border-color:var(--change);color:var(--on-solid)}
+.verdict button[aria-pressed="true"][data-v="cut"]{background:var(--cut);border-color:var(--cut);color:var(--on-solid)}
+label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+textarea{font:inherit;font-size:16px;line-height:1.45;color:var(--fg);background:var(--field);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:170px;flex:1;resize:vertical}
+textarea::placeholder{color:var(--muted);opacity:.85}
+textarea:disabled,.verdict button:disabled{opacity:.6;cursor:not-allowed}
+textarea:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.vw:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.overall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.overall textarea{min-height:140px}
+.actions{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+.primary{font:600 15px var(--body);background:var(--fg);color:var(--bg);border:0;border-radius:999px;padding:12px 22px;cursor:pointer}
+.msg{font-family:var(--mono);font-size:13px;color:var(--muted)}
+#fallback{min-height:160px;flex:none;font-family:var(--mono);font-size:13px}
+@media (max-width:900px){
+  .row{grid-template-columns:minmax(0,.5fr) minmax(0,1fr);grid-template-areas:"p w" "f f" "n n";gap:14px}
+  .mid{display:contents}
+  .clip.p{grid-area:p}
+  .clip.w{grid-area:w}
+  .facts{grid-area:f}
+  .row>.note{grid-area:n}
+  .overall{grid-template-columns:1fr}
+  .full{grid-template-columns:minmax(0,.5fr) minmax(0,1fr)}
+  .status{margin-left:0;flex-basis:100%}
+}
+</style>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Review sheet · promo v2 · 58 s · 13 scenes</div>
+    <h1>Zuzone promo, scene by scene</h1>
+    <p class="lead">Watch each scene in both formats, mark it Keep, Change or Cut, and write what you would change. There is room at the end for sound, pace and anything missing.</p>
+    <div class="bar">
+      <span class="sync" id="sync" data-s="wait" aria-live="polite">Connecting to your saved comments…</span>
+      <span class="progress" id="progress">0 of 13 scenes have a note</span>
+    </div>
+  </header>
+
+  <section class="block">
+    <h2>The full cut</h2>
+    <p>Both versions run the same 58 seconds with the same captions and sound. The voice is an AI guide read for timing; your own recording replaces it. Pick a scene on the strip to jump to it.</p>
+    <div class="full">
+      <figure class="clip p"><div class="vw"><video id="full916" playsinline tabindex="0" preload="none" poster="full_916.jpg" src="full_916.mp4" aria-label="Full promo, 9:16"></video></div><figcaption>9:16 · 1080×1920</figcaption></figure>
+      <figure class="clip w"><div class="vw"><video id="full169" playsinline tabindex="0" preload="none" poster="full_169.jpg" src="full_169.mp4" aria-label="Full promo, 16:9"></video></div><figcaption>16:9 · 1920×1080</figcaption></figure>
+    </div>
+    <div class="timeline" id="timeline" aria-label="Scenes in order; press one to jump to it"></div>
+    <div class="legend"><span><i class="plate"></i>Brand plate</span><span><i class="capture"></i>Live platform capture</span></div>
+  </section>
+
+  <div id="scenes"></div>
+
+  <section class="block">
+    <h2>The whole video</h2>
+    <p>For anything that is not about one scene.</p>
+    <div class="overall" id="overall"></div>
+  </section>
+
+  <section class="block">
+    <h2>When you are done</h2>
+    <p id="donehint">Your comments are saved here as you type. Tell Claude to read them and the next cut follows from them.</p>
+    <div class="actions">
+      <button class="primary" id="copy" type="button">Copy all comments</button>
+      <span class="msg" id="copymsg" aria-live="polite"></span>
+    </div>
+    <textarea id="fallback" hidden readonly aria-label="All comments as text"></textarea>
+  </section>
+</div>
+<script>
+const SCENES=[
+ {id:'s01',n:'01',t:'0:00–0:03',dur:3,title:'The hook',src:'plate',
+  on:'The Zu ring on cream. The lime marker races clockwise and the village name changes every 0.36 s: Zone, Zanzalu, 4Seas, Zuitzerland, ZuKaş, AyaHQ, Web3Clubs, Edge City. The name sits below the ring in 9:16 and beside it in 16:9.',
+  cap:'One world. Twelve months. Places to belong.',vo:'One world. Twelve months. Places to belong.'},
+ {id:'s02',n:'02',t:'0:03–0:09',dur:6,title:'The shared map',src:'capture',
+  on:'The live home. The globe turns under a slow drag, pins carry village avatars, the lockup ticks in the header. After four seconds the List view opens and the villages scroll by.',
+  cap:'24 independent hubs and pop-up cities. One shared map.',vo:'Twenty-four independent hubs and pop-up cities, on one shared map.',isNew:'Caption changed in v2'},
+ {id:'s03',n:'03',t:'0:09–0:14',dur:5,title:'Each hub is its own thing',src:'plate',
+  on:'Cream card with six scattered dots in different colours and no Zu ring. Three lines arrive in turn: “Each hub is its own thing.” “Its own identity, its own network, its own projects and affiliations.” “Independent. Every one of them.”',
+  cap:'',vo:'Each hub is its own thing: its own identity, network, projects and affiliations.',isNew:'New in v2'},
+ {id:'s04',n:'04',t:'0:14–0:20',dur:6,title:'Zuzone is the shared zone',src:'plate',
+  on:'Forest card. “Zuzone is the shared zone.” above the cream ring. Five words arrive one per beat: Connect, Exchange knowledge, Town Halls, Support, Relationships. They stack under the ring in 9:16 and sit around it in 16:9.',
+  cap:'',vo:'Zuzone is the shared zone, where they connect, exchange knowledge, join Town Halls, and support one another.',isNew:'New in v2'},
+ {id:'s05',n:'05',t:'0:20–0:24',dur:4,title:'A village',src:'capture',
+  on:'A tap on the Zuitzerland pin opens its village page: the name, May 1 – May 26, 2025, Laax, Switzerland, its own map and the links row.',
+  cap:'Every village: when, where, how to join.',vo:'Every village: when it runs, where it is, how to join.',
+  todo:'The 9:16 clip shows about half a second of a “Loading map…” spinner after the tap. It is already trimmed in 16:9 and I will trim it in 9:16 next cut. The page shows a past edition’s dates (May 2025): say if you would rather feature a village with upcoming dates.'},
+ {id:'s06',n:'06',t:'0:24–0:28',dur:4,title:'The timeline',src:'capture',
+  on:'The bottom panel lifts into the Gantt strip. The months run past the “Today” marker with the village bars on them. On a phone the strip scrolls; on desktop it fits the width.',
+  cap:'A year of pop-ups on one timeline.',vo:'A year of pop-ups, on one timeline.'},
+ {id:'s07',n:'07',t:'0:28–0:32',dur:4,title:'The pulse',src:'capture',
+  on:'Zupulse opens: “The pulse of the network”, the Read the Zuletter button, then ZuThread with the village chips and the feed of posts scrolling.',
+  cap:'The pulse of the network, one thread.',vo:'The pulse of the network: every village’s posts, in one thread.'},
+ {id:'s08',n:'08',t:'0:32–0:35',dur:3,title:'The newsletter',src:'capture',
+  on:'An email address is typed into the newsletter strip under the globe, with Subscribe beside it. It is never submitted.',
+  cap:'Monthly notes from the hubs.',vo:'Monthly notes from the hubs, in your inbox.'},
+ {id:'s09',n:'09',t:'0:35–0:39',dur:4,title:'The history',src:'capture',
+  on:'The Historic Brief page scrolls: “Zuzalu began as an experiment”, the note that Zuzone grew out of Zuzalu’s ideas, and the Montenegro 2023 figures.',
+  cap:'Born from the spirit of Zuzalu.',vo:'Born from the spirit of Zuzalu.'},
+ {id:'s10',n:'10',t:'0:39–0:43',dur:4,title:'The door in',src:'capture',
+  on:'Events, then “Add a village”. The Add Village window: “Sign in with Zupass to add a village” and the Continue with Zupass button. Nothing is signed in.',
+  cap:'Add your village. Sign in with Zupass.',vo:'Add your village. Sign in with Zupass.',
+  todo:'Behind the window, the Events panel lists placeholder demo events. They stay until the Luma key is set on the site.'},
+ {id:'s11',n:'11',t:'0:43–0:50',dur:7,title:'The lockup',src:'plate',
+  on:'The ring and a name, one tick every 0.8 s: Zone, Zuitzerland, muShanghai, Zanzalu, 4Seas, ZuCity Japan, Valley of the Commons, Crecimiento, AyaHQ. The lime marker advances with each name. The voice stops after the first two seconds.',
+  cap:'One tick. A new place.',vo:'One tick. A new place.'},
+ {id:'s12',n:'12',t:'0:50–0:53',dur:3,title:'The closing line',src:'plate',
+  on:'Forest card with a small ticking ring and one sentence: “You can belong to your own thing, and still be in the zone.”',
+  cap:'',vo:'You can belong to your own thing, and still be in the zone. Zuzone. zuzone dot org.',isNew:'New in v2'},
+ {id:'s13',n:'13',t:'0:53–0:58',dur:5,title:'End card',src:'plate',
+  on:'Forest. The cream ring ticks with “Zone” beside or below it and zuzone.org in lime. It holds for five seconds and a soft ding lands on the last tick.',
+  cap:'',vo:'',voNote:'Line 12 finishes over this card.',
+  todo:'zuzone.org still serves the old site until the DNS moves.'}
+];
+const OVERALL=[
+ {id:'overall_sound',label:'Sound',ph:'The music, the tock on every beat, the whoosh and ding, the tone you want for the voice.'},
+ {id:'overall_pace',label:'Pace and length',ph:'Too long, too short, too fast, too slow? Which scenes should get more or less time?'},
+ {id:'overall_missing',label:'Missing or wrong',ph:'Anything the video should say or show that it does not, or anything it should not claim.'}
+];
+const SRC={plate:'Brand plate',capture:'Platform capture'};
+const $=id=>document.getElementById(id);
+
+/* ---------- render (static content from the constants above) ---------- */
+$('timeline').innerHTML=SCENES.map(s=>`<button type="button" class="${s.src}" style="flex:${s.dur} 1 0" data-go="${s.id}" aria-label="Scene ${+s.n}, ${s.title}, ${s.t}">${s.n}</button>`).join('');
+$('scenes').innerHTML=SCENES.map(s=>`
+<article class="scene" id="${s.id}">
+  <header class="shead">
+    <span class="num">${s.n}</span><h3>${s.title}</h3><span class="tc">${s.t} · ${s.dur} s</span>
+    <span class="tag">${SRC[s.src]}</span>${s.isNew?`<span class="tag new">${s.isNew}</span>`:''}
+    <span class="status" id="st-${s.id}" aria-live="polite"></span>
+  </header>
+  <div class="row">
+    <figure class="clip p"><div class="vw"><video playsinline tabindex="0" preload="none" poster="p/${s.id}.jpg" src="p/${s.id}.mp4" aria-label="Scene ${+s.n} in 9:16"></video></div><figcaption>9:16</figcaption></figure>
+    <div class="mid">
+      <figure class="clip w"><div class="vw"><video playsinline tabindex="0" preload="none" poster="w/${s.id}.jpg" src="w/${s.id}.mp4" aria-label="Scene ${+s.n} in 16:9"></video></div><figcaption>16:9</figcaption></figure>
+      <dl class="facts">
+        <dt>On screen</dt><dd>${s.on}</dd>
+        <dt>Caption</dt>${s.cap?`<dd class="cap">${s.cap}</dd>`:`<dd class="none">None. The card carries its own text.</dd>`}
+        <dt>Voice</dt>${s.vo?`<dd class="vo">“${s.vo}”</dd>`:`<dd class="none">${s.voNote||'None.'}</dd>`}
+        ${s.todo?`<dt>On my list</dt><dd class="todo">${s.todo}</dd>`:''}
+      </dl>
+    </div>
+    <div class="note">
+      <div class="verdict" role="group" aria-label="Verdict for scene ${+s.n}" data-for="${s.id}">
+        <button type="button" data-v="keep" aria-pressed="false">Keep</button>
+        <button type="button" data-v="change" aria-pressed="false">Change</button>
+        <button type="button" data-v="cut" aria-pressed="false">Cut</button>
+      </div>
+      <label for="c-${s.id}">Your comment on scene ${+s.n}</label>
+      <textarea id="c-${s.id}" data-id="${s.id}" placeholder="What should change here? The picture, the wording, the timing, anything."></textarea>
+    </div>
+  </div>
+</article>`).join('');
+$('overall').innerHTML=OVERALL.map(o=>`
+<div class="note">
+  <label for="c-${o.id}">${o.label}</label>
+  <textarea id="c-${o.id}" data-id="${o.id}" placeholder="${o.ph}"></textarea>
+  <span class="status" id="st-${o.id}" aria-live="polite" style="margin-left:0"></span>
+</div>`).join('');
+
+/* ---------- state ---------- */
+const IDS=[...SCENES.map(s=>s.id),...OVERALL.map(o=>o.id)];
+const LABEL={}; SCENES.forEach(s=>LABEL[s.id]=`${s.n} ${s.title}`); OVERALL.forEach(o=>LABEL[o.id]=`Overall: ${o.label}`);
+const LS='zuzone-promo-review-v2';
+function lsRead(){try{const v=JSON.parse(localStorage.getItem(LS)||'{}');return v&&typeof v==='object'?v:{}}catch(e){return {}}}
+function lsWrite(){try{localStorage.setItem(LS,JSON.stringify(drafts))}catch(e){}}
+let drafts=lsRead();            // edits not yet confirmed by the store
+const cur={}, saved={}, timers={}, inflight={}, again={};
+let db=null, readOnly=false;
+IDS.forEach(id=>{const d=drafts[id]; cur[id]={text:(d&&typeof d.text==='string')?d.text:'',verdict:(d&&typeof d.verdict==='string')?d.verdict:''};});
+const keyOf=c=>JSON.stringify([c.text,c.verdict]);
+const hasContent=c=>!!(c.text.trim()||c.verdict);
+
+function paint(id){
+  const ta=$('c-'+id); if(ta&&ta.value!==cur[id].text) ta.value=cur[id].text;
+  const g=document.querySelector(`.verdict[data-for="${id}"]`);
+  if(g) g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===cur[id].verdict)));
+}
+function setStatus(id,s){const el=$('st-'+id); if(!el) return; el.textContent={saving:'Saving…',saved:'Saved',local:'Kept in this browser',none:''}[s]||'';}
+function progress(){const n=SCENES.filter(s=>hasContent(cur[s.id])).length; $('progress').textContent=`${n} of ${SCENES.length} scenes have a note`;}
+function setSync(s){
+  const el=$('sync'); el.dataset.s=s;
+  el.textContent={wait:'Connecting to your saved comments…',on:'Comments save as you type',off:'Saving is not available in this view. Your notes stay in this browser.',ro:'This page is read-only for you. Its owner adds the comments.'}[s];
+  if(s==='off') $('donehint').textContent='Your notes are kept in this browser only. Use Copy all comments and paste them into the chat with Claude.';
+  if(s==='ro') $('donehint').textContent='Comments on this page are added by its owner.';
+}
+function applyReadOnly(){
+  readOnly=true; setSync('ro');
+  document.querySelectorAll('textarea[data-id]').forEach(t=>t.disabled=true);
+  document.querySelectorAll('.verdict button').forEach(b=>b.disabled=true);
+}
+
+/* ---------- saving: one write at a time per document, one write per pause ---------- */
+function touched(id){drafts[id]={text:cur[id].text,verdict:cur[id].verdict}; lsWrite(); progress();}
+function schedule(id){clearTimeout(timers[id]); timers[id]=setTimeout(()=>flush(id),900);}
+async function flush(id,retried){
+  clearTimeout(timers[id]);
+  if(readOnly) return;
+  if(!db){ setStatus(id, drafts[id]&&hasContent(cur[id])?'local':'none'); return; }
+  const want=keyOf(cur[id]);
+  if(saved[id]===want || (saved[id]===undefined && !hasContent(cur[id]) && !drafts[id])){ delete drafts[id]; lsWrite(); setStatus(id,hasContent(cur[id])?'saved':'none'); return; }
+  if(inflight[id]){ again[id]=true; return; }
+  inflight[id]=true; setStatus(id,'saving');
+  const snap={text:cur[id].text,verdict:cur[id].verdict};
+  try{
+    const ref=db.doc('notes/'+id);
+    if(hasContent(snap)) await ref.set({scene:LABEL[id],verdict:snap.verdict,text:snap.text,updatedAt:new Date().toISOString()});
+    else await ref.delete();
+    saved[id]=keyOf(snap);
+    if(keyOf(cur[id])===saved[id]){ delete drafts[id]; lsWrite(); setStatus(id,hasContent(snap)?'saved':'none'); }
+  }catch(e){
+    const code=e&&e.code;
+    if(code==='invalid_argument'||code==='transform_error'){ inflight[id]=false; applyReadOnly(); return; }
+    if(code==='unavailable'&&!retried){ inflight[id]=false; setTimeout(()=>flush(id,true),1200+Math.random()*800); return; }
+    setStatus(id,'local');
+  }
+  inflight[id]=false;
+  if(again[id]){ again[id]=false; flush(id); }
+}
+
+document.addEventListener('input',e=>{
+  const ta=e.target; if(!ta.matches||!ta.matches('textarea[data-id]')) return;
+  const id=ta.dataset.id; cur[id].text=ta.value; touched(id); schedule(id);
+});
+document.addEventListener('focusout',e=>{
+  const ta=e.target; if(!ta.matches||!ta.matches('textarea[data-id]')) return;
+  if(drafts[ta.dataset.id]) flush(ta.dataset.id);
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('.verdict button');
+  if(b){ const id=b.parentElement.dataset.for; cur[id].verdict=cur[id].verdict===b.dataset.v?'':b.dataset.v; paint(id); touched(id); flush(id); return; }
+  const go=e.target.closest&&e.target.closest('[data-go]');
+  if(go){ const el=$(go.dataset.go); if(el) el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}); }
+});
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) Object.keys(drafts).forEach(id=>flush(id)); });
+/* clips: clean poster at rest; the player controls appear on hover, focus or the first tap; one clip plays at a time */
+function arm(v){ if(!v.controls){ v.controls=true; v.parentElement.classList.add('on'); } }
+function disarm(v){ if(v.paused&&document.activeElement!==v){ v.controls=false; v.parentElement.classList.remove('on'); } }
+document.querySelectorAll('.vw video').forEach(v=>{
+  v.addEventListener('click',()=>{ if(!v.controls){ arm(v); const pr=v.play(); if(pr&&pr.catch) pr.catch(()=>{}); } });
+  v.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse') arm(v); });
+  v.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse') disarm(v); });
+  v.addEventListener('focus',()=>arm(v));
+  v.addEventListener('blur',()=>disarm(v));
+  v.addEventListener('ended',()=>{ if(!v.matches(':hover')) disarm(v); });
+});
+document.addEventListener('play',e=>{ document.querySelectorAll('video').forEach(v=>{ if(v!==e.target&&!v.paused){ v.pause(); if(!v.matches(':hover')) disarm(v); } }); },true);
+
+/* ---------- copy ---------- */
+function allText(){
+  const out=['Zuzone promo v2: scene comments',''];
+  SCENES.forEach(s=>{const c=cur[s.id]; if(hasContent(c)) out.push(`${s.n} ${s.title} (${s.t})${c.verdict?' ['+c.verdict.toUpperCase()+']':''}: ${c.text.trim()}`);});
+  const ov=OVERALL.filter(o=>hasContent(cur[o.id]));
+  if(ov.length){ out.push(''); ov.forEach(o=>out.push(`${o.label}: ${cur[o.id].text.trim()}`)); }
+  if(out.length===2) out.push('No comments yet.');
+  return out.join('\n');
+}
+$('copy').addEventListener('click',()=>{
+  const text=allText(), msg=$('copymsg'), fb=$('fallback');
+  const showFallback=()=>{ fb.hidden=false; fb.value=text; fb.focus(); fb.select(); msg.textContent='Select the text below and copy it.'; };
+  try{ navigator.clipboard.writeText(text).then(()=>{ msg.textContent='Copied.'; },showFallback); }catch(err){ showFallback(); }
+});
+
+/* ---------- first paint, then light up the store ---------- */
+IDS.forEach(paint); progress();
+IDS.forEach(id=>{ if(drafts[id]&&hasContent(cur[id])) setStatus(id,'local'); });
+(async()=>{
+  const claude=window.claude;
+  if(!claude||typeof claude.use!=='function'){ setSync('off'); return; }
+  let user=null;
+  try{ [db,user]=await Promise.all([claude.use('db'),claude.use('user')]); }catch(e){ db=null; }
+  if(!db){ setSync('off'); return; }
+  let cw=null; try{ cw=user?await user.can('data.write'):null; }catch(e){}
+  if(cw===false){ applyReadOnly(); return; }
+  setSync('on');
+  db.collection('notes').onSnapshot(snap=>{
+    const seen={};
+    snap.docs.forEach(d=>{
+      const id=d.id; if(!(id in cur)) return; seen[id]=true;
+      const b=d.data()||{}; const c={text:typeof b.text==='string'?b.text:'',verdict:typeof b.verdict==='string'?b.verdict:''};
+      saved[id]=keyOf(c);
+      if(drafts[id]||document.activeElement===$('c-'+id)) return;   // local edits win until they are saved
+      cur[id]=c; paint(id); setStatus(id,hasContent(c)?'saved':'none');
+    });
+    snap.docChanges().forEach(ch=>{                                   // a note removed elsewhere (another tab or device)
+      if(ch.type!=='removed') return; const id=ch.doc.id; if(!(id in cur)||seen[id]) return;
+      saved[id]=undefined;
+      if(drafts[id]||document.activeElement===$('c-'+id)) return;
+      cur[id]={text:'',verdict:''}; paint(id); setStatus(id,'none');
+    });
+    progress();
+  },err=>{ if(err&&err.code==='revoked'){ applyReadOnly(); } else { setSync('off'); db=null; } });
+  Object.keys(drafts).forEach(id=>{ if(id in cur) flush(id); });
+})();
+</script>

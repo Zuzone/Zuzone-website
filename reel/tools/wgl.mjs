@@ -1,0 +1,10 @@
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal','--enable-unsafe-swiftshader'] });
+const ctx = await b.newContext({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+const p = await ctx.newPage();
+await p.goto('https://zuzone.boogaav.workers.dev/', { waitUntil: 'networkidle', timeout: 60000 });
+await p.waitForTimeout(6000);
+const info = await p.evaluate(() => { const c = document.querySelector('canvas'); const gl = c && (c.getContext('webgl2')||c.getContext('webgl')); if(!gl) return 'no gl'; const e = gl.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : 'gl ok'; });
+console.log('renderer:', info);
+await p.screenshot({ path: '/Users/booga/Growth/zuzone/reel/ref/pw_test.png' });
+await b.close();
