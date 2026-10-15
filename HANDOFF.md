@@ -95,6 +95,23 @@ rebuild them. Finished masters are delivered via the Desktop, not the repo.
    - Research them from primary sources and check that every image URL loads.
    - Flag name/location mismatches instead of silently changing them.
 
+## Public repo and secrets (audit 2026-10-15)
+
+The code is public at https://github.com/Zuzone/Zuzone-website (the client's org; `client` remote
+locally) and private at github.com/boogaav/zuzone (`origin`). A gitleaks scan of the full history
+plus a manual pass found only two values, both meant to be public:
+
+- the Supabase **anon** key (`.env`, `worker/wrangler.jsonc`): publishable by design; every table
+  has row-level security, and the audit tightened the last two anonymous reads (`settings`,
+  `notification_routes`, migration 20261015150000)
+- the Mapbox **public** token (`pk.…` in four pages): restrict it to the site's domains in the
+  Mapbox account under Tokens → URL restrictions, so copies cannot run up the quota elsewhere
+
+Real secrets (Supabase service role, monid, Telegram, Luma) live only in Cloudflare Worker secrets
+and Supabase function secrets. The previous dev's Mapbox token that sat in two 2026 commits was
+scrubbed from the public history with git-filter-repo before the first push; it should still be
+revoked in whichever Mapbox account owns it.
+
 ## Health check
 
 `GET /api/_health` must report `service_kind: "jwt:service_role:xflmthlxogmbslglgdwj"`. If the
