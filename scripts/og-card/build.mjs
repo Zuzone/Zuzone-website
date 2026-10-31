@@ -11,7 +11,7 @@ import { mkdtempSync, readFileSync, statSync, writeFileSync, copyFileSync } from
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const API = process.env.ZUZONE_API || "https://zuzone.boogaav.workers.dev";
+const API = process.env.ZUZONE_API || "https://zuzone.org";
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 // Mapbox public token: from the environment, else .env.local (never committed)
 const TOKEN = process.env.VITE_MAPBOX_TOKEN || (readFileSync(".env.local", "utf8").match(/VITE_MAPBOX_TOKEN\s*=\s*"?([^"\n]+)/) || [])[1];
