@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/edge.mjs": { "maxDuration": 60 }
+  },
+  "redirects": [
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.zuzone.org" }], "destination": "https://zuzone.org/:path*", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/(newsletter|why-zuzone|manifesto|historic-brief|admin|auth|profile|notifications|embed|widget)(/.*)?", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/api/edge" }
+  ],
+  "headers": [
+    { "source": "/assets/(.*)", "headers": [{ "key": "cache-control", "value": "public, max-age=31536000, immutable" }] }
+  ]
+}

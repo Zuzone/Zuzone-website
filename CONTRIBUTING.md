@@ -19,13 +19,13 @@ so a fresh clone talks to the real directory straight away.
 
 | You can, on a clone | You need access for |
 | --- | --- |
-| Everything in `src/` — UI, pages, hooks | Deploying the Worker (Cloudflare) |
+| Everything in `src/` — UI, pages, hooks | Deploying (the Vercel project) |
 | Read the live data through the anon key | Writing to the database outside the app's own rules |
-| Run and edit the Worker locally (`cd worker && npx wrangler dev`) | Applying migrations (`supabase db push`) |
-| Rebuild the ZuThread snapshot, with your own monid key | Setting Worker secrets |
+| Run the edge layer locally (`npx vercel dev`) | Applying migrations (`supabase db push`) |
+| Rebuild the ZuThread snapshot, with your own monid key | Setting Vercel environment variables |
 
 Ask for access rather than working around row-level security: anonymous writes are closed on
-purpose, and the add-village path is gated behind a Zupass signature that the Worker verifies.
+purpose, and the add-village path is gated behind a Zupass signature that the edge layer verifies.
 
 ## Workflow
 

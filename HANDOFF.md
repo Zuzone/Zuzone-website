@@ -4,7 +4,7 @@ Read this before continuing work. Setup, commands and architecture are in [READM
 and [CONTRIBUTING.md](CONTRIBUTING.md); this file covers what is live, the content rules, and what
 is still open.
 
-Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a push does not deploy).
+Live: **https://zuzone.org** · hosted on Vercel; a push to `main` deploys (or run `npm run deploy`).
 
 ## What is live
 
@@ -32,10 +32,10 @@ Live: **https://zuzone.boogaav.workers.dev** · deploy with `npm run deploy` (a 
   - Approve: `UPDATE villages SET hidden = false WHERE id = '<id>';`
   - After approving, rerun `node scripts/og-card/build.mjs`.
 - **ZuThread** (inside Zupulse): X posts from 21 accounts, including @zuzones (`EXTRA_SOURCES` in
-  `worker/src/zuthread.mjs`).
+  `server/zuthread.mjs`).
   - The refresh button chains Worker invocations, 4 accounts each, through the `SELF` binding.
   - Limits: 10-minute cooldown, 20 refreshes per day.
-  - Blocked personal accounts: `EXCLUDED_HANDLES` in `worker/src/zuthread.mjs` (currently
+  - Blocked personal accounts: `EXCLUDED_HANDLES` in `server/zuthread.mjs` (currently
     @James_of_Arc). Never a source, and their reposts/quotes are dropped both when a feed is built
     and when a cached feed is served.
 - **`/why-zuzone`**: the manifesto on top (`src/components/why/ManifestoSection.tsx`; merged from the
@@ -101,7 +101,7 @@ The code is public at https://github.com/Zuzone/Zuzone-website (the client's org
 locally) and private at github.com/boogaav/zuzone (`origin`). A gitleaks scan of the full history
 plus a manual pass found only two values, both meant to be public:
 
-- the Supabase **anon** key (`.env`, `worker/wrangler.jsonc`): publishable by design; every table
+- the Supabase **anon** key (`.env`): publishable by design; every table
   has row-level security, and the audit tightened the last two anonymous reads (`settings`,
   `notification_routes`, migration 20261015150000)
 - the Mapbox **public** token: since 2026-10-31 it is NOT in the code. Pages import it from
@@ -118,16 +118,23 @@ repos therefore share code but not commit hashes: replay changes onto a clone of
 
 ## Health check
 
-`GET /api/_health` must report `service_kind: "jwt:service_role:xflmthlxogmbslglgdwj"`. If the
-service-role secret holds the publishable key instead, every Worker write fails with RLS 42501.
+`GET /api/_health` must report `service_kind: "jwt:service_role:exgxlhlecglvuctbrsco"`. If the
+service-role secret holds the publishable key instead, every edge write fails with RLS 42501.
 
-Worker secrets currently set: `SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`. Not set: `LUMA_API_KEY`.
+Vercel environment variables to set: `VITE_MAPBOX_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`. Not set yet: `LUMA_API_KEY`.
+
+## Supabase project move (2026-10-31)
+
+The backend moved from `xflmthlxogmbslglgdwj` to `exgxlhlecglvuctbrsco` (org Zuzone). All migrations
+were applied there, and `villages` and `spots` were copied from the old project. Everything the anon
+key cannot read did not move: auth users, profiles, stays, newsletter signups, bulletin, edge-function
+secrets. The edge functions are not deployed to the new project yet (`npx supabase functions deploy --use-api`).
 
 ## Open items
 
 1. **Luma**: waiting on the owner.
    - Create a Zuzone calendar on Luma Plus.
-   - Run `cd worker && npx wrangler secret put LUMA_API_KEY`. Optionally also set `LUMA_CONTACT_TAG`.
+   - Add `LUMA_API_KEY` in Vercel → Settings → Environment Variables, then redeploy. Optionally also set `LUMA_CONTACT_TAG`.
    - Submit a test signup, then check `luma_synced_at` or `luma_error` on the row.
 2. **Edge functions**: several secrets are unset: Telegram, Firecrawl, Twitter, Magic, Privy, Villedge.
    - `admin-ai-chat`, `agent-create-village`, `generate-village-about` and `telegram-webhook` still call
@@ -149,12 +156,12 @@ Worker secrets currently set: `SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`. Not 
 - **Supabase Free auto-pauses the project after 7 quiet days** (happened 2026-09-25; the hostname
   stops resolving, the site's village API returns `supabase 530`, the CLI fails with a login-role
   timeout). Resume from the dashboard project page ("Resume project", ~10 min). Usage was under 1%,
-  so it is never a quota issue. Cloudflare cron quota is used up, so no keep-alive ping there yet.
+  so it is never a quota issue. A Vercel cron hitting `/api/villages.json` daily would keep it awake.
 
 - Mapbox paints nothing in a hidden browser tab, so use headless Chrome with `--window-size` for screenshots.
-- Workers free plan limits: 50 subrequests per invocation (hence the batched refresh), and the account's cron quota is used up.
-- Register internal POST routes before the non-GET → assets guard in `worker/src/index.mjs`, or they return 405.
-- Clear test rate limits with `npx wrangler kv key delete --remote --binding ZUTHREAD <key>`
+- The ZuThread refresh runs in batches of 4 accounts per invocation, each batch handing the rest to a fresh call of the same function (a leftover of the Workers subrequest limit; it also keeps each call well under Vercel's 60 s limit).
+- Register internal POST routes before the non-GET → assets guard in `server/index.mjs`, or they return 405.
+- Clear test rate limits with `DELETE FROM edge_kv WHERE key = '<key>';`
   (`refresh-stamp`, `sub-rate:<ipHash>:<hour>`).
 - zsh: never name a shell variable `path`.
 - `npx supabase` auto-upgraded to 2.120.0 on 2026-10-07 and that build no longer saw the stored login

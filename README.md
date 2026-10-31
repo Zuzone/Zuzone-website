@@ -4,7 +4,7 @@
 globe, with a timeline of who is running when, per-village pages, a subscribable calendar feed,
 and a combined feed of what the villages are posting.
 
-Live: **https://zuzone.boogaav.workers.dev**
+Live: **https://zuzone.org**
 
 ---
 
@@ -24,7 +24,7 @@ Live: **https://zuzone.boogaav.workers.dev**
 ## Architecture
 
 ```
-browser ──► Cloudflare Worker (worker/)  ──►  Supabase (Postgres + Auth + 20 edge functions)
+browser ──► Vercel (static build + api/edge.mjs) ──►  Supabase (Postgres + Auth + 20 edge functions)
                  │                                  ▲
                  │ serves the Vite build            │ villages, profiles, stays, events…
                  │ + per-village Open Graph tags
@@ -34,10 +34,11 @@ browser ──► Cloudflare Worker (worker/)  ──►  Supabase (Postgres + A
 
 - **Frontend** — Vite + React + TypeScript + Tailwind + shadcn/ui. Originally generated in
   Lovable, now maintained here.
-- **Edge layer** — a Cloudflare Worker (`worker/src/index.mjs`) serves the built SPA and adds
-  what a static host cannot: Open Graph tags injected per village so shared links unfurl, the
-  iCalendar feed, the JSON APIs, and the Zupass-gated write path.
-- **Database** — Supabase project `xflmthlxogmbslglgdwj`. Schema lives in
+- **Edge layer** — Vercel serves the static Vite build; every other path goes to one Vercel
+  Function (`api/edge.mjs` → `server/index.mjs`) that adds what a static host cannot: Open Graph tags injected per village so shared links unfurl, the
+  iCalendar feed, the JSON APIs, and the Zupass-gated write path. Its small key/value state
+  (the cached ZuThread feed, refresh locks, rate limits) lives in the Supabase table `edge_kv`.
+- **Database** — Supabase project `exgxlhlecglvuctbrsco`. Schema lives in
   `supabase/migrations/` and travels with the repo, seed villages included.
 
 ## Quick start
@@ -56,7 +57,7 @@ row-level security is designed around. There is no secret to obtain to run the a
 | `npm run dev` | Vite dev server on port 8080 |
 | `npm run build` | Production build into `dist/` |
 | `npm run lint` | ESLint |
-| `npm run deploy` | `vite build` + `wrangler deploy` (needs Cloudflare access) |
+| `npm run deploy` | `vercel --prod` (needs access to the Vercel project) |
 | `node scripts/zuthread-refresh.mjs` | Rebuild `public/zuthread.json` locally via the monid CLI |
 | `node scripts/og-card/build.mjs` | Regenerate the social share image from the visible villages |
 
@@ -68,9 +69,12 @@ src/
   pages/            Index, Village, WhyZuzone, Newsletter, Profile, Admin, …
   hooks/            one hook per table — useVillages, useStays, useEvents, …
   integrations/     Supabase client + generated types
-worker/
-  src/index.mjs     routing, OG injection, calendar feed, Zupass-verified writes
-  src/zuthread.mjs  X timeline fetch + normalization
+api/
+  edge.mjs          Vercel Function: maps Vercel/Supabase onto the edge layer's bindings
+server/
+  index.mjs         routing, OG injection, calendar feed, Zupass-verified writes
+  zuthread.mjs      X timeline fetch + normalization
+vercel.json         build settings, www → apex redirect, rewrites into api/edge.mjs
 supabase/
   migrations/       schema, in order; the seed migration carries the villages
   functions/        20 edge functions (Telegram bots, wallets, Luma, auth)
@@ -78,16 +82,25 @@ supabase/
 
 ## Deploying
 
-The Worker is the live site. A `git push` does **not** redeploy anything.
+Vercel hosts the site at **https://zuzone.org**. With the GitHub repo connected to the Vercel
+project, every push to `main` deploys production and every other branch gets a preview URL.
 
 ```bash
-npm run deploy                       # frontend + worker
+npm run deploy                       # manual production deploy (Vercel CLI)
 npx supabase db push                 # migrations
 npx supabase functions deploy --use-api
 ```
 
-Secrets live in Cloudflare and Supabase, never in the repo:
-`SUPABASE_SERVICE_ROLE_KEY`, `MONID_API_KEY`, and the Telegram/wallet keys the edge functions use.
+Secrets live in Vercel (Project → Settings → Environment Variables) and Supabase, never in the repo:
+
+| Vercel variable | Needed for |
+| --- | --- |
+| `VITE_MAPBOX_TOKEN` | the globe (read at build time) |
+| `SUPABASE_SERVICE_ROLE_KEY` | add-village, newsletter signups, `edge_kv` (feed cache, rate limits) |
+| `MONID_API_KEY` | live ZuThread refreshes (optional; falls back to `public/zuthread.json`) |
+| `LUMA_API_KEY`, `LUMA_CONTACT_TAG` | syncing signups to Luma (optional) |
+
+`SUPABASE_URL` and the anon key are read from the committed `.env` (`VITE_SUPABASE_*`).
 
 ## Notes worth knowing
 
