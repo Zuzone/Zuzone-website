@@ -1,5 +1,5 @@
 /**
- * Zuzone edge worker.
+ * Zuzone edge layer (runs as a Vercel Function via api/edge.mjs).
  *
  * Serves the Vite build (SPA fallback) and adds what a static host cannot:
  *   GET  /calendar.ics        iCalendar feed of every pop-up city (subscribe in Google/Apple/Outlook)
@@ -10,7 +10,12 @@
  *   POST /api/zuthread/refresh  start a manual refresh (rate-limited); GET .../status to follow it
  *   GET  /:slug[/section]     index.html with per-village Open Graph tags so links unfurl on X/Telegram
  */
-import { POD } from "@pcd/pod";
+import { createRequire } from "node:module";
+// The ESM build of @pcd/pod breaks under plain Node (a CommonJS named-import in @zk-kit/eddsa-poseidon);
+// the CommonJS build works everywhere. Keep the `require` binding: Vercel's file tracer only
+// follows require() calls on a variable named `require`, so an inline call ships without the package.
+const require = createRequire(import.meta.url);
+const { POD } = require("@pcd/pod");
 import { buildFeed, EXTRA_SOURCE_IDS, fetchAccount, handlesFromVillages, isExcludedPost, EXCLUDED_HANDLES } from "./zuthread.mjs";
 
 const RESERVED = new Set(["newsletter", "why-zuzone", "why-zuzalu", "manifesto", "historic-brief", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
@@ -22,6 +27,12 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    // One canonical origin: send www.zuzone.org to the apex, keeping path and query.
+    if (url.hostname === "www.zuzone.org") {
+      url.hostname = "zuzone.org";
+      return Response.redirect(url.toString(), 301);
+    }
 
     if (path === "/api/newsletter/subscribe") {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -112,7 +123,7 @@ async function newsletterSubscribe(request, env, ctx) {
   const email = String(body?.email || "").trim().toLowerCase();
   if (email.length > 254 || !EMAIL_RE.test(email)) return json({ error: "Please enter a valid email address." }, 422);
 
-  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") || (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
   const ipHash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`newsletter:${ip}`)))]
     .slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
   const rateKey = `sub-rate:${ipHash}:${new Date().toISOString().slice(0, 13)}`;

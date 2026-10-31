@@ -11,7 +11,7 @@ interface CalendarFeedDialogProps {
 
 /**
  * Lets a visitor subscribe to every pop-up city as a live calendar feed.
- * The feed itself is generated at the edge (worker/src/index.mjs → /calendar.ics).
+ * The feed itself is generated at the edge (server/index.mjs → /calendar.ics).
  */
 /** Subscribe rows (Google / webcal / copy), used by the side panel and the legacy dialog. */
 export const CalendarFeedContent = ({ villageCount }: { villageCount?: number }) => {

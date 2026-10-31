@@ -29,3 +29,4 @@ supabase/.temp
 supabase/tmp
 
 .claude/
+.vercel

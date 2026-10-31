@@ -1,8 +1,8 @@
-project_id = "xflmthlxogmbslglgdwj"
+project_id = "exgxlhlecglvuctbrsco"
 
 [auth]
-site_url = "https://zuzone.boogaav.workers.dev"
-additional_redirect_urls = ["https://zuzone.boogaav.workers.dev/**", "http://localhost:8080/**", "https://zuzone.lovable.app/**"]
+site_url = "https://zuzone.org"
+additional_redirect_urls = ["https://zuzone.org/**", "https://www.zuzone.org/**", "https://zuzone.boogaav.workers.dev/**", "http://localhost:8080/**", "https://zuzone.lovable.app/**"]
 
 # Called by Telegram's servers with no Supabase JWT.
 [functions.telegram-webhook]

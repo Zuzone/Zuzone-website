@@ -8,7 +8,7 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { handlesFromVillages, buildFeed } from "../worker/src/zuthread.mjs";
+import { handlesFromVillages, buildFeed } from "../server/zuthread.mjs";
 
 const only = process.argv.includes("--handles") ? process.argv[process.argv.indexOf("--handles") + 1].split(",") : null;
 
