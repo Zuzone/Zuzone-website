@@ -9,3 +9,7 @@ promo_treatment/*.mp4
 promo_treatment/*.jpg
 promo_review/*.mp4
 promo_review/*.jpg
+reel_review/*.mp4
+reel_review/*.jpg
+reel_review/p/
+reel_review/w/
