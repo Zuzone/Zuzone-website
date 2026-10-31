@@ -104,13 +104,17 @@ plus a manual pass found only two values, both meant to be public:
 - the Supabase **anon** key (`.env`, `worker/wrangler.jsonc`): publishable by design; every table
   has row-level security, and the audit tightened the last two anonymous reads (`settings`,
   `notification_routes`, migration 20261015150000)
-- the Mapbox **public** token (`pk.…` in four pages): restrict it to the site's domains in the
-  Mapbox account under Tokens → URL restrictions, so copies cannot run up the quota elsewhere
+- the Mapbox **public** token: since 2026-10-31 it is NOT in the code. Pages import it from
+  `src/lib/mapbox.ts`, which reads `VITE_MAPBOX_TOKEN` at build time. Locally it lives in
+  `.env.local` (gitignored; see `.env.local.example`); a host such as Vercel needs it as an
+  environment variable. Restrict the token to the site's domains in the Mapbox account under
+  Tokens → URL restrictions
 
 Real secrets (Supabase service role, monid, Telegram, Luma) live only in Cloudflare Worker secrets
-and Supabase function secrets. The previous dev's Mapbox token that sat in two 2026 commits was
-scrubbed from the public history with git-filter-repo before the first push; it should still be
-revoked in whichever Mapbox account owns it.
+and Supabase function secrets. GitHub push protection flagged the Mapbox token in the history, so
+the public repo's history was rewritten with git-filter-repo before the first push; that same
+token is the one the site still uses, which is why it now comes from `VITE_MAPBOX_TOKEN`. The two
+repos therefore share code but not commit hashes: replay changes onto a clone of the public repo.
 
 ## Health check
 

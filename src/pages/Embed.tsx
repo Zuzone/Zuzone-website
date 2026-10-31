@@ -1,8 +1,8 @@
 import { useSearchParams } from "react-router-dom";
 import { EmbedMap } from "@/components/EmbedMap";
 import { EmbedVillagesMap } from "@/components/EmbedVillagesMap";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 
-const MAPBOX_TOKEN = "REDACTED_MAPBOX_TOKEN";
 
 const Embed = () => {
   const [params] = useSearchParams();

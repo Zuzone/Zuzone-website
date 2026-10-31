@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, ChevronDown, ExternalLink, Sparkles } from "luci
 import { PUBLIC_SITE_URL } from "@/lib/publicSite";
 import { DossierSection } from "@/components/why/DossierSection";
 import { ManifestoSection } from "@/components/why/ManifestoSection";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 
 /**
  * Manifesto + Historic Brief (one page since 2026-09-16; the manifesto opens it).
@@ -16,7 +17,6 @@ import { ManifestoSection } from "@/components/why/ManifestoSection";
  */
 
 const ESSAY_URL = "https://www.palladiummag.com/2023/10/06/why-i-built-zuzalu/";
-const MAPBOX_TOKEN = "REDACTED_MAPBOX_TOKEN";
 
 // ---------- 1. size × duration ----------
 

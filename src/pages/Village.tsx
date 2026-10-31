@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 
-const MAPBOX_TOKEN = "REDACTED_MAPBOX_TOKEN";
 
 type CategoryType = "map" | "about" | "residents" | "scenius" | "events" | "pulse";
 

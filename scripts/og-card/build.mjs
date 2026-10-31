@@ -13,7 +13,9 @@ import { join } from "node:path";
 
 const API = process.env.ZUZONE_API || "https://zuzone.boogaav.workers.dev";
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-const TOKEN = readFileSync("src/pages/Index.tsx", "utf8").match(/pk\.[A-Za-z0-9._-]+/)[0];
+// Mapbox public token: from the environment, else .env.local (never committed)
+const TOKEN = process.env.VITE_MAPBOX_TOKEN || (readFileSync(".env.local", "utf8").match(/VITE_MAPBOX_TOKEN\s*=\s*"?([^"\n]+)/) || [])[1];
+if (!TOKEN) { console.error("Set VITE_MAPBOX_TOKEN (env or .env.local)"); process.exit(1); }
 
 const [CLON, CLAT, Z, W, H] = [30, 28, 1.05, 1200, 630];
 // The Zu symbol (brand/zu-mark-forest.svg), read at build time so the card follows the identity

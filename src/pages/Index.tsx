@@ -1,6 +1,6 @@
 import { GlobalMap } from "@/components/GlobalMap";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 
-const MAPBOX_TOKEN = "REDACTED_MAPBOX_TOKEN";
 
 const Index = () => {
   return (
