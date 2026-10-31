@@ -12,8 +12,10 @@
  */
 import { createRequire } from "node:module";
 // The ESM build of @pcd/pod breaks under plain Node (a CommonJS named-import in @zk-kit/eddsa-poseidon);
-// the CommonJS build works everywhere.
-const { POD } = createRequire(import.meta.url)("@pcd/pod");
+// the CommonJS build works everywhere. Keep the `require` binding: Vercel's file tracer only
+// follows require() calls on a variable named `require`, so an inline call ships without the package.
+const require = createRequire(import.meta.url);
+const { POD } = require("@pcd/pod");
 import { buildFeed, EXTRA_SOURCE_IDS, fetchAccount, handlesFromVillages, isExcludedPost, EXCLUDED_HANDLES } from "./zuthread.mjs";
 
 const RESERVED = new Set(["newsletter", "why-zuzone", "why-zuzalu", "manifesto", "historic-brief", "dossier", "admin", "auth", "profile", "notifications", "embed", "widget", "assets", "api", "calendar.ics", "og.png", "robots.txt", "favicon.ico", "favicon.png", "placeholder.svg", "tonconnect-manifest.json"]);
